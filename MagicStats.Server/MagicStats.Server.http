@@ -1,0 +1,6 @@
+@MagicStats.Server_HostAddress = http://localhost:5135
+
+GET {{MagicStats.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
