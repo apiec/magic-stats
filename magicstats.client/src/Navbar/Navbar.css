@@ -1,0 +1,27 @@
+﻿nav {
+    grid-area: nav;
+    background: blue;
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 10px;
+}
+
+.navbar-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.navbar-section:hover {
+    opacity: 80%;
+    cursor: pointer;
+}
+
+.navbar-icon {
+    padding: 10px;
+}
+

@@ -21,7 +21,7 @@ export function Commanders() {
     }
 
     return (
-        <>
+        <div className="commanders">
             <h1 id="tabelLabel">Commanders!</h1>
             <table className="table table-striped" aria-labelledby="tabelLable">
                 <thead>
@@ -40,7 +40,7 @@ export function Commanders() {
                 </tbody>
 
             </table>
-        </>
+        </div>
     );
 
     async function populateCommanderData() {
