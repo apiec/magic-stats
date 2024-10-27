@@ -1,6 +1,6 @@
 ﻿nav {
     grid-area: nav;
-    background: blue;
+    background: #103090;
     display: flex;
     flex-direction: column;
     align-content: flex-start;

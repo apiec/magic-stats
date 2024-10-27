@@ -1,6 +1,6 @@
 import './App.css';
-import {Commanders} from "./Commanders.tsx";
 import Navbar from "./Navbar/Navbar.tsx";
+import Commanders from "./Commanders/Commanders.tsx";
 
 function App() {
     return (
