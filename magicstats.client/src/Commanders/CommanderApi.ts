@@ -1,46 +1,53 @@
-﻿const BasePath: string = 'api/commanders/';
+﻿import {TableApi, TableEntry} from "../Shared/SimpleTable/TableApi.ts";
 
-export default interface CommanderData {
-    commanders: Commander[];
-}
-
-export interface Commander {
-    name: string,
+interface CommanderDto {
     id: string,
-}
-
-
-export async function GetCommanders(): Promise<CommanderData> {
-    const response = await fetch(BasePath);
-    return await response.json();
-}
-
-export interface CreateCommanderRequest {
     name: string;
 }
 
-export interface CreateCommanderResponse {
-    id: string;
+interface GetCommandersResponse {
+    commanders: CommanderDto[];
+}
+
+interface CreateCommanderRequest {
     name: string;
 }
 
-export async function CreateCommander(request: CreateCommanderRequest): Promise<CreateCommanderResponse> {
-    const response = await fetch(BasePath, {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(request),
-    } as RequestInit);
-    const content = await response.json() as CreateCommanderResponse;
-    content.name = request.name;
-    return content;
-}
-
-export interface DeleteCommanderRequest {
+interface CreateCommanderResponse {
     id: string;
 }
 
-export async function DeleteCommander(request: DeleteCommanderRequest) {
-    await fetch(BasePath + request.id, {method: 'DELETE',});
+interface CommanderEntry extends TableEntry {
+}
+
+export default class CommanderApi implements TableApi<CommanderEntry> {
+    private basePath: string = 'api/commanders/';
+
+    async getAll(): Promise<CommanderEntry[]> {
+        const rawResponse = await fetch(this.basePath);
+        const response = await rawResponse.json() as GetCommandersResponse;
+        return response.commanders.map(
+            c => ({id: c.id, contents: c.name} as CommanderEntry));
+    }
+
+    async create(entry: CommanderEntry): Promise<CommanderEntry> {
+        const request = {name: entry.contents} as CreateCommanderRequest;
+        const rawResponse = await fetch(this.basePath, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(request),
+        });
+        const response = await rawResponse.json() as CreateCommanderResponse;
+        return {
+            id: response.id,
+            contents: entry.contents
+        } as CommanderEntry;
+    }
+
+    async delete(id: string): Promise<void> {
+        await fetch(this.basePath + id, {method: 'DELETE'});
+    }
+
 }

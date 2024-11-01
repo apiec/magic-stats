@@ -1,77 +1,7 @@
 ﻿.commanders {
-    grid-area: main;
+    grid-area: commanders;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    align-content: center;
-}
-
-.table {
-    width: 100%;
-    max-width: 400px;
-    display: flex;
-    flex-direction: column;
-    border-width: 10px;
-    border-color: yellow;
-}
-
-.text {
-    padding-left: 5px;
-}
-
-.row {
-    background: #f2f2f2;
-    color: black;
-    display: flex;
-    flex-direction: row;
-}
-
-@keyframes fadeIn {
-    0% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 1;
-    }
-}
-
-.delete-button {
-    animation: fadeIn 400ms;
-    background: #e00000;
-    color: white;
-    max-width: 50px;
-}
-
-.delete-button:last-of-type {
-    margin-left: auto;
-}
-
-
-.row:nth-child(even) {
-    background: #e2e2e2;
-}
-
-button {
-    padding: 0;
-    border: 0;
-    width: 100%;
-    height: 100%;
-    background: #103090;
-    text-align: center;
-    color: white;
-}
-
-button:hover {
-    opacity: 80%;
-    cursor: pointer;
-}
-
-form {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    display: grid;
-    grid-auto-flow: column;
+    justify-items: start;
 }
