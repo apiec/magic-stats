@@ -13,6 +13,7 @@ internal static class StartupExtensions
             .MapGroup("/games")
             .WithTags("games");
 
+        endpoints.MapEndpoint<GetGames>();
         endpoints.MapEndpoint<CreateGame>();
         endpoints.MapEndpoint<DeleteGame>();
         endpoints.MapEndpoint<UpdateGame>();
