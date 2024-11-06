@@ -3,7 +3,8 @@
     width: 100vw;
     display: grid;
     grid-template-areas:
-        "nav commanders players";
+        "nav commanders players"
+        "nav games games";
     grid-template-columns: 200px 1fr 1fr;
 }
 
