@@ -1,5 +1,4 @@
 ﻿.commanders {
-    grid-area: commanders;
     display: flex;
     flex-direction: column;
     align-items: center;

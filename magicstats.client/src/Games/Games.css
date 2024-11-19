@@ -1,5 +1,4 @@
 ﻿.games-table {
-    grid-area: games;
     display: flex;
     align-items: center;
     justify-content: center;
