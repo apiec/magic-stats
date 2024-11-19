@@ -1,4 +1,4 @@
-﻿import './GameTab.css';
+﻿import './GameDetails.css';
 import {
     ColumnDef,
     createColumnHelper,
@@ -8,12 +8,13 @@ import {
     useReactTable
 } from "@tanstack/react-table";
 import {Game, Participant} from "../Games.tsx";
+import {format} from 'date-fns';
 
-interface GameTabProps {
+interface GameDetailsProps {
     game: Game,
 }
 
-export function GameTab({game}: GameTabProps) {
+export function GameDetails({game}: GameDetailsProps) {
     const data = game.participants;
     const table = useReactTable({
         data,
@@ -30,10 +31,14 @@ export function GameTab({game}: GameTabProps) {
         }
     })
     return (
-        <table className='game-tab-table'>
-            <thead>
-            {
-                table.getHeaderGroups().map(headerGroup => (
+        <div className='game-details'>
+            <section className='game-details-header'>
+                <div>{game.participants.length} player game</div>
+                <div>{format(game.playedAt, "dd/MM/yyyy HH:mm")}</div>
+            </section>
+            <table className='game-details-table'>
+                <thead>
+                {table.getHeaderGroups().map(headerGroup => (
                     <tr key={headerGroup.id}>
                         {headerGroup.headers.map(header => (
                             <th key={header.id}>
@@ -42,26 +47,27 @@ export function GameTab({game}: GameTabProps) {
                         ))}
                     </tr>
                 ))
-            }
-            </thead>
-            <tbody>
-            {table.getRowModel().rows.map(row => (
-                <tr>
-                    {row.getVisibleCells().map(cell => (
-                        <td key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>))}
-                </tr>
-            ))}
-            </tbody>
-        </table>
+                }
+                </thead>
+                <tbody>
+                {table.getRowModel().rows.map(row => (
+                    <tr>
+                        {row.getVisibleCells().map(cell => (
+                            <td key={cell.id}>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </td>))}
+                    </tr>
+                ))}
+                </tbody>
+            </table>
+        </div>
     );
 }
 
 const columnHelper = createColumnHelper<Participant>();
 const columns: ColumnDef<Participant, any>[] = [
-    columnHelper.accessor('player.name', {id: 'playerName', header: 'Player'}),
-    columnHelper.accessor('commander.name', {id: 'commanderName', header: 'Commander'}),
     columnHelper.accessor('placement', {id: 'placement', header: 'Placement'}),
+    columnHelper.accessor('commander.name', {id: 'commanderName', header: 'Commander'}),
+    columnHelper.accessor('player.name', {id: 'playerName', header: 'Player'}),
     columnHelper.accessor('startingOrder', {id: 'startingOrder', header: 'Started'}),
 ];

@@ -7,6 +7,7 @@
 
 table {
     border: 1px solid lightgray;
+    border-collapse: collapse;
 }
 
 tbody {
@@ -14,21 +15,21 @@ tbody {
 }
 
 th {
-    border-bottom: 1px solid lightgray;
-    border-right: 1px solid lightgray;
+    border-bottom: 1px solid gray;
+    border-right: 1px solid gray;
     padding: 2px 4px;
 }
 
 td {
+    border: 1px solid gray;
 }
-.game-tab-cell{
+
+tr:last-child > td {
+
+}
+
+.game-details-cell {
     padding: 0;
-}
-
-tfoot {
-    color: gray;
-}
-
-tfoot th {
-    font-weight: normal;
+    border-top: 3px solid black;
+    border-bottom: 3px solid black;
 }

@@ -53,7 +53,7 @@ public class GetGames : IEndpoint
         new GameDto(g.Id, g.LastModified, g.PlayedAt, g.Participants.Select(MapParticipant));
 
     private static ParticipantDto MapParticipant(Participant p) =>
-        new(MapCommander(p.Commander), MapPlayer(p.Player), p.StartingOrder, p.Placement);
+        new(MapCommander(p.Commander), MapPlayer(p.Player), p.StartingOrder + 1, p.Placement + 1);
 
     private static PlayerDto MapPlayer(Player p) => new(p.Id, p.Name);
     private static CommanderDto MapCommander(Commander c) => new(c.Id, c.Name);
