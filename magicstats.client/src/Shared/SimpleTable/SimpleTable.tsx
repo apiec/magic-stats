@@ -29,6 +29,9 @@ export default function SimpleTable<TEntry extends TableEntry>({tableApi}: Simpl
     );
 
     async function handleSubmitInput(input: string) {
+        if (input.length === 0) {
+            return;
+        }
         const entry = {contents: input} as TEntry;
         const response = await tableApi.create(entry);
         const newEntries = [...entries ?? [], response];

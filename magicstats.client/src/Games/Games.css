@@ -1,5 +1,6 @@
 ﻿.games-table {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
 }
@@ -21,10 +22,6 @@ th {
 
 td {
     border: 1px solid gray;
-}
-
-tr:last-child > td {
-
 }
 
 .game-details-cell {

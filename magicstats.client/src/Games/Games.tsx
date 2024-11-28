@@ -11,6 +11,7 @@ import {
 import {Fragment, useState} from "react";
 import {GameDetails} from "./GameDetails/GameDetails.tsx";
 import {format} from "date-fns";
+import GameForm from "./GameForm/GameForm.tsx";
 
 export default function Games() {
     const [data, _setData] = useState<Game[]>(mockData);
@@ -68,6 +69,8 @@ export default function Games() {
                 ))}
                 </tbody>
             </table>
+            
+            <GameForm/>
         </div>
     );
 }
