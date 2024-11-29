@@ -1,4 +1,5 @@
 ﻿import {TableApi, TableEntry} from "../Shared/SimpleTable/TableApi.ts";
+import {Player} from "../Games/Games.tsx";
 
 interface PlayerDto {
     id: string,
@@ -23,7 +24,13 @@ interface PlayerEntry extends TableEntry {
 export default class PlayerApi implements TableApi<PlayerEntry> {
     private basePath: string = 'api/players/';
 
-    async getAll(): Promise<PlayerEntry[]> {
+    async getAll(): Promise<Player[]> {
+        const rawResponse = await fetch(this.basePath);
+        const response = await rawResponse.json() as GetPlayersResponse;
+        return response.players.map(c => c as Player)
+    }
+
+    async getAllAsTableEntries(): Promise<PlayerEntry[]> {
         const rawResponse = await fetch(this.basePath);
         const response = await rawResponse.json() as GetPlayersResponse;
         return response.players.map(

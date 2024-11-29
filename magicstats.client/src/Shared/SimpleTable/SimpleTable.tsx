@@ -39,7 +39,7 @@ export default function SimpleTable<TEntry extends TableEntry>({tableApi}: Simpl
     }
 
     async function populateTableData() {
-        const data = await tableApi.getAll();
+        const data = await tableApi.getAllAsTableEntries();
         setEntries(data);
     }
 
