@@ -3,14 +3,14 @@ import CommanderApi from "../../Commanders/CommanderApi.ts";
 import PlayerApi from "../../Players/PlayerApi.ts";
 import Select from "react-select";
 import {useEffect, useState} from "react";
-import './AddParticipantForm.css';
+import './AddParticipantDialog.css';
 import {Commander, Participant, Player} from "../Games.tsx";
 
-type AddParticipantPopupProps = {
+type AddParticipantDialogProps = {
     onAdd: (participant: Participant) => void;
 }
 
-export default function AddParticipantPopup({onAdd}: AddParticipantPopupProps) {
+export default function AddParticipantDialog({onAdd}: AddParticipantDialogProps) {
     const formId = 'add-participant-form'
     const [commander, setCommander] = useState<Commander | undefined>();
     const [player, setPlayer] = useState<Player | undefined>();
@@ -81,6 +81,7 @@ function Picker<T>({className, getOptions, onValueChange}: PickerProps<T>) {
     }, []);
 
     return <Select
+        maxMenuHeight={200}
         className={className}
         options={options}
         onChange={(x) => {

@@ -11,8 +11,17 @@
     background-color: grey;
     cursor: auto;
 }
+
 .add-participant-form > button {
     height: fit-content;
     padding: 10px;
     border-radius: 5px;
+}
+
+.player-picker {
+    color: black;
+}
+
+.commander-picker {
+    color: black;
 }
