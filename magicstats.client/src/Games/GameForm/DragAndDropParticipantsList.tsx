@@ -1,29 +1,31 @@
 ﻿import {ColumnDef, createColumnHelper, flexRender, getCoreRowModel, Row, useReactTable} from "@tanstack/react-table";
-import {Participant} from "../Games";
-import {CSSProperties} from "react";
+import {CSSProperties, useMemo} from "react";
 import {
+    closestCenter,
     DndContext,
+    type DragEndEvent,
     KeyboardSensor,
     MouseSensor,
     TouchSensor,
-    closestCenter,
-    type DragEndEvent,
     useSensor,
     useSensors,
 } from '@dnd-kit/core';
 import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy} from "@dnd-kit/sortable";
 import {CSS} from '@dnd-kit/utilities';
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers";
+import {Participant} from "../Games.tsx";
 
 type DragAndDropListProps = {
-    data: Participant[],
-    onDataChanged: (values: Participant[]) => void,
+    orderedData: Participant[],
+    onDataReordered: (values: Participant[]) => void,
+    orderedColumnName: string,
 }
 
-export default function DragAndDropParticipantsList({data, onDataChanged}: DragAndDropListProps) {
+export default function DragAndDropParticipantsList({orderedData, onDataReordered, orderedColumnName}: DragAndDropListProps) {
+    const columns = useMemo<ColumnDef<Participant, any>[]>(() => getColumnDefinition(orderedColumnName), []);
     const table = useReactTable({
         columns: columns,
-        data: data, 
+        data: orderedData,
         getCoreRowModel: getCoreRowModel(),
         getRowId: row => row.player.id,
     });
@@ -31,10 +33,10 @@ export default function DragAndDropParticipantsList({data, onDataChanged}: DragA
     function handleDragEnd(event: DragEndEvent) {
         const {active, over} = event;
         if (active && over && active.id !== over.id) {
-            const oldIndex = data.findIndex(p => p.player.id === active.id);
-            const newIndex = data.findIndex(p => p.player.id === over.id);
-            const newData = arrayMove(data, oldIndex, newIndex);
-            onDataChanged(newData);
+            const oldIndex = orderedData.findIndex(p => p.player.id === active.id);
+            const newIndex = orderedData.findIndex(p => p.player.id === over.id);
+            const newData = arrayMove(orderedData, oldIndex, newIndex);
+            onDataReordered(newData);
         }
     }
 
@@ -69,9 +71,8 @@ export default function DragAndDropParticipantsList({data, onDataChanged}: DragA
                 </thead>
                 <tbody>
                 <SortableContext
-                    items={data.map(p => p.player.id)}
-                    strategy={verticalListSortingStrategy}
-                >
+                    items={orderedData.map(p => p.player.id)}
+                    strategy={verticalListSortingStrategy}>
                     {table.getRowModel().rows.map(row => (
                         <DraggableRow key={row.id} row={row}/>
                     ))}
@@ -82,23 +83,30 @@ export default function DragAndDropParticipantsList({data, onDataChanged}: DragA
     );
 }
 
-const columnHelper = createColumnHelper<Participant>();
-const columns: ColumnDef<Participant, any>[] = [
-    columnHelper.display({
-        id: 'drag-handle',
-        header: 'Move',
-        cell: ({row}) => <RowDragHandleCell rowId={row.id}/>,
-        size: 60,
-    }),
-    columnHelper.accessor('player.name', {
-        id: 'playerName',
-        header: 'Player',
-    }),
-    columnHelper.accessor('commander.name', {
-        id: 'commanderName',
-        header: 'Commander',
-    }),
-];
+function getColumnDefinition(orderedColumnName: string): ColumnDef<Participant, any>[] {
+    const columnHelper = createColumnHelper<Participant>();
+    return [
+        columnHelper.display({
+            id: 'drag-handle',
+            cell: ({row}) => <RowDragHandleCell rowId={row.id}/>,
+            size: 60,
+        }),
+        columnHelper.display({
+            id: 'ordering',
+            header: orderedColumnName,
+            cell: ({row}) => row.index + 1,
+            size: 60,
+        }),
+        columnHelper.accessor('player.name', {
+            id: 'playerName',
+            header: 'Player',
+        }),
+        columnHelper.accessor('commander.name', {
+            id: 'commanderName',
+            header: 'Commander',
+        }),
+    ];
+}
 
 type RowDragHandleCellProps = {
     rowId: string,

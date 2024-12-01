@@ -34,7 +34,7 @@ export default function Games() {
 
     return (
         <div className='games-table'>
-            <table>
+            <table id='games-table'>
                 <thead>
                 {table.getHeaderGroups().map(headerGroup => (
                     <tr key={headerGroup.id}>

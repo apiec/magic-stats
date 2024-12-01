@@ -20,16 +20,26 @@ export default function GameForm() {
             ? dialogRef.current.close()
             : dialogRef.current.showModal();
     }
-    console.log('dupa');
 
     return (
         <div id='game-form-component'>
-            <form id='game-form' onSubmit={(e) => {
-                e.preventDefault();
+            <dialog id='participant-dialog' ref={dialogRef} onClick={(e) => {
+                if (e.currentTarget === e.target) {
+                    toggleDialog();
+                }
             }}>
+                <AddParticipantDialog onAdd={(participant) => {
+                    const newParticipants = participants.slice();
+                    participant.startingOrder = participants.length;
+                    participant.placement = participants.length;
+                    newParticipants.push(participant);
+                    setParticipants(newParticipants);
+                    toggleDialog();
+                }}/>
+            </dialog>
+            <div id='date-picker'>
                 <label htmlFor='date-picker'>Played at:</label>
                 <DatePicker
-                    id='date-picker'
                     name='startedAt'
                     selected={date}
                     onChange={(d) => setDate(d)}
@@ -37,28 +47,30 @@ export default function GameForm() {
                     showTimeSelect
                     dateFormat='dd-MM-yyyy HH:mm'
                     maxDate={new Date()}/>
-            </form>
+            </div>
 
-            <button onClick={toggleDialog}>+1 byczq</button>
-            <dialog id='participant-dialog' ref={dialogRef} onClick={(e) => {
-                if (e.currentTarget === e.target) {
-                    toggleDialog();
-                }
-            }}>
-                <AddParticipantDialog onAdd={(p) => {
-                    const newParticipants = participants.slice();
-                    newParticipants.push(p);
-                    setParticipants(newParticipants);
-                    toggleDialog();
-                }}/>
-            </dialog>
+            <button id='add-participant-button' onClick={toggleDialog}>+1 byczq</button>
 
-            <DragAndDropParticipantsList
-                data={participants}
-                onDataChanged={(newData) => {
-                    console.log(newData);
-                    setParticipants(newData)
-                }}/>
+            <div id='starting-order-section'>
+                <h3>Starting order</h3>
+                <DragAndDropParticipantsList
+                    orderedColumnName='#'
+                    orderedData={participants.slice().sort(((a, b) => a.startingOrder - b.startingOrder))}
+                    onDataReordered={(newData) => {
+                        newData.forEach((p, i) => p.startingOrder = i);
+                        setParticipants(newData)
+                    }}/>
+            </div>
+            <div id='placement-section'>
+                <h3>Placement</h3>
+                <DragAndDropParticipantsList
+                    orderedColumnName='#'
+                    orderedData={participants.slice().sort(((a, b) => a.placement - b.placement))}
+                    onDataReordered={(newData) => {
+                        newData.forEach((p, i) => p.placement = i);
+                        setParticipants(newData)
+                    }}/>
+            </div>
         </div>
     );
 }

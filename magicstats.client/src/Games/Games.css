@@ -5,6 +5,10 @@
     justify-content: center;
 }
 
+#games-table {
+    margin-bottom: 100px;
+}
+
 table {
     border: 1px solid lightgray;
     border-collapse: collapse;
