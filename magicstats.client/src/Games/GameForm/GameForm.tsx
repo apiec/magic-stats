@@ -4,6 +4,7 @@ import './GameForm.css';
 import AddParticipantDialog from "./AddParticipantDialog.tsx";
 import {useRef, useState} from "react";
 import {Participant} from "../Games.tsx";
+import DragAndDropParticipantsList from "./DragAndDropParticipantsList.tsx";
 
 export default function GameForm() {
     const [date, setDate] = useState<Date | null>(new Date());
@@ -19,10 +20,10 @@ export default function GameForm() {
             ? dialogRef.current.close()
             : dialogRef.current.showModal();
     }
+    console.log('dupa');
 
     return (
         <div id='game-form-component'>
-
             <form id='game-form' onSubmit={(e) => {
                 e.preventDefault();
             }}>
@@ -52,7 +53,13 @@ export default function GameForm() {
                 }}/>
             </dialog>
 
-            {participants.map(p => <p id={p.player.id}>{p.player.name + ' ' + p.commander.name}</p>)}
+            <DragAndDropParticipantsList
+                data={participants}
+                onDataChanged={(newData) => {
+                    console.log(newData);
+                    setParticipants(newData)
+                }}/>
         </div>
     );
 }
+

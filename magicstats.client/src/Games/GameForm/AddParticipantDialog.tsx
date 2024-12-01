@@ -22,10 +22,10 @@ export default function AddParticipantDialog({onAdd}: AddParticipantDialogProps)
                 const participant = {commander: commander, player: player} as Participant;
                 onAdd(participant);
             }}>
-            <label>Commander:</label>
-            <CommanderPicker onCommanderChange={(c) => setCommander(c)}/>
             <label>Player:</label>
             <PlayerPicker onPlayerChange={(p) => setPlayer(p)}/>
+            <label>Commander:</label>
+            <CommanderPicker onCommanderChange={(c) => setCommander(c)}/>
             <button type='submit' disabled={player === undefined || commander === undefined}>Add</button>
         </form>
     );
