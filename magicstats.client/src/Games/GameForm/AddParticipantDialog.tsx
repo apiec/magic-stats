@@ -4,7 +4,7 @@ import PlayerApi from "../../Players/PlayerApi.ts";
 import Select from "react-select";
 import {useEffect, useState} from "react";
 import './AddParticipantDialog.css';
-import {Commander, Participant, Player} from "../GameApi.ts";
+import {Commander, Participant, Player} from "../GamesApi.ts";
 
 type AddParticipantDialogProps = {
     onAdd: (participant: Participant) => void;

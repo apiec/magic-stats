@@ -8,7 +8,7 @@ import {
     useReactTable
 } from "@tanstack/react-table";
 import {format} from 'date-fns';
-import {Game, Participant} from "../GameApi.ts";
+import {Game, Participant} from "../GamesApi.ts";
 
 interface GameDetailsProps {
     game: Game,

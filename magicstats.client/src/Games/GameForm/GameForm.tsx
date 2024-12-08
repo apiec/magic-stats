@@ -2,25 +2,35 @@
 import 'react-datepicker/dist/react-datepicker.css';
 import './GameForm.css';
 import AddParticipantDialog from "./AddParticipantDialog.tsx";
-import {useRef, useState} from "react";
+import {useEffect, useRef} from "react";
 import DragAndDropParticipantsList from "./DragAndDropParticipantsList.tsx";
-import {Participant} from "../GameApi.ts";
+import {AddParticipantRequest, Game, GamesApi, Participant} from "../GamesApi.ts";
+import {useParams} from "react-router-dom";
+import {useImmer} from "use-immer";
 
 export default function GameForm() {
-    const [date, setDate] = useState<Date | null>(new Date());
-    const [participants, setParticipants] = useState<Participant[]>([]);
+    const [game, setGame] = useImmer<Game | undefined>(undefined);
+
+    const {gameId} = useParams<string>();
 
     const dialogRef = useRef<HTMLDialogElement>(null);
 
-    function toggleDialog() {
-        if (!dialogRef.current) {
-            return;
-        }
-        dialogRef.current.hasAttribute("open")
-            ? dialogRef.current.close()
-            : dialogRef.current.showModal();
+    useEffect(() => {
+        populateGameData();
+    }, []);
+
+    async function populateGameData() {
+        const api = new GamesApi();
+        const game = await api.get(gameId!);
+        setGame(game);
     }
 
+
+    if (game === undefined || game === null) {
+        return (
+            <p>Loading...</p>
+        );
+    }
     return (
         <div id='game-form-component'>
             <dialog id='participant-dialog' ref={dialogRef} onClick={(e) => {
@@ -28,21 +38,22 @@ export default function GameForm() {
                     toggleDialog();
                 }
             }}>
-                <AddParticipantDialog onAdd={(participant) => {
-                    const newParticipants = participants.slice();
-                    participant.startingOrder = participants.length;
-                    participant.placement = participants.length;
-                    newParticipants.push(participant);
-                    setParticipants(newParticipants);
-                    toggleDialog();
-                }}/>
+                <AddParticipantDialog onAdd={handleAddParticipant}/>
             </dialog>
             <div id='date-picker'>
                 <label htmlFor='date-picker'>Played at:</label>
                 <DatePicker
                     name='startedAt'
-                    selected={date}
-                    onChange={(d) => setDate(d)}
+                    selected={game.playedAt}
+                    onChange={async (newDate) => {
+                        const api = new GamesApi();
+                        await api.updatePlayedAt(game.id, newDate!);
+                        setGame((draft) => {
+                            if (draft !== undefined) {
+                                draft.playedAt = newDate!;
+                            }
+                        });
+                    }}
                     showIcon
                     showTimeSelect
                     dateFormat='dd-MM-yyyy HH:mm'
@@ -55,23 +66,78 @@ export default function GameForm() {
                 <h3>Starting order</h3>
                 <DragAndDropParticipantsList
                     orderedColumnName='#'
-                    orderedData={participants.slice().sort(((a, b) => a.startingOrder - b.startingOrder))}
-                    onDataReordered={(newData) => {
-                        newData.forEach((p, i) => p.startingOrder = i);
-                        setParticipants(newData)
-                    }}/>
+                    orderedData={game.participants.slice().sort(((a, b) => a.startingOrder - b.startingOrder))}
+                    onDataReordered={handleStartingOrderChanged}/>
             </div>
             <div id='placement-section'>
                 <h3>Placement</h3>
                 <DragAndDropParticipantsList
                     orderedColumnName='#'
-                    orderedData={participants.slice().sort(((a, b) => a.placement - b.placement))}
-                    onDataReordered={(newData) => {
-                        newData.forEach((p, i) => p.placement = i);
-                        setParticipants(newData)
-                    }}/>
+                    orderedData={game.participants.slice().sort(((a, b) => a.placement - b.placement))}
+                    onDataReordered={handlePlacementChanged}/>
             </div>
         </div>
     );
-}
 
+    function toggleDialog() {
+        if (!dialogRef.current) {
+            return;
+        }
+        dialogRef.current.hasAttribute("open")
+            ? dialogRef.current.close()
+            : dialogRef.current.showModal();
+    }
+
+    async function handleAddParticipant(newParticipant: Participant) {
+        if (game === undefined) {
+            return;
+        }
+
+        const api = new GamesApi();
+        const request = {
+            playerId: newParticipant.player.id,
+            commanderId: newParticipant.commander.id,
+        } as AddParticipantRequest;
+
+        const participantResponse = await api.addParticipant(game.id, request);
+        console.log(participantResponse);
+        setGame((draft) => {
+            if (draft !== undefined) {
+                draft.participants.push(participantResponse);
+            }
+        })
+        toggleDialog();
+    }
+
+    async function handleStartingOrderChanged(newData: Participant[]) {
+        if (game === undefined) {
+            return;
+        }
+        const api = new GamesApi();
+        await api.updateStartingOrder(game.id, newData.map(p => p.player.id));
+        setGame((draft) => {
+            if (draft !== undefined) {
+                newData.forEach((p, i) => {
+                    const dp = draft.participants.find(dp => dp.player.id == p.player.id);
+                    dp!.startingOrder = i;
+                })
+            }
+        })
+    }
+
+    async function handlePlacementChanged(newData: Participant[]) {
+        if (game === undefined) {
+            return;
+        }
+        const api = new GamesApi();
+        await api.updatePlacement(game.id, newData.map(p => p.player.id));
+        setGame((draft) => {
+            if (draft !== undefined) {
+                newData.forEach((p, i) => {
+                    const dp = draft.participants.find(dp => dp.player.id == p.player.id);
+                    dp!.placement = i;
+                })
+            }
+        })
+    }
+}

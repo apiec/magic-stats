@@ -1,18 +1,18 @@
-﻿.games-table {
+﻿.games-table-component {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
-#new-game-button {
+.new-game-button {
     padding: 6px;
     margin-bottom: 10px;
     font-size: 1.5rem;
     max-height: 40px;
 }
 
-#games-table {
+.games-table {
     margin-bottom: 100px;
 }
 

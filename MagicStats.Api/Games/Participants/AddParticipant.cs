@@ -18,9 +18,7 @@ public class AddParticipant : IEndpoint
 
     public record Request(int PlayerId, int CommanderId, int? StartingOrder, int? Placement);
 
-    public record Response(int PlayerId, int CommanderId, int StartingOrder, int Placement);
-
-    private static async Task<Results<Ok<Response>, NotFound<string>>> Handle(
+    private static async Task<Results<Ok<ParticipantDto>, NotFound<string>>> Handle(
         [FromRoute] int gameId,
         [FromBody] Request request,
         StatsDbContext dbContext,
@@ -55,15 +53,13 @@ public class AddParticipant : IEndpoint
         }
 
         game.Participants.Add(participant);
-
         await dbContext.SaveChangesAsync(ct);
 
-        var response = new Response(
-            participant.PlayerId,
-            participant.CommanderId,
-            participant.StartingOrder,
-            participant.Placement);
+        var queried = await dbContext.Participants
+            .Include(p => p.Commander)
+            .Include(p => p.Player)
+            .SingleAsync(p => p.GameId == gameId && p.PlayerId == request.PlayerId, ct);
 
-        return TypedResults.Ok(response);
+        return TypedResults.Ok(GameMapper.MapParticipant(queried));
     }
 }

@@ -13,7 +13,7 @@ import {
 import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy} from "@dnd-kit/sortable";
 import {CSS} from '@dnd-kit/utilities';
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers";
-import {Participant} from "../GamesTable.tsx";
+import {Participant} from "../GamesApi.ts";
 
 type DragAndDropListProps = {
     orderedData: Participant[],

@@ -8,17 +8,16 @@ import {
     getSortedRowModel,
     useReactTable
 } from "@tanstack/react-table";
-import {Fragment, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
 import {GameDetails} from "./GameDetails/GameDetails.tsx";
 import {format} from "date-fns";
-import GameForm from "./GameForm/GameForm.tsx";
-import {Game} from './GameApi.ts';
-import {NavLink} from 'react-router-dom';
+import {Game, GamesApi} from './GamesApi.ts';
+import {NavLink, useNavigate} from 'react-router-dom';
 
 export default function GamesTable() {
-    const [data, _setData] = useState<Game[]>(mockData);
+    const [games, setGames] = useState<Game[]>([]);
     const table = useReactTable({
-        data,
+        data: games,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getExpandedRowModel: getExpandedRowModel(),
@@ -34,14 +33,31 @@ export default function GamesTable() {
         }
     });
 
+    async function populateGameData() {
+        const api = new GamesApi();
+        const games = await api.getAll();
+        setGames(games);
+    }
+
+    useEffect(() => {
+        populateGameData();
+    }, []);
+    const navigate = useNavigate();
+
+    async function handleNewGame() {
+        const api = new GamesApi();
+        const gameId = await api.createNewGame();
+        await navigate(gameId);
+    }
+
     return (
-        <div className='games-table'>
+        <div className='games-table-component'>
             <div>
-                <button id='new-game-button'>
+                <button className='new-game-button' onClick={handleNewGame}>
                     New game
                 </button>
             </div>
-            <table id='games-table'>
+            <table className='games-table'>
                 <thead>
                 {table.getHeaderGroups().map(headerGroup => (
                     <tr key={headerGroup.id}>
@@ -76,8 +92,6 @@ export default function GamesTable() {
                 ))}
                 </tbody>
             </table>
-
-            <GameForm/>
         </div>
     );
 }
@@ -97,8 +111,8 @@ const columns: ColumnDef<Game, any>[] = [
     columnHelper.group({
         header: 'Winner',
         columns: [
-            columnHelper.accessor('winner.commander.name', {id: 'winning_commander', header: 'Commander'}),
-            columnHelper.accessor('winner.player.name', {id: 'winning_player', header: 'Player'}),
+            columnHelper.accessor((g) => g.winner?.commander.name ?? 'no data', {id: 'winning_commander', header: 'Commander'}),
+            columnHelper.accessor((g) => g.winner?.player.name ?? 'no data', {id: 'winning_player', header: 'Player'}),
         ],
     }),
     columnHelper.display({
@@ -114,169 +128,8 @@ type EditGameButtonProps = {
 
 function EditGameButton({gameId}: EditGameButtonProps) {
     return (
-        <NavLink to={gameId}>
+        <NavLink to={gameId} onClick={(e) => e.stopPropagation()}>
             edit
         </NavLink>
-    )
-        ;
+    );
 }
-
-const mockData: Game[] = [
-    {
-        id: '1',
-        lastModified: new Date('2024-01-06T21:37:00.000Z'),
-        playedAt: new Date('2024-01-06T21:37:00.000Z'),
-        participants: [
-            {
-                commander: {
-                    id: '0',
-                    name: 'Yargle',
-                },
-                player: {
-                    id: '0',
-                    name: 'Maszer',
-                },
-                startingOrder: 1,
-                placement: 2,
-            },
-            {
-                commander: {
-                    id: '1',
-                    name: 'Ezio',
-                },
-                player: {
-                    id: '1',
-                    name: 'Dominik',
-                },
-                startingOrder: 2,
-                placement: 1,
-            },
-            {
-                commander: {
-                    id: '2',
-                    name: 'Breena',
-                },
-                player: {
-                    id: '2',
-                    name: 'Michael',
-                },
-                startingOrder: 3,
-                placement: 3,
-            },
-        ],
-        winner: {
-            commander: {
-                id: '1',
-                name: 'Ezio',
-            },
-            player: {
-                id: '1',
-                name: 'Dominik',
-            },
-            startingOrder: 2,
-            placement: 1,
-        },
-    },
-    {
-        id: '2',
-        lastModified:
-            new Date('2024-06-06T21:37:00.000Z'),
-        playedAt:
-            new Date('2024-06-06T21:37:00.000Z'),
-        participants:
-            [
-                {
-                    commander: {
-                        id: '0',
-                        name: 'Yargle',
-                    },
-                    player: {
-                        id: '0',
-                        name: 'Maszer',
-                    },
-                    startingOrder: 1,
-                    placement: 1,
-                },
-                {
-                    commander: {
-                        id: '1',
-                        name: 'Ezio',
-                    },
-                    player: {
-                        id: '1',
-                        name: 'Dominik',
-                    },
-                    startingOrder: 2,
-                    placement: 2,
-                },
-            ],
-        winner: {
-            commander: {
-                id: '0',
-                name: 'Yargle',
-            },
-            player: {
-                id: '0',
-                name: 'Maszer',
-            },
-            startingOrder: 1,
-            placement: 1,
-        },
-    },
-    {
-        id: '3',
-        lastModified: new Date('2024-01-06T21:37:00.000Z'),
-        playedAt: new Date('2024-01-08T21:37:00.000Z'),
-        participants: [
-            {
-                commander: {
-                    id: '0',
-                    name: 'Yargle',
-                },
-                player: {
-                    id: '0',
-                    name: 'Maszer',
-                },
-                startingOrder: 1,
-                placement: 3,
-            },
-            {
-                commander: {
-                    id: '1',
-                    name: 'Ezio',
-                },
-                player: {
-                    id: '1',
-                    name: 'Dominik',
-                },
-                startingOrder: 2,
-                placement: 2,
-            },
-            {
-                commander: {
-                    id: '2',
-                    name: 'Breena',
-                },
-                player: {
-                    id: '2',
-                    name: 'Michael',
-                },
-                startingOrder: 3,
-                placement: 1,
-            },
-        ],
-        winner: {
-            commander: {
-                id: '2',
-                name: 'Breena',
-            },
-            player: {
-                id: '2',
-                name: 'Michael',
-            },
-            startingOrder: 3,
-            placement: 1,
-        },
-
-    },
-];
