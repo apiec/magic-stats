@@ -1,5 +1,5 @@
 ﻿import {TableApi, TableEntry} from "../Shared/SimpleTable/TableApi.ts";
-import {Commander} from "../Games/Games.tsx";
+import {Commander} from "../Games/GameApi.ts";
 
 interface CommanderDto {
     id: string,
@@ -27,7 +27,7 @@ export default class CommanderApi implements TableApi<CommanderEntry> {
     async getAll(): Promise<Commander[]> {
         const rawResponse = await fetch(this.basePath);
         const response = await rawResponse.json() as GetCommandersResponse;
-        return response.commanders.map(c => c as Commander);
+        return response.commanders;
     }
 
     async getAllAsTableEntries(): Promise<CommanderEntry[]> {

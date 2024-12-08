@@ -1,5 +1,5 @@
 ﻿import {TableApi, TableEntry} from "../Shared/SimpleTable/TableApi.ts";
-import {Player} from "../Games/Games.tsx";
+import {Player} from "../Games/GameApi.ts";
 
 interface PlayerDto {
     id: string,
@@ -27,7 +27,7 @@ export default class PlayerApi implements TableApi<PlayerEntry> {
     async getAll(): Promise<Player[]> {
         const rawResponse = await fetch(this.basePath);
         const response = await rawResponse.json() as GetPlayersResponse;
-        return response.players.map(c => c as Player)
+        return response.players;
     }
 
     async getAllAsTableEntries(): Promise<PlayerEntry[]> {

@@ -3,8 +3,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 import './GameForm.css';
 import AddParticipantDialog from "./AddParticipantDialog.tsx";
 import {useRef, useState} from "react";
-import {Participant} from "../Games.tsx";
 import DragAndDropParticipantsList from "./DragAndDropParticipantsList.tsx";
+import {Participant} from "../GameApi.ts";
 
 export default function GameForm() {
     const [date, setDate] = useState<Date | null>(new Date());

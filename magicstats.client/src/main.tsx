@@ -5,6 +5,8 @@ import './index.css'
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import Commanders from "./Commanders/Commanders.tsx";
 import Players from "./Players/Players.tsx";
+import GamesTable from "./Games/GamesTable.tsx";
+import GameForm from "./Games/GameForm/GameForm.tsx";
 import Games from "./Games/Games.tsx";
 
 const router = createBrowserRouter([
@@ -14,15 +16,25 @@ const router = createBrowserRouter([
         children: [
             {
                 path: "commanders",
-                element: <Commanders/>
+                element: <Commanders/>,
             },
             {
                 path: "players",
-                element: <Players/>
+                element: <Players/>,
             },
             {
                 path: "games",
-                element: <Games/>
+                element: <Games/>,
+                children: [
+                    {
+                        index: true,
+                        element: <GamesTable/>,
+                    },
+                    {
+                        path: ":gameId",
+                        element: <GameForm/>,
+                    }
+                ],
             },
         ]
     },
