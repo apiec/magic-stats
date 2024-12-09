@@ -17,7 +17,7 @@ public class CreateGame : IEndpoint
 
     public record Request(DateTimeOffset PlayedAt, IReadOnlyList<ParticipantDto> Participants);
 
-    public record ParticipantDto(int PlayerId, int CommanderId, int StartingOder, int Placement);
+    public record ParticipantDto(int PlayerId, int CommanderId, int StartingOrder, int Placement);
 
     public record Response(int Id);
 
@@ -38,7 +38,7 @@ public class CreateGame : IEndpoint
                     {
                         PlayerId = p.PlayerId,
                         CommanderId = p.CommanderId,
-                        StartingOrder = p.StartingOder,
+                        StartingOrder = p.StartingOrder,
                         Placement = p.Placement,
                     })
                 .ToList(),

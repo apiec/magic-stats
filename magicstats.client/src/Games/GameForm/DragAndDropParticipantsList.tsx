@@ -52,7 +52,7 @@ export default function DragAndDropParticipantsList({orderedData, onDataReordere
             modifiers={[restrictToVerticalAxis]}
             onDragEnd={handleDragEnd}
             sensors={sensors}>
-            <table>
+            <table className='dnd-participant-list'>
                 <thead>
                 {table.getHeaderGroups().map(headerGroup => (
                     <tr key={headerGroup.id}>

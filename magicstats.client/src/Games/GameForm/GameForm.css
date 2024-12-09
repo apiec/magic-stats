@@ -13,8 +13,10 @@
     gap: 5px;
     border: solid 2px grey;
     border-radius: 5px;
-    padding: 10px;
+    padding: 20px;
     background: #303030;
+    align-self: center;
+    justify-self: center;
 }
 
 #date-picker > label {
@@ -57,4 +59,9 @@
 #participant-dialog {
     min-width: 300px;
     min-height: 400px;
+}
+
+.dnd-participant-list {
+    border-radius: 5px;
+    overflow: clip;
 }

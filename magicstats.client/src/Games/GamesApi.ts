@@ -55,6 +55,7 @@ export class GamesApi {
 
     async getAll(): Promise<Game[]> {
         const response = await this.api.get<GetGamesResponse>(this.path);
+        console.log(response);
         return response.games;
     }
 
