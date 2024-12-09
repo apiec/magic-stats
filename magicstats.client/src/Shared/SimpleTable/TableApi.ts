@@ -4,7 +4,7 @@
 }
 
 export interface TableApi<T extends TableEntry> {
-    getAll(): Promise<T[]>;
+    getAllAsTableEntries(): Promise<T[]>;
 
     create(entry: T): Promise<T>;
 

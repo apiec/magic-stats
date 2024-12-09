@@ -1,0 +1,27 @@
+﻿.add-participant-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.add-participant-form > * {
+    margin-bottom: 5px;
+}
+
+.add-participant-form > button:disabled {
+    background-color: grey;
+    cursor: auto;
+}
+
+.add-participant-form > button {
+    height: fit-content;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.player-picker {
+    color: black;
+}
+
+.commander-picker {
+    color: black;
+}
