@@ -74,13 +74,12 @@ export class GamesApi {
     }
 
     async delete(gameId: string): Promise<void> {
-        await fetch(this.path + gameId, {method: 'DELETE'});
+        await this.api.delete(this.path + gameId);
     }
 
     async updatePlayedAt(gameId: string, playedAt: Date): Promise<void> {
         const request = {playedAt: playedAt};
-        const response = await this.api.put(this.path + gameId, request);
-        console.log(response);
+        await this.api.put(this.path + gameId, request);
     }
 
     async addParticipant(gameId: string, participant: AddParticipantRequest): Promise<Participant> {

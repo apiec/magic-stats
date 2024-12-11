@@ -13,6 +13,7 @@ import {GameDetails} from "./GameDetails/GameDetails.tsx";
 import {format} from "date-fns";
 import {Game, GamesApi} from './GamesApi.ts';
 import {NavLink, useNavigate} from 'react-router-dom';
+import {FaPen, FaTrash} from 'react-icons/fa';
 
 export default function GamesTable() {
     const [games, setGames] = useState<Game[]>([]);
@@ -111,15 +112,23 @@ const columns: ColumnDef<Game, any>[] = [
     columnHelper.group({
         header: 'Winner',
         columns: [
-            columnHelper.accessor((g) => g.winner?.commander.name ?? 'no data', {id: 'winning_commander', header: 'Commander'}),
+            columnHelper.accessor((g) => g.winner?.commander.name ?? 'no data', {
+                id: 'winning_commander',
+                header: 'Commander'
+            }),
             columnHelper.accessor((g) => g.winner?.player.name ?? 'no data', {id: 'winning_player', header: 'Player'}),
         ],
     }),
     columnHelper.display({
         id: 'edit',
         header: 'Edit',
-        cell: props => <EditGameButton gameId={props.row.original.id}/>
+        cell: props => <EditGameButton gameId={props.row.original.id}/>,
     }),
+    columnHelper.display({
+        id: 'delete',
+        header: 'Delete',
+        cell: props => <DeleteGameButton gameId={props.row.original.id}/>,
+    })
 ];
 
 type EditGameButtonProps = {
@@ -129,7 +138,24 @@ type EditGameButtonProps = {
 function EditGameButton({gameId}: EditGameButtonProps) {
     return (
         <NavLink to={gameId} onClick={(e) => e.stopPropagation()}>
-            edit
+            <FaPen/>
+        </NavLink>
+    );
+}
+
+type DeleteGameButtonProps = {
+    gameId: string,
+}
+
+function DeleteGameButton({gameId}: DeleteGameButtonProps) {
+    return (
+        <NavLink to='' onClick={(e) => {
+            e.stopPropagation();
+            const api = new GamesApi();
+            api.delete(gameId)
+                .then(() => window.location.reload());
+        }}>
+            <FaTrash/>
         </NavLink>
     );
 }

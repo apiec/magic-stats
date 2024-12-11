@@ -14,18 +14,36 @@ import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy} fr
 import {CSS} from '@dnd-kit/utilities';
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers";
 import {Participant} from "../GamesApi.ts";
+import {FaGripLines, FaTrash} from "react-icons/fa";
+import "./DragAndDropParticipantsList.css";
 
 type DragAndDropListProps = {
+    stylePlacement?: boolean,
     orderedData: Participant[],
     onDataReordered: (values: Participant[]) => void,
+    onParticipantDeleted: (playerId: string) => void,
     orderedColumnName: string,
 }
 
-export default function DragAndDropParticipantsList({orderedData, onDataReordered, orderedColumnName}: DragAndDropListProps) {
-    const columns = useMemo<ColumnDef<Participant, any>[]>(() => getColumnDefinition(orderedColumnName), []);
+type ParticipantRow = Participant & {
+    onRowDeleted: () => void,
+}
+
+export default function DragAndDropParticipantsList(
+    {
+        stylePlacement,
+        orderedData,
+        onDataReordered,
+        onParticipantDeleted,
+        orderedColumnName,
+    }: DragAndDropListProps) {
+    const columns = useMemo<ColumnDef<ParticipantRow, any>[]>(() => getColumnDefinition(orderedColumnName), []);
+    const data = orderedData.map(p => {
+        return {...p, onRowDeleted: () => onParticipantDeleted(p.player.id)} as ParticipantRow
+    });
     const table = useReactTable({
         columns: columns,
-        data: orderedData,
+        data: data,
         getCoreRowModel: getCoreRowModel(),
         getRowId: row => row.player.id,
     });
@@ -74,7 +92,7 @@ export default function DragAndDropParticipantsList({orderedData, onDataReordere
                     items={orderedData.map(p => p.player.id)}
                     strategy={verticalListSortingStrategy}>
                     {table.getRowModel().rows.map(row => (
-                        <DraggableRow key={row.id} row={row}/>
+                        <DraggableRow key={row.id} row={row} stylePlacement={stylePlacement}/>
                     ))}
                 </SortableContext>
                 </tbody>
@@ -83,11 +101,12 @@ export default function DragAndDropParticipantsList({orderedData, onDataReordere
     );
 }
 
-function getColumnDefinition(orderedColumnName: string): ColumnDef<Participant, any>[] {
-    const columnHelper = createColumnHelper<Participant>();
+function getColumnDefinition(orderedColumnName: string): ColumnDef<ParticipantRow, any>[] {
+    const columnHelper = createColumnHelper<ParticipantRow>();
     return [
         columnHelper.display({
             id: 'drag-handle',
+            header: 'Move',
             cell: ({row}) => <RowDragHandleCell rowId={row.id}/>,
             size: 60,
         }),
@@ -105,6 +124,18 @@ function getColumnDefinition(orderedColumnName: string): ColumnDef<Participant, 
             id: 'commanderName',
             header: 'Commander',
         }),
+        columnHelper.display({
+            id: 'delete',
+            header: 'Delete',
+            cell: ({row}) =>
+                <FaTrash
+                    className='dnd-delete-button'
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        row.original.onRowDeleted();
+                    }}/>,
+            size: 60,
+        }),
     ];
 }
 
@@ -118,27 +149,27 @@ function RowDragHandleCell({rowId}: RowDragHandleCellProps) {
     });
 
     return (
-        <button {...attributes} {...listeners}>
-            🟰
-        </button>
+        <FaGripLines {...attributes} {...listeners} className='move-row-icon'/>
     )
 }
 
 type DraggableRowProps = {
-    row: Row<Participant>
+    row: Row<Participant>,
+    stylePlacement?: boolean,
 }
 
-function DraggableRow({row}: DraggableRowProps) {
+function DraggableRow({row, stylePlacement}: DraggableRowProps) {
     const {transform, transition, setNodeRef, isDragging} = useSortable({
         id: row.original.player.id,
     });
-
+    
     const style: CSSProperties = {
         transform: CSS.Transform.toString(transform),
         transition: transition,
         opacity: isDragging ? 0.8 : 1,
         zIndex: isDragging ? 1 : 0,
         position: 'relative',
+        background: stylePlacement && row.index === 0 ? 'yellow' : undefined,
     }
 
     return (
