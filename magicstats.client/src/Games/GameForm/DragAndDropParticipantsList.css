@@ -1,0 +1,7 @@
+﻿.move-row-icon:hover {
+    cursor: pointer;
+}
+.dnd-delete-button:hover {
+    cursor: pointer;
+    opacity: 80%;
+}

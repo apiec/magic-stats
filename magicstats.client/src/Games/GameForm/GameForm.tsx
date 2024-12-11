@@ -25,6 +25,16 @@ export default function GameForm() {
         setGame(game);
     }
 
+    async function handleDeleteParticipant(playerId: string) {
+        const api = new GamesApi();
+        await api.deleteParticipant(game!.id, playerId);
+        setGame((draft) => {
+            if (draft === undefined) {
+                return;
+            }
+            draft.participants = draft.participants.filter(p => p.player.id !== playerId);
+        });
+    }
 
     if (game === undefined || game === null) {
         return (
@@ -67,13 +77,16 @@ export default function GameForm() {
                 <DragAndDropParticipantsList
                     orderedColumnName='#'
                     orderedData={game.participants.slice().sort(((a, b) => a.startingOrder - b.startingOrder))}
+                    onParticipantDeleted={handleDeleteParticipant}
                     onDataReordered={handleStartingOrderChanged}/>
             </div>
             <div id='placement-section'>
                 <h3>Placement</h3>
                 <DragAndDropParticipantsList
+                    stylePlacement={true}
                     orderedColumnName='#'
                     orderedData={game.participants.slice().sort(((a, b) => a.placement - b.placement))}
+                    onParticipantDeleted={handleDeleteParticipant}
                     onDataReordered={handlePlacementChanged}/>
             </div>
         </div>
