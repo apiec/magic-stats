@@ -3,35 +3,34 @@ using MagicStats.Persistence.EfCore.Context;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
 namespace MagicStats.Api.Games;
 
-public class GetGames : IEndpoint
+public class GetGame : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app) => app
-        .MapGet("/", Handle)
-        .WithSummary("Get all games");
+        .MapGet("/{id:int}", Handle)
+        .WithSummary("Get a game by id");
 
-    public record Response(IEnumerable<GameDto> Games);
 
-    private static async Task<Ok<Response>> Handle(
+    private static async Task<Results<Ok<GameDto>, NotFound>> Handle(
+        [FromRoute] int id,
         StatsDbContext dbContext,
         TimeProvider timeProvider,
         CancellationToken ct)
     {
-        var games = await dbContext.Games
+        var game = await dbContext.Games
             .Include(g => g.Participants)
             .ThenInclude(p => p.Player)
             .Include(g => g.Participants)
             .ThenInclude(p => p.Commander)
-            .OrderByDescending(g => g.PlayedAt)
-            .ToListAsync(ct);
+            .SingleOrDefaultAsync(g => g.Id == id, ct);
 
-        var response = new Response(games.Select(GameMapper.MapGame));
-
-        return TypedResults.Ok(response);
+        return game is not null
+            ? TypedResults.Ok(GameMapper.MapGame(game))
+            : TypedResults.NotFound();
     }
-
 }

@@ -1,4 +1,6 @@
 ﻿import {TableApi, TableEntry} from "../Shared/SimpleTable/TableApi.ts";
+import {Player} from "../Games/GamesApi.ts";
+import Api from "../api/Api.ts";
 
 interface PlayerDto {
     id: string,
@@ -21,25 +23,24 @@ interface PlayerEntry extends TableEntry {
 }
 
 export default class PlayerApi implements TableApi<PlayerEntry> {
-    private basePath: string = 'api/players/';
+    private path: string = 'players/';
+    private api: Api = new Api();
 
-    async getAll(): Promise<PlayerEntry[]> {
-        const rawResponse = await fetch(this.basePath);
-        const response = await rawResponse.json() as GetPlayersResponse;
-        return response.players.map(
-            c => ({id: c.id, contents: c.name} as PlayerEntry));
+    async getAll(): Promise<Player[]> {
+        const response = await this.api.get<GetPlayersResponse>(this.path);
+        return response.players;
+    }
+
+    async getAllAsTableEntries(): Promise<PlayerEntry[]> {
+        const players = await this.getAll();
+        return players.map(p => ({id: p.id, contents: p.name} as PlayerEntry));
     }
 
     async create(entry: PlayerEntry): Promise<PlayerEntry> {
         const request = {name: entry.contents} as CreatePlayerRequest;
-        const rawResponse = await fetch(this.basePath, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(request),
-        });
-        const response = await rawResponse.json() as CreatePlayerResponse;
+        const response = await this.api.post<CreatePlayerRequest, CreatePlayerResponse>(
+            this.path,
+            request);
         return {
             id: response.id,
             contents: entry.contents
@@ -47,6 +48,6 @@ export default class PlayerApi implements TableApi<PlayerEntry> {
     }
 
     async delete(id: string): Promise<void> {
-        await fetch(this.basePath + id, {method: 'DELETE'});
+        await this.api.delete(this.path + id);
     }
 }

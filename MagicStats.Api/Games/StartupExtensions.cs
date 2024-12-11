@@ -14,6 +14,7 @@ internal static class StartupExtensions
             .WithTags("games");
 
         endpoints.MapEndpoint<GetGames>();
+        endpoints.MapEndpoint<GetGame>();
         endpoints.MapEndpoint<CreateGame>();
         endpoints.MapEndpoint<DeleteGame>();
         endpoints.MapEndpoint<UpdateGame>();

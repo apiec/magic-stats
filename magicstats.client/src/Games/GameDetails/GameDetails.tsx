@@ -7,8 +7,8 @@ import {
     getSortedRowModel,
     useReactTable
 } from "@tanstack/react-table";
-import {Game, Participant} from "../Games.tsx";
 import {format} from 'date-fns';
+import {Game, Participant} from "../GamesApi.ts";
 
 interface GameDetailsProps {
     game: Game,
@@ -51,7 +51,7 @@ export function GameDetails({game}: GameDetailsProps) {
                 </thead>
                 <tbody>
                 {table.getRowModel().rows.map(row => (
-                    <tr>
+                    <tr key ={row.id}>
                         {row.getVisibleCells().map(cell => (
                             <td key={cell.id}>
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}

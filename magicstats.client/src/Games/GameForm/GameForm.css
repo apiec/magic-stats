@@ -1,0 +1,67 @@
+﻿
+#game-form-component {
+    display: grid;
+    grid-template-areas:
+        "date add-button"
+        "placement starting-order";
+
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 50px 1fr;
+
+    align-items: end;
+    justify-items: center;
+    gap: 5px;
+    border: solid 2px grey;
+    border-radius: 5px;
+    padding: 20px;
+    background: #303030;
+    align-self: center;
+    justify-self: center;
+}
+
+#date-picker > label {
+    margin-right: auto;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+#game-form-component > button {
+    height: fit-content;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#game-form-component > * > h3 {
+    margin-bottom: 2px;
+    justify-self: center;
+}
+
+#date-picker {
+    grid-area: date;
+    display: flex;
+    flex-direction: column;
+}
+
+#add-participant-button {
+    grid-area: add-button;
+    width: fit-content;
+}
+
+#starting-order-section {
+    grid-area: starting-order;
+    width: auto;
+}
+
+#placement-section {
+    grid-area: placement;
+}
+
+#participant-dialog {
+    min-width: 300px;
+    min-height: 400px;
+}
+
+.dnd-participant-list {
+    border-radius: 5px;
+    overflow: clip;
+}
