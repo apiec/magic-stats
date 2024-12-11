@@ -20,6 +20,7 @@ public class GetCommanders : IEndpoint
     private static async Task<Ok<Response>> Handle(StatsDbContext dbContext, CancellationToken ct)
     {
         var commanders = await dbContext.Commanders
+            .OrderBy(c => c.Name)
             .Select(c => new CommanderDto(c.Id, c.Name))
             .AsNoTracking()
             .ToListAsync(ct);

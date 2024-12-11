@@ -53,7 +53,7 @@ internal class GameConfiguration : IEntityTypeConfiguration<Game>
 
         builder
             .HasMany<Participant>(g => g.Participants)
-            .WithOne()
+            .WithOne(p => p.Game)
             .HasForeignKey(p => p.GameId)
             .HasPrincipalKey(g => g.Id)
             .OnDelete(DeleteBehavior.Cascade);
