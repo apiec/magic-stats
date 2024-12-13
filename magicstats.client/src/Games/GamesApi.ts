@@ -1,5 +1,6 @@
 ﻿import Api from "../api/Api.ts";
 import {Player} from "../Players/PlayerApi.ts";
+import {Commander} from "../Commanders/CommanderApi.ts";
 
 export type Game = {
     id: string,
@@ -14,11 +15,6 @@ export type Participant = {
     player: Player,
     startingOrder: number,
     placement: number,
-}
-
-export type Commander = {
-    id: string,
-    name: string,
 }
 
 export type NewParticipantDto = {
