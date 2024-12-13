@@ -12,17 +12,15 @@ export default class Api {
             headers: {"Content-Type": "application/json",},
             body: JSON.stringify(body),
         });
-        console.log(rawResponse);
         return await rawResponse.json() as TResponse;
     }
 
     async postNoResponse<TBody>(path: string, body: TBody) {
-        const rawResponse = await fetch(baseUrl + path, {
+        await fetch(baseUrl + path, {
             method: "POST",
             headers: {"Content-Type": "application/json",},
             body: JSON.stringify(body),
         });
-        console.log(rawResponse);
     }
 
     async delete(path: string): Promise<void> {

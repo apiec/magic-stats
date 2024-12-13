@@ -1,4 +1,5 @@
 ﻿import Api from "../api/Api.ts";
+import {Player} from "../Players/PlayerApi.ts";
 
 export type Game = {
     id: string,
@@ -16,11 +17,6 @@ export type Participant = {
 }
 
 export type Commander = {
-    id: string,
-    name: string,
-}
-
-export type Player = {
     id: string,
     name: string,
 }
@@ -55,7 +51,6 @@ export class GamesApi {
 
     async getAll(): Promise<Game[]> {
         const response = await this.api.get<GetGamesResponse>(this.path);
-        console.log(response);
         return response.games;
     }
 

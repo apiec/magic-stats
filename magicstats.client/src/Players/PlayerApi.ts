@@ -1,28 +1,40 @@
-﻿import {TableApi, TableEntry} from "../Shared/SimpleTable/TableApi.ts";
-import {Player} from "../Games/GamesApi.ts";
-import Api from "../api/Api.ts";
+﻿import Api from "../api/Api.ts";
 
-interface PlayerDto {
+export type Player = {
     id: string,
+    name: string,
+}
+
+type GetPlayersResponse = {
+    players: Player[];
+}
+
+type GetPlayersWithStatsResponse = {
+    players: PlayerWithStats[];
+}
+
+type CreatePlayerRequest = {
     name: string;
 }
 
-interface GetPlayersResponse {
-    players: PlayerDto[];
-}
-
-interface CreatePlayerRequest {
-    name: string;
-}
-
-interface CreatePlayerResponse {
+type CreatePlayerResponse = {
     id: string;
 }
 
-interface PlayerEntry extends TableEntry {
+export type PlayerWithStats = {
+    id: string,
+    name: string,
+    stats: PlayerStats,
 }
 
-export default class PlayerApi implements TableApi<PlayerEntry> {
+export type PlayerStats = {
+    wins: number,
+    games: number,
+    winrate: number,
+    winrateLast10: number,
+}
+
+export default class PlayerApi {
     private path: string = 'players/';
     private api: Api = new Api();
 
@@ -31,20 +43,17 @@ export default class PlayerApi implements TableApi<PlayerEntry> {
         return response.players;
     }
 
-    async getAllAsTableEntries(): Promise<PlayerEntry[]> {
-        const players = await this.getAll();
-        return players.map(p => ({id: p.id, contents: p.name} as PlayerEntry));
+    async getAllWithStats(): Promise<PlayerWithStats[]> {
+        const response = await this.api.get<GetPlayersWithStatsResponse>(this.path + 'stats');
+        return response.players;
     }
 
-    async create(entry: PlayerEntry): Promise<PlayerEntry> {
-        const request = {name: entry.contents} as CreatePlayerRequest;
+    async create(name: string): Promise<string> {
+        const request = {name: name} as CreatePlayerRequest;
         const response = await this.api.post<CreatePlayerRequest, CreatePlayerResponse>(
             this.path,
             request);
-        return {
-            id: response.id,
-            contents: entry.contents
-        } as PlayerEntry;
+        return response.id.toString(); // todo: make them as string in backend
     }
 
     async delete(id: string): Promise<void> {
