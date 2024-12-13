@@ -12,9 +12,11 @@ public static class StartupExtensions
             .MapGroup("/players")
             .WithTags("players");
 
+        endpoints.MapEndpoint<GetPlayers>();
+        endpoints.MapEndpoint<GetPlayersWithStats>();
+
         endpoints.MapEndpoint<CreatePlayer>();
         endpoints.MapEndpoint<DeletePlayer>();
-        endpoints.MapEndpoint<GetPlayers>();
 
         return app;
     }

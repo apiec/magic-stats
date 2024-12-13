@@ -8,6 +8,7 @@ public class Participant
     public int Id { get; init; }
 
     public int GameId { get; init; }
+    public Game Game { get; init; } = null!;
 
     public int PlayerId { get; init; }
     public Player Player { get; init; } = null!;

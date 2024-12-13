@@ -113,7 +113,6 @@ export default function GameForm() {
         } as AddParticipantRequest;
 
         const participantResponse = await api.addParticipant(game.id, request);
-        console.log(participantResponse);
         setGame((draft) => {
             if (draft !== undefined) {
                 draft.participants.push(participantResponse);

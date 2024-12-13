@@ -20,6 +20,7 @@ public class GetPlayers : IEndpoint
     private static async Task<Ok<Response>> Handle(StatsDbContext dbContext, CancellationToken ct)
     {
         var players = await dbContext.Players
+            .OrderBy(p => p.Name)
             .Select(c => new PlayerDto(c.Id, c.Name))
             .AsNoTracking()
             .ToListAsync(ct);

@@ -1,7 +1,30 @@
-﻿.players {
+﻿.players-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    align-content: center;
-    justify-items: start;
+    justify-content: center;
+    gap: 20px;
+}
+
+.sortable-header:hover {
+    cursor: pointer;
+}
+
+.inactive-sort {
+    opacity: 0.2;
+}
+
+.sort-icon {
+    font-size: 1.1rem;
+}
+
+.sortable-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-self: center;
+    justify-self: center;
+    padding-left: 15px;
+    padding-right: 5px;
+    gap: 3px;
 }
