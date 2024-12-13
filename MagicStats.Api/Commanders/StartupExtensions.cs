@@ -12,9 +12,11 @@ internal static class StartupExtensions
             .MapGroup("/commanders")
             .WithTags("commanders");
 
+        endpoints.MapEndpoint<GetCommanders>();
+        endpoints.MapEndpoint<GetCommandersWithStats>();
+
         endpoints.MapEndpoint<CreateCommander>();
         endpoints.MapEndpoint<DeleteCommander>();
-        endpoints.MapEndpoint<GetCommanders>();
 
         return app;
     }

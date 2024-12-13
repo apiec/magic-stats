@@ -6,31 +6,31 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
-namespace MagicStats.Api.Players;
+namespace MagicStats.Api.Commanders;
 
-public class GetPlayersWithStats : IEndpoint
+public class GetCommandersWithStats : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app) => app
         .MapGet("/stats", Handle);
 
-    public record Response(IReadOnlyCollection<PlayerWithStatsDto> Players);
+    public record Response(IReadOnlyCollection<CommanderWithStatsDto> Commanders);
 
-    public record PlayerWithStatsDto(int Id, string Name, PlayerStats Stats);
+    public record CommanderWithStatsDto(int Id, string Name, CommanderStats Stats);
 
-    public record PlayerStats(int Wins, int Games, float? Winrate, float? WinrateLast10);
+    public record CommanderStats(int Wins, int Games, float? Winrate, float? WinrateLast10);
 
     private record RawStats(int Id, string Name, int Games, int Wins, int WinsLast10);
 
     private static async Task<Ok<Response>> Handle(StatsDbContext dbContext, CancellationToken ct)
     {
-        var query = dbContext.Players
+        var query = dbContext.Commanders
             .AsNoTracking()
-            .Select(player => new RawStats(
-                player.Id,
-                player.Name,
-                player.Participated.Count(),
-                player.Participated.Count(part => part.Placement == 0),
-                player.Participated
+            .Select(commander => new RawStats(
+                commander.Id,
+                commander.Name,
+                commander.Participated.Count(),
+                commander.Participated.Count(part => part.Placement == 0),
+                commander.Participated
                     .OrderByDescending(part => part.Game.PlayedAt)
                     .Take(10)
                     .Count(part => part.Placement == 0)));
@@ -38,10 +38,10 @@ public class GetPlayersWithStats : IEndpoint
         var rawStats = await query.ToListAsync(ct);
 
         var dto = rawStats.Select(p =>
-                new PlayerWithStatsDto(
+                new CommanderWithStatsDto(
                     p.Id,
                     p.Name,
-                    new PlayerStats(
+                    new CommanderStats(
                         Wins: p.Wins,
                         Games: p.Games,
                         Winrate: p.Games > 0 ? (float)p.Wins / p.Games : null,

@@ -4,14 +4,13 @@ import {
     flexRender,
     getCoreRowModel,
     getSortedRowModel,
-    HeaderContext,
     TableState,
     useReactTable
 } from '@tanstack/react-table';
 import {useEffect} from 'react';
 import PlayerApi, {PlayerWithStats} from './PlayerApi';
-import {FaSort, FaSortDown, FaSortUp} from 'react-icons/fa';
 import {useImmer} from 'use-immer';
+import SortableHeader from "../Shared/SortableHeader.tsx";
 
 export default function Players() {
     const [players, setPlayers] = useImmer<PlayerWithStats[]>([]);
@@ -110,43 +109,4 @@ const columns = [
 
 function toPercentage(num: number): string {
     return (100 * num).toFixed(0);
-}
-
-type SortableHeaderProps = {
-    text: string,
-    context: HeaderContext<PlayerWithStats, any>,
-}
-
-function SortableHeader({text, context}: SortableHeaderProps) {
-    function handleSort() {
-        context.table.setState(state => {
-            if (state.sorting[0].id === context.column.id) {
-                state.sorting[0].desc = !state.sorting[0].desc;
-            } else {
-                state.sorting[0] = {id: context.column.id, desc: context.column.id !== 'name'};
-            }
-
-            return state;
-        });
-    }
-
-    function sortingIcon() {
-        const ownId = context.column.id;
-        const sort = context.table.getState().sorting[0];
-        if (ownId !== sort.id) {
-            return <FaSort className='sort-icon inactive-sort'/>
-        }
-        return sort.desc ? <FaSortDown className='sort-icon'/> : <FaSortUp className='sort-icon'/>
-    }
-
-    return (
-        <div className='sortable-header' onClick={e => {
-            e.stopPropagation();
-            handleSort();
-        }}>
-            <p>{text}</p>
-            {sortingIcon()}
-        </div>
-    );
-
 }

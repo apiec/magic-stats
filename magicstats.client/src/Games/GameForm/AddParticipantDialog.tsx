@@ -1,10 +1,10 @@
 ﻿// import {Participant} from "../Games";
-import CommanderApi from "../../Commanders/CommanderApi.ts";
+import CommanderApi, {Commander} from "../../Commanders/CommanderApi.ts";
 import PlayerApi, {Player} from "../../Players/PlayerApi.ts";
 import Select from "react-select";
 import {useEffect, useState} from "react";
 import './AddParticipantDialog.css';
-import {Commander, Participant} from "../GamesApi.ts";
+import {Participant} from "../GamesApi.ts";
 
 type AddParticipantDialogProps = {
     onAdd: (participant: Participant) => void;
