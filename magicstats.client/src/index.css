@@ -42,3 +42,15 @@ html {
 *, *:before, *:after {
     box-sizing: inherit;
 }
+
+button {
+    background-color: #051545;
+    border: 0;
+    border-radius: 5px;
+    box-shadow: 3px 3px 5px black;
+}
+
+button:hover {
+    opacity: 80%;
+    cursor: pointer;
+}

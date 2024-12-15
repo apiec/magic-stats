@@ -1,11 +1,17 @@
 ﻿import './Navbar.css'
-import {FaIdBadge, FaUser} from 'react-icons/fa'
+import {FaHome, FaIdBadge, FaUser} from 'react-icons/fa'
 import {GiStack} from 'react-icons/gi';
 import {Link} from "react-router-dom";
 
 export default function Navbar() {
     return (
         <nav>
+            <Link to="">
+                <div className="navbar-section">
+                    <FaHome className="navbar-icon"/>
+                    <p>Home</p>
+                </div>
+            </Link>
             <Link to="players">
                 <div className="navbar-section">
                     <FaUser className="navbar-icon"/>
