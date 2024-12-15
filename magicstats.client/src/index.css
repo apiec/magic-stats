@@ -47,10 +47,15 @@ button {
     background-color: #051545;
     border: 0;
     border-radius: 5px;
-    box-shadow: 3px 3px 5px black;
+    box-shadow: 3px 3px 5px #1a1a1a;
 }
 
 button:hover {
+    opacity: 80%;
+    cursor: pointer;
+}
+
+.button-like:hover {
     opacity: 80%;
     cursor: pointer;
 }
