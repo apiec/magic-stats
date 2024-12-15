@@ -41,3 +41,7 @@ td {
     border-top: 3px solid black;
     border-bottom: 3px solid black;
 }
+
+.edit-game, .edit-game:hover {
+    color: black;
+}

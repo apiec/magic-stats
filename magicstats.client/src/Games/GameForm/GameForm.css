@@ -50,6 +50,7 @@
 #starting-order-section {
     grid-area: starting-order;
     width: auto;
+    z-index: 1;
 }
 
 #placement-section {

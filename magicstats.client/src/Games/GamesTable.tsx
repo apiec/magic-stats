@@ -4,11 +4,10 @@ import {
     createColumnHelper,
     flexRender,
     getCoreRowModel,
-    getExpandedRowModel,
     getSortedRowModel,
     useReactTable
 } from "@tanstack/react-table";
-import {Fragment, useEffect, useState} from "react";
+import {Fragment, useEffect, useRef, useState} from "react";
 import {GameDetails} from "./GameDetails/GameDetails.tsx";
 import {format} from "date-fns";
 import {Game, GamesApi} from './GamesApi.ts';
@@ -17,13 +16,15 @@ import {FaPen, FaTrash} from 'react-icons/fa';
 
 export default function GamesTable() {
     const [games, setGames] = useState<Game[]>([]);
+    const [currentGameId, setCurrentGameId] = useState<string>();
+    const currentGame = games.find(g => g.id === currentGameId);
+
+    const dialogRef = useRef<HTMLDialogElement>(null);
     const table = useReactTable({
         data: games,
         columns,
         getCoreRowModel: getCoreRowModel(),
-        getExpandedRowModel: getExpandedRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        getRowCanExpand: () => true,
         initialState: {
             sorting: [
                 {
@@ -51,8 +52,26 @@ export default function GamesTable() {
         await navigate(gameId);
     }
 
+    function toggleDialog() {
+        if (!dialogRef.current) {
+            return;
+        }
+        dialogRef.current.hasAttribute("open")
+            ? dialogRef.current.close()
+            : dialogRef.current.showModal();
+    }
+
     return (
         <div className='games-table-component'>
+            <dialog ref={dialogRef} onClick={(e) => {
+                if (e.currentTarget === e.target) {
+                    toggleDialog();
+                }
+            }}>
+                {
+                    currentGame ? <GameDetails game={currentGame}/> : 'dupa'
+                }
+            </dialog>
             <div>
                 <button className='new-game-button' onClick={handleNewGame}>
                     New game
@@ -74,21 +93,15 @@ export default function GamesTable() {
                 <tbody>
                 {table.getRowModel().rows.map(row => (
                     <Fragment key={row.id}>
-                        {!row.getIsExpanded() &&
-                            (<tr onClick={() => row.toggleExpanded()}>
-                                    {row.getVisibleCells().map(cell => (
-                                        <td key={cell.id}>
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                        </td>))}
-                                </tr>
-                            )}
-                        {row.getIsExpanded() && (
-                            <tr onClick={() => row.toggleExpanded()} className='game-details-row'>
-                                <td colSpan={row.getAllCells().length} className='game-details-cell'>
-                                    <GameDetails game={row.original}/>
-                                </td>
-                            </tr>
-                        )}
+                        <tr onClick={() => {
+                            setCurrentGameId(row.original.id);
+                            toggleDialog();
+                        }}>
+                            {row.getVisibleCells().map(cell => (
+                                <td key={cell.id}>
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </td>))}
+                        </tr>
                     </Fragment>
                 ))}
                 </tbody>
@@ -137,7 +150,7 @@ type EditGameButtonProps = {
 
 function EditGameButton({gameId}: EditGameButtonProps) {
     return (
-        <NavLink to={gameId} onClick={(e) => e.stopPropagation()}>
+        <NavLink to={gameId} className='button-like edit-game' onClick={(e) => e.stopPropagation()}>
             <FaPen/>
         </NavLink>
     );
@@ -149,13 +162,11 @@ type DeleteGameButtonProps = {
 
 function DeleteGameButton({gameId}: DeleteGameButtonProps) {
     return (
-        <NavLink to='' onClick={(e) => {
+        <FaTrash className='button-like delete-game' onClick={(e) => {
             e.stopPropagation();
             const api = new GamesApi();
             api.delete(gameId)
                 .then(() => window.location.reload());
-        }}>
-            <FaTrash/>
-        </NavLink>
+        }}/>
     );
 }
