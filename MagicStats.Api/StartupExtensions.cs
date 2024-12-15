@@ -1,5 +1,6 @@
 ﻿using MagicStats.Api.Commanders;
 using MagicStats.Api.Games;
+using MagicStats.Api.Home;
 using MagicStats.Api.Players;
 using MagicStats.Api.Shared;
 using Microsoft.AspNetCore.Builder;
@@ -21,6 +22,7 @@ public static class StartupExtensions
             .MapGroup("/api")
             .WithOpenApi();
 
+        endpoints.AddHomeEndpoints();
         endpoints.AddCommanderEndpoints();
         endpoints.AddPlayerEndpoints();
         endpoints.AddGameEndpoints();

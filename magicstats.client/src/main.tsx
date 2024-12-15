@@ -8,12 +8,17 @@ import Players from "./Players/Players.tsx";
 import GamesTable from "./Games/GamesTable.tsx";
 import GameForm from "./Games/GameForm/GameForm.tsx";
 import Games from "./Games/Games.tsx";
+import HomePage from "./Home/HomePage.tsx";
 
 const router = createBrowserRouter([
     {
         path: "/",
         element: <App/>,
         children: [
+            {
+                index: true,
+                element: <HomePage/>,
+            },
             {
                 path: "commanders",
                 element: <Commanders/>,

@@ -28,6 +28,15 @@ public class StatsDbContext : DbContext
     {
         configurationBuilder
             .Properties<DateTimeOffset>()
-            .HaveConversion<DateTimeOffsetToBinaryConverter>();
+            .HaveConversion<DateTimeOffsetToUnixEpochConverter>();
+    }
+
+    private class DateTimeOffsetToUnixEpochConverter : ValueConverter<DateTimeOffset, long>
+    {
+        public DateTimeOffsetToUnixEpochConverter() : base(
+            v => v.ToUnixTimeSeconds(),
+            t => DateTimeOffset.FromUnixTimeSeconds(t))
+        {
+        }
     }
 }
