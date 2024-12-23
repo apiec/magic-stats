@@ -1,10 +1,9 @@
 ﻿import {HeaderContext} from "@tanstack/react-table";
-import {CommanderWithStats} from "../Commanders/CommanderApi";
 import {FaSort, FaSortDown, FaSortUp} from 'react-icons/fa';
 
 type SortableHeaderProps = {
     text: string,
-    context: HeaderContext<CommanderWithStats, any>,
+    context: HeaderContext<any, any>,
 }
 
 export default function SortableHeader({text, context}: SortableHeaderProps) {

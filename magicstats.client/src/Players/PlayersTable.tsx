@@ -13,15 +13,18 @@ import SortableHeader from "../Shared/SortableHeader.tsx";
 
 type PlayersTableProps = {
     players: PlayerWithStats[],
+    lastXWindowSize: number,
 }
 
-export default function PlayersTable({players}: PlayersTableProps) {
+export default function PlayersTable({players, lastXWindowSize}: PlayersTableProps) {
     const table = useReactTable({
         data: players,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         initialState: {
+            // @ts-ignore
+            lastXWindowSize: lastXWindowSize?.toString(),
             sorting: [
                 {
                     id: 'name',
@@ -87,13 +90,13 @@ const columns = [
     }),
     columnHelper.accessor('stats.winrate', {
         id: 'winrate',
-        header: ctx => <SortableHeader text='WR%' context={ctx}/>,
+        header: ctx => <SortableHeader text={'WR%'} context={ctx}/>,
         cell: props => toPercentage(props.row.original.stats.winrate)
     }),
-    columnHelper.accessor('stats.winrateLast10', {
-        id: 'winrateLast10',
-        header: ctx => <SortableHeader text='WRL10' context={ctx}/>,
-        cell: props => toPercentage(props.row.original.stats.winrateLast10)
+    columnHelper.accessor('stats.winrateLastX', {
+        id: 'winrateLastX',
+        header: ctx => <SortableHeader text={'WRLX'} context={ctx}/>,
+        cell: props => toPercentage(props.row.original.stats.winrateLastX)
     }),
 ];
 

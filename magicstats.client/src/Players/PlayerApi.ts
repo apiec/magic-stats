@@ -31,7 +31,7 @@ export type PlayerStats = {
     wins: number,
     games: number,
     winrate: number,
-    winrateLast10: number,
+    winrateLastX: number,
 }
 
 type GetPlayerWinratesResponse = {
@@ -58,13 +58,16 @@ export default class PlayerApi {
         return response.players;
     }
 
-    async getAllWithStats(): Promise<PlayerWithStats[]> {
-        const response = await this.api.get<GetPlayersWithStatsResponse>(this.path + 'stats');
+    async getAllWithStats(windowSize: number): Promise<PlayerWithStats[]> {
+        const path = this.path + 'stats' + (windowSize ? '?windowSize=' + windowSize : '');
+        console.log(path);
+        const response = await this.api.get<GetPlayersWithStatsResponse>(path);
         return response.players;
     }
 
-    async getWinrates(): Promise<PlayerWithWinrates[]> {
-        const response = await this.api.get<GetPlayerWinratesResponse>(this.path + 'winrates');
+    async getWinrates(slidingWindowSize?: number): Promise<PlayerWithWinrates[]> {
+        const path = this.path + 'winrates' + (slidingWindowSize ? '?slidingWindowSize=' + slidingWindowSize : '');
+        const response = await this.api.get<GetPlayerWinratesResponse>(path);
         return response.playerWinrates;
     }
 

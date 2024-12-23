@@ -11,7 +11,7 @@ import {Fragment, useEffect, useRef, useState} from "react";
 import {GameDetails} from "./GameDetails/GameDetails.tsx";
 import {format} from "date-fns";
 import {Game, GamesApi} from './GamesApi.ts';
-import {NavLink, useNavigate} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import {FaPen, FaTrash} from 'react-icons/fa';
 
 export default function GamesTable() {
@@ -150,9 +150,9 @@ type EditGameButtonProps = {
 
 function EditGameButton({gameId}: EditGameButtonProps) {
     return (
-        <NavLink to={gameId} className='button-like edit-game' onClick={(e) => e.stopPropagation()}>
+        <Link to={gameId} className='button-like edit-game' onClick={(e) => e.stopPropagation()}>
             <FaPen/>
-        </NavLink>
+        </Link>
     );
 }
 
