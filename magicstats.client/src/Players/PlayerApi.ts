@@ -34,6 +34,21 @@ export type PlayerStats = {
     winrateLast10: number,
 }
 
+type GetPlayerWinratesResponse = {
+    playerWinrates: PlayerWithWinrates[],
+}
+
+export type PlayerWithWinrates = {
+    id: number,
+    name: string,
+    dataPoints: DataPoint[],
+}
+
+export type DataPoint = {
+    date: string,
+    winrate: number,
+}
+
 export default class PlayerApi {
     private path: string = 'players/';
     private api: Api = new Api();
@@ -46,6 +61,11 @@ export default class PlayerApi {
     async getAllWithStats(): Promise<PlayerWithStats[]> {
         const response = await this.api.get<GetPlayersWithStatsResponse>(this.path + 'stats');
         return response.players;
+    }
+
+    async getWinrates(): Promise<PlayerWithWinrates[]> {
+        const response = await this.api.get<GetPlayerWinratesResponse>(this.path + 'winrates');
+        return response.playerWinrates;
     }
 
     async create(name: string): Promise<string> {
