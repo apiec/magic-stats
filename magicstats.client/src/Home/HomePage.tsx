@@ -1,6 +1,7 @@
 ﻿import {useEffect, useState} from "react";
 import "./HomePage.css";
 import Api from "../api/Api.ts";
+import ValueDisplay from "../Shared/ValueDisplay.tsx";
 
 export default function HomePage() {
 
@@ -31,24 +32,6 @@ export default function HomePage() {
                 <ValueDisplay
                     title='Most played'
                     values={[stats.mostGamesCommander.name, stats.mostGamesCommander.gamesPlayed.toFixed(0)]}/>
-            </div>
-        </div>
-    );
-}
-
-type ValueDisplayProps = {
-    title: string,
-    values: string[],
-}
-
-function ValueDisplay({title, values}: ValueDisplayProps) {
-    return (
-        <div className='value-display'>
-            <p className='value-display-title'>{title}</p>
-            <div className='value-display-values-container'>
-                {values.map((v, i) =>
-                    <p key={i} className='value-display-value'>{v}</p>
-                )}
             </div>
         </div>
     );

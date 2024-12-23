@@ -7,13 +7,15 @@ import {
     TableState,
     useReactTable
 } from '@tanstack/react-table';
-import {useEffect} from 'react';
-import PlayerApi, {PlayerWithStats} from './PlayerApi';
+import {PlayerWithStats} from './PlayerApi';
 import {useImmer} from 'use-immer';
 import SortableHeader from "../Shared/SortableHeader.tsx";
 
-export default function PlayersTable() {
-    const [players, setPlayers] = useImmer<PlayerWithStats[]>([]);
+type PlayersTableProps = {
+    players: PlayerWithStats[],
+}
+
+export default function PlayersTable({players}: PlayersTableProps) {
     const table = useReactTable({
         data: players,
         columns,
@@ -39,16 +41,6 @@ export default function PlayersTable() {
             onStateChange: setTableState,
         };
     });
-
-    useEffect(() => {
-        populatePlayerData().then();
-    }, []);
-
-    async function populatePlayerData() {
-        const api = new PlayerApi();
-        const players = await api.getAllWithStats();
-        setPlayers(() => players);
-    }
 
     return (
         <table className='players-table'>
