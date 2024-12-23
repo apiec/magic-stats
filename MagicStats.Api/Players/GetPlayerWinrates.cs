@@ -1,8 +1,10 @@
 ﻿using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
+using MagicStats.Persistence.EfCore.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,13 +26,17 @@ public class GetPlayerWinrates : IEndpoint
         DateOnly Date,
         float Winrate);
 
-    private static async Task<Ok<Response>> Handle(StatsDbContext dbContext, CancellationToken ct)
+    private static async Task<Ok<Response>> Handle(
+        [FromQuery] int? slidingWindowSize,
+        StatsDbContext dbContext,
+        CancellationToken ct)
     {
         var games = await dbContext.Games
             .Include(g => g.Participants)
             .ThenInclude(p => p.Player)
             .ToListAsync(ct);
 
+        var window = slidingWindowSize ?? games.Count;
         var players = await dbContext.Players
             .Include(p => p.Participated)
             .ThenInclude(p => p.Game)
@@ -40,22 +46,28 @@ public class GetPlayerWinrates : IEndpoint
         var playerResults = players.ToDictionary(
             p => p.Id,
             p => new PlayerWinratesOverTime(p.Id, p.Name, new List<DataPoint>(meetings.Length)));
-        var playerWins = players.ToDictionary(p => p.Id, _ => 0);
-        var gamesCount = 0;
+        var playerRecords = players.ToDictionary(p => p.Id, _ => new Queue<bool>(window));
 
         foreach (var meeting in meetings)
         {
-            gamesCount += meeting.Count();
             foreach (var game in meeting)
             {
-                var winnerId = game.Participants.First(p => p.Placement == 0).PlayerId;
-                playerWins[winnerId] += 1;
+                foreach (var participant in game.Participants)
+                {
+                    var record = playerRecords[participant.PlayerId];
+                    record.Enqueue(participant.IsWinner());
+                    while (record.Count > window)
+                    {
+                        record.Dequeue();
+                    }
+                }
             }
 
-            var date = DateOnly.FromDateTime(meeting.Key.Date);
-            foreach (var (playerId, winCount) in playerWins)
+            var meetingDate = DateOnly.FromDateTime(meeting.Key.Date);
+            foreach (var (playerId, record) in playerRecords)
             {
-                playerResults[playerId].DataPoints.Add(new DataPoint(date, (float)winCount / gamesCount));
+                var winCount = record.Count(isWin => isWin);
+                playerResults[playerId].DataPoints.Add(new DataPoint(meetingDate, (float)winCount / record.Count));
             }
         }
 
