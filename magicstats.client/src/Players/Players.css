@@ -17,22 +17,6 @@
     gap: 10px;
 }
 
-.player-winrate-graph {
-    flex-grow: 1;
-    justify-items: center;
-    align-items: start;
-}
-
-.player-winrate-graph > h3 {
-    margin: 0;
-}
-
-.player-winrate-graph > p {
-    margin: 0;
-    font-size: 1.1rem;
-    font-style: italic;
-}
-
 .players-section-values {
     display: flex;
     flex-direction: row;

@@ -16,15 +16,13 @@ type PlayersTableProps = {
     lastXWindowSize: number,
 }
 
-export default function PlayersTable({players, lastXWindowSize}: PlayersTableProps) {
+export default function PlayersTable({players}: PlayersTableProps) {
     const table = useReactTable({
         data: players,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         initialState: {
-            // @ts-ignore
-            lastXWindowSize: lastXWindowSize?.toString(),
             sorting: [
                 {
                     id: 'name',

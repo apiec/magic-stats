@@ -1,114 +1,111 @@
 ﻿import './Commanders.css'
 import CommanderApi, {CommanderWithStats} from "./CommanderApi.ts";
-
-import {
-    createColumnHelper,
-    flexRender,
-    getCoreRowModel,
-    getSortedRowModel,
-    TableState,
-    useReactTable
-} from '@tanstack/react-table';
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {useImmer} from 'use-immer';
-import SortableHeader from '../Shared/SortableHeader.tsx';
+import CommandersTable from "./CommandersTable.tsx";
+import WinrateGraph, {DataPoint, DataSeries} from "../Shared/WinrateGraph.tsx";
+import ValueDisplay from "../Shared/ValueDisplay.tsx";
+import Select from "react-select";
 
 export default function Commanders() {
-    const [players, setCommanders] = useImmer<CommanderWithStats[]>([]);
-    const table = useReactTable({
-        data: players,
-        columns,
-        getCoreRowModel: getCoreRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        initialState: {
-            sorting: [
-                {
-                    id: 'name',
-                    desc: false,
-                }
-            ],
-        },
-    })
-    const [tableState, setTableState] = useImmer<TableState>({
-        ...table.initialState,
-    });
-
-    table.setOptions((prev) => {
-        return {
-            ...prev,
-            state: tableState,
-            onStateChange: setTableState,
-        };
-    });
+    const [commanders, setCommanders] = useImmer<CommanderWithStats[] | undefined>(undefined);
+    const [slidingWindowSize, setSlidingWindowSize] = useState<number | undefined>(startingWindowValue);
+    const lastX = slidingWindowSize ?? 10;
 
     useEffect(() => {
         populateCommanderData().then();
-    }, []);
+    }, [slidingWindowSize]);
 
     async function populateCommanderData() {
         const api = new CommanderApi();
-        const players = await api.getAllWithStats();
-        setCommanders(() => players);
+        const commanders = await api.getAllWithStats(lastX);
+        setCommanders(() => commanders);
     }
 
+    if (commanders === undefined) {
+        return <p>Loading...</p>;
+    }
+
+    const mostGames = Math.max(...commanders.map(p => p.stats.games));
+    const mostGamesCommander = commanders.find(p => p.stats.games === mostGames)!;
+    const highestWinrate = Math.max(...commanders.map(p => p.stats.winrate));
+    const highestWinrateCommander = commanders.find(p => p.stats.winrate === highestWinrate)!;
+    const highestWinrateLast = Math.max(...commanders.map(p => p.stats.winrateLastX));
+    const highestWinrateCommanderLast = commanders.find(p => p.stats.winrateLastX === highestWinrateLast)!;
+
     return (
-        <section className='players-section'>
-            <table className='players-table'>
-                <thead>
-                {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
-                        {headerGroup.headers.map(header => (
-                            <th key={header.id}>
-                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                            </th>
-                        ))}
-                    </tr>
-                ))
-                }
-                </thead>
-                <tbody>
-                {table.getRowModel().rows.map(row => (
-                    <tr key={row.id}>
-                        {row.getVisibleCells().map(cell => (
-                            <td key={cell.id}>
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </td>))}
-                    </tr>
-                ))}
-                </tbody>
-            </table>
+        <section className='commanders-section'>
+            <section className='commanders-section-values'>
+                <ValueDisplay title='Most games' values={[mostGamesCommander.name, mostGames.toFixed(0)]}/>
+                <ValueDisplay title='Highest WR'
+                              values={[highestWinrateCommander.name, toPercentage(highestWinrate)]}/>
+                <ValueDisplay title={'Highest WRL' + lastX}
+                              values={[highestWinrateCommanderLast.name, toPercentage(highestWinrateLast)]}/>
+            </section>
+            <div className='sliding-window-pick'>
+                <p>Sliding window:</p>
+                <Select className='black-text' options={options}
+                        value={options.find(o => o.value === slidingWindowSize)}
+                        onChange={(x) => {
+                            setSlidingWindowSize(x?.value);
+                        }}/>
+            </div>
+            <CommandersTable commanders={commanders} lastXWindowSize={lastX}/>
+            <CommandersWinrateGraph slidingWindowSize={slidingWindowSize}/>
         </section>
     );
 }
 
-const columnHelper = createColumnHelper<CommanderWithStats>();
-
-const columns = [
-    columnHelper.accessor('name', {
-        id: 'name',
-        header: ctx => <SortableHeader text='Name' context={ctx}/>,
-    }),
-    columnHelper.accessor('stats.games', {
-        id: 'games',
-        header: ctx => <SortableHeader text='Games' context={ctx}/>,
-    }),
-    columnHelper.accessor('stats.wins', {
-        id: 'wins',
-        header: ctx => <SortableHeader text='Wins' context={ctx}/>,
-    }),
-    columnHelper.accessor('stats.winrate', {
-        id: 'winrate',
-        header: ctx => <SortableHeader text='WR%' context={ctx}/>,
-        cell: props => toPercentage(props.row.original.stats.winrate)
-    }),
-    columnHelper.accessor('stats.winrateLast10', {
-        id: 'winrateLast10',
-        header: ctx => <SortableHeader text='WRL10' context={ctx}/>,
-        cell: props => toPercentage(props.row.original.stats.winrateLast10)
-    }),
+const windowValues = [
+    undefined,
+    5,
+    10,
+    20,
+    50,
 ];
 
-function toPercentage(num: number): string {
-    return (100 * num).toFixed(0);
+const options = windowValues.map(v => {
+    return {
+        label: v ? v.toString() : 'None',
+        value: v,
+    }
+});
+const startingWindowValue = undefined;
+
+
+type CommandersWinrateGraphProps = {
+    slidingWindowSize: number | undefined;
 }
 
+function CommandersWinrateGraph({slidingWindowSize}: CommandersWinrateGraphProps) {
+    const [data, setData] = useState<DataSeries[]>([]);
+
+    async function populateData() {
+        const api = new CommanderApi();
+        const commanderWinrates = await api.getWinrates(slidingWindowSize);
+        const data = commanderWinrates.map(p => {
+            return {
+                name: p.name,
+                data: p.dataPoints.map(d => {
+                    return {
+                        date: new Date(d.date).valueOf(),
+                        value: d.winrate,
+                    } as DataPoint;
+                })
+            } as DataSeries;
+        });
+        setData(data);
+    }
+
+    useEffect(() => {
+        populateData().then();
+    }, [slidingWindowSize]);
+
+    return (
+        <WinrateGraph data={data} slidingWindowSize={slidingWindowSize}/>
+    );
+}
+
+function toPercentage(num: number): string {
+    return (100 * num).toFixed(0) + '%'
+}

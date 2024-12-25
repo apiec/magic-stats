@@ -1,0 +1,15 @@
+﻿.winrate-graph {
+    flex-grow: 1;
+    justify-items: center;
+    align-items: start;
+}
+
+.winrate-graph > h3 {
+    margin: 0;
+}
+
+.winrate-graph > p {
+    margin: 0;
+    font-size: 1.1rem;
+    font-style: italic;
+}
