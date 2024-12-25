@@ -18,6 +18,8 @@ public class Participant
 
     public int StartingOrder { get; set; }
     public int Placement { get; set; }
+
+    public bool IsWinner() => Placement == 0;
 }
 
 internal class ParticipantConfiguration : IEntityTypeConfiguration<Participant>

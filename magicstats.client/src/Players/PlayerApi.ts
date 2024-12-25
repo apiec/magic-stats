@@ -31,7 +31,22 @@ export type PlayerStats = {
     wins: number,
     games: number,
     winrate: number,
-    winrateLast10: number,
+    winrateLastX: number,
+}
+
+type GetPlayerWinratesResponse = {
+    playerWinrates: PlayerWithWinrates[],
+}
+
+export type PlayerWithWinrates = {
+    id: number,
+    name: string,
+    dataPoints: DataPoint[],
+}
+
+export type DataPoint = {
+    date: string,
+    winrate: number,
 }
 
 export default class PlayerApi {
@@ -43,9 +58,17 @@ export default class PlayerApi {
         return response.players;
     }
 
-    async getAllWithStats(): Promise<PlayerWithStats[]> {
-        const response = await this.api.get<GetPlayersWithStatsResponse>(this.path + 'stats');
+    async getAllWithStats(windowSize: number): Promise<PlayerWithStats[]> {
+        const path = this.path + 'stats' + (windowSize ? '?windowSize=' + windowSize : '');
+        console.log(path);
+        const response = await this.api.get<GetPlayersWithStatsResponse>(path);
         return response.players;
+    }
+
+    async getWinrates(slidingWindowSize?: number): Promise<PlayerWithWinrates[]> {
+        const path = this.path + 'winrates' + (slidingWindowSize ? '?slidingWindowSize=' + slidingWindowSize : '');
+        const response = await this.api.get<GetPlayerWinratesResponse>(path);
+        return response.playerWinrates;
     }
 
     async create(name: string): Promise<string> {

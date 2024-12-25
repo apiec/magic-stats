@@ -3,6 +3,7 @@ using MagicStats.Persistence.EfCore.Context;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,12 +18,16 @@ public class GetPlayersWithStats : IEndpoint
 
     public record PlayerWithStatsDto(int Id, string Name, PlayerStats Stats);
 
-    public record PlayerStats(int Wins, int Games, float? Winrate, float? WinrateLast10);
+    public record PlayerStats(int Wins, int Games, float? Winrate, float? WinrateLastX);
 
-    private record RawStats(int Id, string Name, int Games, int Wins, int WinsLast10);
+    private record RawStats(int Id, string Name, int Games, int Wins, int WinsLastX);
 
-    private static async Task<Ok<Response>> Handle(StatsDbContext dbContext, CancellationToken ct)
+    private static async Task<Ok<Response>> Handle(
+        [FromQuery] int? windowSize,
+        StatsDbContext dbContext,
+        CancellationToken ct)
     {
+        windowSize ??= 10;
         var query = dbContext.Players
             .AsNoTracking()
             .Select(player => new RawStats(
@@ -32,7 +37,7 @@ public class GetPlayersWithStats : IEndpoint
                 player.Participated.Count(part => part.Placement == 0),
                 player.Participated
                     .OrderByDescending(part => part.Game.PlayedAt)
-                    .Take(10)
+                    .Take(windowSize.Value)
                     .Count(part => part.Placement == 0)));
 
         var rawStats = await query.ToListAsync(ct);
@@ -45,7 +50,7 @@ public class GetPlayersWithStats : IEndpoint
                         Wins: p.Wins,
                         Games: p.Games,
                         Winrate: p.Games > 0 ? (float)p.Wins / p.Games : null,
-                        WinrateLast10: p.Games > 0 ? (float)p.WinsLast10 / Math.Min(p.Games, 10) : null)))
+                        WinrateLastX: p.Games > 0 ? (float)p.WinsLastX / Math.Min(p.Games, windowSize.Value) : null)))
             .ToList();
 
         var response = new Response(dto);
