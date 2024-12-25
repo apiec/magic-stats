@@ -60,7 +60,6 @@ export default class PlayerApi {
 
     async getAllWithStats(windowSize: number): Promise<PlayerWithStats[]> {
         const path = this.path + 'stats' + (windowSize ? '?windowSize=' + windowSize : '');
-        console.log(path);
         const response = await this.api.get<GetPlayersWithStatsResponse>(path);
         return response.players;
     }

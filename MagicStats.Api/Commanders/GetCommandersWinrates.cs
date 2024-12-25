@@ -1,6 +1,5 @@
 ﻿using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
-using MagicStats.Persistence.EfCore.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -8,23 +7,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
-namespace MagicStats.Api.Players;
+namespace MagicStats.Api.Commanders;
 
-public class GetPlayerWinrates : IEndpoint
+public class GetCommandersWinrates : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app) => app
         .MapGet("/winrates", Handle);
 
-    public record Response(IReadOnlyCollection<PlayerWinratesOverTime> PlayerWinrates);
+    public record Response(IReadOnlyCollection<CommanderWinratesOverTime> CommanderWinrates);
 
-    public record PlayerWinratesOverTime(
+    public record CommanderWinratesOverTime(
         int Id,
         string Name,
         List<DataPoint> DataPoints);
 
     public record DataPoint(
         DateOnly Date,
-        float Winrate);
+        float? Winrate);
 
     private static async Task<Ok<Response>> Handle(
         [FromQuery] int? slidingWindowSize,
@@ -33,20 +32,20 @@ public class GetPlayerWinrates : IEndpoint
     {
         var games = await dbContext.Games
             .Include(g => g.Participants)
-            .ThenInclude(p => p.Player)
+            .ThenInclude(p => p.Commander)
             .ToListAsync(ct);
 
         var window = slidingWindowSize ?? games.Count;
-        var players = await dbContext.Players
+        var commanders = await dbContext.Commanders
             .Include(p => p.Participated)
             .ThenInclude(p => p.Game)
             .ToListAsync(ct);
 
         var meetings = games.GroupBy(g => g.PlayedAt.Date).OrderBy(g => g.Key).ToArray();
-        var playerResults = players.ToDictionary(
-            p => p.Id,
-            p => new PlayerWinratesOverTime(p.Id, p.Name, new List<DataPoint>(meetings.Length)));
-        var playerRecords = players.ToDictionary(p => p.Id, _ => new Queue<bool>(window));
+        var commanderResults = commanders.ToDictionary(
+            c => c.Id,
+            c => new CommanderWinratesOverTime(c.Id, c.Name, new List<DataPoint>(meetings.Length)));
+        var commanderRecords = commanders.ToDictionary(p => p.Id, _ => new Queue<bool>(window));
 
         foreach (var meeting in meetings)
         {
@@ -54,7 +53,7 @@ public class GetPlayerWinrates : IEndpoint
             {
                 foreach (var participant in game.Participants)
                 {
-                    var record = playerRecords[participant.PlayerId];
+                    var record = commanderRecords[participant.CommanderId];
                     record.Enqueue(participant.IsWinner());
                     while (record.Count > window)
                     {
@@ -64,14 +63,18 @@ public class GetPlayerWinrates : IEndpoint
             }
 
             var meetingDate = DateOnly.FromDateTime(meeting.Key.Date);
-            foreach (var (playerId, record) in playerRecords)
+            foreach (var (playerId, record) in commanderRecords)
             {
                 var winCount = record.Count(isWin => isWin);
-                playerResults[playerId].DataPoints.Add(new DataPoint(meetingDate, (float)winCount / record.Count));
+                if (record.Count > 0)
+                {
+                    commanderResults[playerId]
+                        .DataPoints.Add(new DataPoint(meetingDate, (float)winCount / record.Count));
+                }
             }
         }
 
-        var response = new Response(playerResults.Values);
+        var response = new Response(commanderResults.Values.Where(x => x.DataPoints.Count > 0).ToArray());
         return TypedResults.Ok(response);
     }
 }

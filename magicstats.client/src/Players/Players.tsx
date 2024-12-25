@@ -1,11 +1,11 @@
 ﻿import {useEffect, useState} from 'react';
 import './Players.css'
 import PlayersTable from "./PlayersTable.tsx";
-import WinrateGraph, {DataPoint, DataSeries} from "./WinrateGraph.tsx";
 import PlayerApi, {PlayerWithStats} from "./PlayerApi.ts";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
 import {useImmer} from 'use-immer';
 import Select from "react-select";
+import WinrateGraph, {DataSeries, DataPoint} from "../Shared/WinrateGraph.tsx";
 
 export default function Players() {
     const [players, setPlayers] = useImmer<PlayerWithStats[] | undefined>(undefined);
@@ -44,9 +44,11 @@ export default function Players() {
             </section>
             <div className='sliding-window-pick'>
                 <p>Sliding window:</p>
-                <Select className='black-text' options={options} onChange={(x) => {
-                    setSlidingWindowSize(x?.value);
-                }}/>
+                <Select className='black-text' options={options}
+                        value={options.find(o => o.value === slidingWindowSize)}
+                        onChange={(x) => {
+                            setSlidingWindowSize(x?.value);
+                        }}/>
             </div>
             <PlayersTable players={players} lastXWindowSize={lastX}/>
             <PlayersWinrateGraph slidingWindowSize={slidingWindowSize}/>
@@ -100,11 +102,7 @@ function PlayersWinrateGraph({slidingWindowSize}: PlayersWinrateGraphProps) {
     }, [slidingWindowSize]);
 
     return (
-        <div className='player-winrate-graph'>
-            <h3>Winrates</h3>
-            <p>{slidingWindowSize ? `Sliding window - ${slidingWindowSize}` : 'All time'}</p>
-            <WinrateGraph data={data}/>
-        </div>
+        <WinrateGraph data={data} slidingWindowSize={slidingWindowSize}/>
     );
 }
 

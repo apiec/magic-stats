@@ -14,7 +14,7 @@ public static class StartupExtensions
 
         endpoints.MapEndpoint<GetPlayers>();
         endpoints.MapEndpoint<GetPlayersWithStats>();
-        endpoints.MapEndpoint<GetPlayerWinrates>();
+        endpoints.MapEndpoint<GetPlayersWinrates>();
 
         endpoints.MapEndpoint<CreatePlayer>();
         endpoints.MapEndpoint<DeletePlayer>();

@@ -13,7 +13,7 @@ export type CommanderStats = {
     wins: number,
     games: number,
     winrate: number,
-    winrateLast10: number,
+    winrateLastX: number,
 }
 
 type GetCommandersResponse = {
@@ -22,6 +22,21 @@ type GetCommandersResponse = {
 
 type GetCommandersWithStatsResponse = {
     commanders: CommanderWithStats[];
+}
+
+type GetCommanderWinratesResponse = {
+    commanderWinrates: CommanderWithWinrates[],
+}
+
+export type CommanderWithWinrates = {
+    id: number,
+    name: string,
+    dataPoints: DataPoint[],
+}
+
+export type DataPoint = {
+    date: string,
+    winrate: number | undefined,
 }
 
 type CreateCommanderRequest = {
@@ -41,9 +56,15 @@ export default class CommanderApi {
         return response.commanders;
     }
 
-    async getAllWithStats(): Promise<CommanderWithStats[]> {
-        const response = await this.api.get<GetCommandersWithStatsResponse>(this.path + 'stats');
+    async getAllWithStats(windowSize: number): Promise<CommanderWithStats[]> {
+        const path = this.path + 'stats' + (windowSize ? '?windowSize=' + windowSize : '');
+        const response = await this.api.get<GetCommandersWithStatsResponse>(path);
         return response.commanders;
+    }
+    async getWinrates(slidingWindowSize?: number): Promise<CommanderWithWinrates[]> {
+        const path = this.path + 'winrates' + (slidingWindowSize ? '?slidingWindowSize=' + slidingWindowSize : '');
+        const response = await this.api.get<GetCommanderWinratesResponse>(path);
+        return response.commanderWinrates;
     }
 
     async create(name: string): Promise<string> {

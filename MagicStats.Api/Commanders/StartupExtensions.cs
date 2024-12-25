@@ -14,6 +14,7 @@ internal static class StartupExtensions
 
         endpoints.MapEndpoint<GetCommanders>();
         endpoints.MapEndpoint<GetCommandersWithStats>();
+        endpoints.MapEndpoint<GetCommandersWinrates>();
 
         endpoints.MapEndpoint<CreateCommander>();
         endpoints.MapEndpoint<DeleteCommander>();
