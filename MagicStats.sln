@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicStats.Persistence.EfCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicStats.Api", "MagicStats.Api\MagicStats.Api.csproj", "{933DE7A7-7A3D-4745-8D28-58EA9F57A4F0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicStats.Stats.Domain", "MagicStats.Stats.Domain\MagicStats.Stats.Domain.csproj", "{942A1A82-2B4C-4FFF-9F60-BE32D10A953D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{933DE7A7-7A3D-4745-8D28-58EA9F57A4F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{933DE7A7-7A3D-4745-8D28-58EA9F57A4F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{933DE7A7-7A3D-4745-8D28-58EA9F57A4F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{942A1A82-2B4C-4FFF-9F60-BE32D10A953D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{942A1A82-2B4C-4FFF-9F60-BE32D10A953D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{942A1A82-2B4C-4FFF-9F60-BE32D10A953D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{942A1A82-2B4C-4FFF-9F60-BE32D10A953D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
