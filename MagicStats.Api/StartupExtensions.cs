@@ -2,6 +2,7 @@
 using MagicStats.Api.Games;
 using MagicStats.Api.Home;
 using MagicStats.Api.Players;
+using MagicStats.Api.Pods;
 using MagicStats.Api.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -26,6 +27,7 @@ public static class StartupExtensions
         endpoints.AddCommanderEndpoints();
         endpoints.AddPlayerEndpoints();
         endpoints.AddGameEndpoints();
+        endpoints.AddPodsEndpoints();
 
         return app;
     }
