@@ -1,5 +1,6 @@
 ﻿import {HeaderContext} from "@tanstack/react-table";
 import {FaSort, FaSortDown, FaSortUp} from 'react-icons/fa';
+import './SortableHeader.css';
 
 type SortableHeaderProps = {
     text: string,
