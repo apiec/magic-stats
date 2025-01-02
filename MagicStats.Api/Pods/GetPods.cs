@@ -20,7 +20,7 @@ public class GetPods : IEndpoint
 
     public record PlayerDto(int Id, string Name);
 
-    private record PodsDtoRaw(string PlayerIds, int Games);
+    private record PodsRaw(string PlayerIds, int Games);
 
     private static async Task<Ok<Response>> Handle(StatsDbContext dbContext, CancellationToken ct)
     {
@@ -29,8 +29,9 @@ public class GetPods : IEndpoint
                 pl => pl.Id.ToString(),
                 pl => new PlayerDto(pl.Id, pl.Name),
                 ct);
+
         var pods = await dbContext.Database
-            .SqlQuery<PodsDtoRaw>(
+            .SqlQuery<PodsRaw>(
                 $"""
                  SELECT PlayerIds, COUNT(1) Games
                  FROM (SELECT GROUP_CONCAT(PlayerId, ';') PlayerIds
