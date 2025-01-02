@@ -9,6 +9,7 @@ import GamesTable from "./Games/GamesTable.tsx";
 import GameForm from "./Games/GameForm/GameForm.tsx";
 import Games from "./Games/Games.tsx";
 import HomePage from "./Home/HomePage.tsx";
+import Pods from "./Pods/Pods.tsx";
 
 const router = createBrowserRouter([
     {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
             {
                 path: "players",
                 element: <Players/>,
+            },
+            {
+                path: "pods",
+                element: <Pods/>,
             },
             {
                 path: "games",
