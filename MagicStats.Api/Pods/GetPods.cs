@@ -47,6 +47,7 @@ public class GetPods : IEndpoint
                 var playersInPod = playerIds.Select(id => players[id]).ToArray();
                 return new PodDto(playersInPod, p.Games);
             })
+            .Where(p => p.Players.Count > 1)
             .ToArray();
 
         return TypedResults.Ok(new Response(podDtos));
