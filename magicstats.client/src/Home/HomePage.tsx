@@ -9,7 +9,7 @@ export default function HomePage() {
 
     async function populateStatsData() {
         const api = new Api();
-        const data = await api.get<Stats>('/home/stats');
+        const data = await api.get<Stats>('home/stats');
         setStats(data);
     }
 
