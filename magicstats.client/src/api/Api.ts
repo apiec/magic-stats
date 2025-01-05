@@ -1,13 +1,12 @@
-﻿const baseUrl = "https://localhost:5173/api/";
-
-export default class Api {
+﻿export default class Api {
+    private baseUrl = window.location.origin + '/api/';
     async get<T>(path: string): Promise<T> {
-        const response = await fetch(baseUrl + path);
+        const response = await fetch(this.baseUrl + path);
         return await response.json() as T;
     }
 
     async post<TBody, TResponse>(path: string, body: TBody): Promise<TResponse> {
-        const rawResponse = await fetch(baseUrl + path, {
+        const rawResponse = await fetch(this.baseUrl + path, {
             method: "POST",
             headers: {"Content-Type": "application/json",},
             body: JSON.stringify(body),
@@ -16,7 +15,7 @@ export default class Api {
     }
 
     async postNoResponse<TBody>(path: string, body: TBody) {
-        await fetch(baseUrl + path, {
+        await fetch(this.baseUrl + path, {
             method: "POST",
             headers: {"Content-Type": "application/json",},
             body: JSON.stringify(body),
@@ -24,11 +23,11 @@ export default class Api {
     }
 
     async delete(path: string): Promise<void> {
-        await fetch(baseUrl + path, {method: "DELETE"});
+        await fetch(this.baseUrl + path, {method: "DELETE"});
     }
 
     async put<TBody>(path: string, body: TBody) {
-        await fetch(baseUrl + path, {
+        await fetch(this.baseUrl + path, {
             method: "PUT",
             headers: {"Content-Type": "application/json",},
             body: JSON.stringify(body),
