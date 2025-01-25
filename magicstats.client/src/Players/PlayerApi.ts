@@ -58,14 +58,56 @@ export default class PlayerApi {
         return response.players;
     }
 
-    async getAllWithStats(windowSize: number): Promise<PlayerWithStats[]> {
-        const path = this.path + 'stats' + (windowSize ? '?windowSize=' + windowSize : '');
+    async getAllWithStats(windowSize: number, podSize?: number): Promise<PlayerWithStats[]> {
+        const queryParams = new URLSearchParams();
+        queryParams.append('windowSize', windowSize.toString());
+        if (podSize !== undefined) {
+            queryParams.append('podSize', podSize.toString());
+        }
+        const query = queryParams.size > 0 ? '?' + queryParams.toString() : '';
+
+        const path = this.path + 'stats' + query;
         const response = await this.api.get<GetPlayersWithStatsResponse>(path);
         return response.players;
     }
 
-    async getWinrates(slidingWindowSize?: number): Promise<PlayerWithWinrates[]> {
-        const path = this.path + 'winrates' + (slidingWindowSize ? '?slidingWindowSize=' + slidingWindowSize : '');
+    async getStatsForPod(playerIds: string[], windowSize: number): Promise<PlayerWithStats[]> {
+        const queryParams = new URLSearchParams();
+        queryParams.append('windowSize', windowSize.toString());
+        playerIds.forEach(id => queryParams.append('playerIds', id.toString()));
+        const query = queryParams.size > 0 ? '?' + queryParams.toString() : '';
+
+        const path = this.path + 'stats' + query;
+        const response = await this.api.get<GetPlayersWithStatsResponse>(path);
+        return response.players;
+    }
+
+    async getWinrates(slidingWindowSize?: number, podSize?: number): Promise<PlayerWithWinrates[]> {
+        const queryParams = new URLSearchParams();
+
+        if (slidingWindowSize !== undefined) {
+            queryParams.append('slidingWindowSize', slidingWindowSize.toString());
+        }
+        if (podSize !== undefined) {
+            queryParams.append('podSize', podSize.toString());
+        }
+
+        const query = queryParams.size > 0 ? '?' + queryParams.toString() : '';
+        const path = this.path + 'winrates' + query;
+        const response = await this.api.get<GetPlayerWinratesResponse>(path);
+        return response.playerWinrates;
+    }
+
+    async getWinratesForPod(playerIds: string[], slidingWindowSize?: number): Promise<PlayerWithWinrates[]> {
+        const queryParams = new URLSearchParams();
+
+        if (slidingWindowSize !== undefined) {
+            queryParams.append('slidingWindowSize', slidingWindowSize.toString());
+        }
+        playerIds.forEach(id => queryParams.append('playerIds', id.toString()));
+
+        const query = queryParams.size > 0 ? '?' + queryParams.toString() : '';
+        const path = this.path + 'winrates' + query;
         const response = await this.api.get<GetPlayerWinratesResponse>(path);
         return response.playerWinrates;
     }

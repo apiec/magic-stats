@@ -1,4 +1,4 @@
-﻿import {useEffect, useState} from 'react';
+﻿import {useEffect, useMemo, useState} from 'react';
 import './Players.css'
 import PlayersTable from "./PlayersTable.tsx";
 import PlayerApi, {PlayerWithStats} from "./PlayerApi.ts";
@@ -6,19 +6,25 @@ import ValueDisplay from "../Shared/ValueDisplay.tsx";
 import {useImmer} from 'use-immer';
 import Select from "react-select";
 import WinrateGraph, {DataSeries, DataPoint} from "../Shared/WinrateGraph.tsx";
+import {useLocation} from 'react-router-dom';
 
 export default function Players() {
     const [players, setPlayers] = useImmer<PlayerWithStats[] | undefined>(undefined);
     const [slidingWindowSize, setSlidingWindowSize] = useState<number | undefined>(startingWindowValue);
+    const [podSize, setPodSize] = useState<number | undefined>(startingPodSizeValue);
+    const query = useQuery();
+    const playersFromQuery = query.getAll('playerIds');
     const lastX = slidingWindowSize ?? 10;
 
     useEffect(() => {
         populatePlayerData().then();
-    }, [slidingWindowSize]);
+    }, [slidingWindowSize, podSize, query]);
 
     async function populatePlayerData() {
         const api = new PlayerApi();
-        const players = await api.getAllWithStats(lastX);
+        const players = playersFromQuery.length > 0
+            ? await api.getStatsForPod(playersFromQuery, lastX)
+            : await api.getAllWithStats(lastX, podSize);
         setPlayers(() => players);
     }
 
@@ -42,29 +48,41 @@ export default function Players() {
                 <ValueDisplay title={'Highest WRL' + lastX}
                               values={[highestWinratePlayerLast.name, toPercentage(highestWinrateLast)]}/>
             </section>
-            <div className='sliding-window-pick'>
-                <p>Sliding window:</p>
-                <Select className='black-text' options={options}
-                        value={options.find(o => o.value === slidingWindowSize)}
-                        onChange={(x) => {
-                            setSlidingWindowSize(x?.value);
-                        }}/>
-            </div>
+            <section className='players-controls'>
+                <div>
+                    <p>Sliding window:</p>
+                    <Select className='black-text'
+                            options={slidingWindowOptions}
+                            value={slidingWindowOptions.find(o => o.value === slidingWindowSize)}
+                            onChange={(x) => {
+                                setSlidingWindowSize(x?.value);
+                            }}/>
+                </div>
+                <div>
+                    <p>Pod size:</p>
+                    <Select isDisabled={playersFromQuery.length > 0}
+                            className='black-text'
+                            options={podSizeOptions}
+                            value={podSizeOptions.find(o => o.value === (playersFromQuery.length > 0 ? playersFromQuery.length : podSize))}
+                            onChange={(x) => {
+                                setPodSize(x?.value);
+                            }}/>
+                </div>
+            </section>
             <PlayersTable players={players} lastXWindowSize={lastX}/>
-            <PlayersWinrateGraph slidingWindowSize={slidingWindowSize}/>
+            <PlayersWinrateGraph slidingWindowSize={slidingWindowSize} podSize={podSize} playerIds={playersFromQuery}/>
         </section>
     );
 }
 
-const windowValues = [
-    undefined,
-    5,
-    10,
-    20,
-    50,
-];
+function useQuery() {
+    const {search} = useLocation();
+    return useMemo(() => new URLSearchParams(search), [search]);
+}
 
-const options = windowValues.map(v => {
+const windowValues = [undefined, 5, 10, 20, 50,];
+
+const slidingWindowOptions = windowValues.map(v => {
     return {
         label: v ? v.toString() : 'None',
         value: v,
@@ -72,17 +90,30 @@ const options = windowValues.map(v => {
 });
 const startingWindowValue = undefined;
 
+const podSizeValues = [undefined, 3, 4, 5, 6,];
+
+const podSizeOptions = podSizeValues.map(v => {
+    return {
+        label: v ? v.toString() : 'None',
+        value: v,
+    }
+});
+const startingPodSizeValue = undefined;
 
 type PlayersWinrateGraphProps = {
     slidingWindowSize: number | undefined;
+    podSize: number | undefined;
+    playerIds: string[];
 }
 
-function PlayersWinrateGraph({slidingWindowSize}: PlayersWinrateGraphProps) {
+function PlayersWinrateGraph({slidingWindowSize, podSize, playerIds}: PlayersWinrateGraphProps) {
     const [data, setData] = useState<DataSeries[]>([]);
 
     async function populateData() {
         const api = new PlayerApi();
-        const playerWinrates = await api.getWinrates(slidingWindowSize);
+        const playerWinrates = playerIds.length > 0
+            ? await api.getWinratesForPod(playerIds, slidingWindowSize)
+            : await api.getWinrates(slidingWindowSize, podSize);
         const data = playerWinrates.map(p => {
             return {
                 name: p.name,
@@ -99,7 +130,7 @@ function PlayersWinrateGraph({slidingWindowSize}: PlayersWinrateGraphProps) {
 
     useEffect(() => {
         populateData().then();
-    }, [slidingWindowSize]);
+    }, [slidingWindowSize, podSize, playerIds]);
 
     return (
         <WinrateGraph data={data} slidingWindowSize={slidingWindowSize}/>

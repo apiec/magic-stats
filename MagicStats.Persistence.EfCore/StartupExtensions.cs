@@ -7,7 +7,9 @@ namespace MagicStats.Persistence.EfCore;
 
 public static class StartupExtensions
 {
-    public static IServiceCollection AddPersistenceEfCore(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddPersistenceEfCore(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("sqlite");
         services.AddDbContext<StatsDbContext>(options => options.UseSqlite(connectionString));

@@ -1,6 +1,7 @@
 ﻿using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
 using MagicStats.Persistence.EfCore.Entities;
+using MagicStats.Stats.Domain;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -17,64 +18,85 @@ public class GetPlayersWinrates : IEndpoint
 
     public record Response(IReadOnlyCollection<PlayerWinratesOverTime> PlayerWinrates);
 
-    public record PlayerWinratesOverTime(
-        int Id,
-        string Name,
-        List<DataPoint> DataPoints);
-
-    public record DataPoint(
-        DateOnly Date,
-        float? Winrate);
-
-    private static async Task<Ok<Response>> Handle(
+    private static async Task<Results<Ok<Response>, BadRequest>> Handle(
         [FromQuery] int? slidingWindowSize,
+        [FromQuery] int? podSize,
+        [FromQuery] int[]? playerIds,
         StatsDbContext dbContext,
         CancellationToken ct)
+    {
+        if (podSize is not null && playerIds!.Length != 0)
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var dataProvider = new PlayerWinratesDataProvider(dbContext, ct);
+        var (games, players) = (podSize, playerIds!.Length) switch
+        {
+            (null, 0) => await dataProvider.GetAllData(),
+            (not null, _) => await dataProvider.GetByPodSize(podSize.Value),
+            (_, not 0) => await dataProvider.GetByPlayers(playerIds),
+        };
+
+        slidingWindowSize ??= 10;
+
+        var calculator = new PlayerWinratesCalculator(games, players);
+        var playerResults = calculator.Calculate(slidingWindowSize.Value).ToArray();
+
+        var response = new Response(playerResults);
+        return TypedResults.Ok(response);
+    }
+}
+
+internal class PlayerWinratesDataProvider(StatsDbContext dbContext, CancellationToken ct)
+{
+    public async Task<(Game[], Player[])> GetAllData()
     {
         var games = await dbContext.Games
             .Include(g => g.Participants)
             .ThenInclude(p => p.Player)
-            .ToListAsync(ct);
+            .ToArrayAsync(ct);
 
-        var window = slidingWindowSize ?? games.Count;
-        var players = await dbContext.Players
-            .Include(p => p.Participated)
-            .ThenInclude(p => p.Game)
-            .ToListAsync(ct);
+        var players = games
+            .SelectMany(p => p.Participants)
+            .Select(p => p.Player)
+            .ToHashSet()
+            .ToArray();
+        return (games, players);
+    }
 
-        var meetings = games.GroupBy(g => g.PlayedAt.Date).OrderBy(g => g.Key).ToArray();
-        var playerResults = players.ToDictionary(
-            p => p.Id,
-            p => new PlayerWinratesOverTime(p.Id, p.Name, new List<DataPoint>(meetings.Length)));
-        var playerRecords = players.ToDictionary(p => p.Id, _ => new Queue<bool>(window));
+    public async Task<(Game[], Player[])> GetByPodSize(int podSize)
+    {
+        var games = await dbContext.Games
+            .Include(g => g.Participants)
+            .ThenInclude(p => p.Player)
+            .Where(g => g.Participants.Count == podSize)
+            .ToArrayAsync(ct);
 
-        foreach (var meeting in meetings)
-        {
-            foreach (var game in meeting)
-            {
-                foreach (var participant in game.Participants)
-                {
-                    var record = playerRecords[participant.PlayerId];
-                    record.Enqueue(participant.IsWinner());
-                    while (record.Count > window)
-                    {
-                        record.Dequeue();
-                    }
-                }
-            }
+        var players = games
+            .SelectMany(p => p.Participants)
+            .Select(p => p.Player)
+            .ToHashSet()
+            .ToArray();
 
-            var meetingDate = DateOnly.FromDateTime(meeting.Key.Date);
-            foreach (var (playerId, record) in playerRecords)
-            {
-                var winCount = record.Count(isWin => isWin);
-                if (record.Count > 0)
-                {
-                    playerResults[playerId].DataPoints.Add(new DataPoint(meetingDate, (float)winCount / record.Count));
-                }
-            }
-        }
+        return (games, players);
+    }
 
-        var response = new Response(playerResults.Values.Where(x => x.DataPoints.Count > 0).ToArray());
-        return TypedResults.Ok(response);
+    public async Task<(Game[], Player[])> GetByPlayers(IReadOnlyCollection<int> playerIds)
+    {
+        var games = await dbContext.Games
+            .Include(g => g.Participants)
+            .ThenInclude(p => p.Player)
+            .Where(g => g.Participants.Count == playerIds.Count &&
+                        g.Participants.All(p => playerIds.Contains(p.PlayerId)))
+            .ToArrayAsync(ct);
+
+        var players = games
+            .SelectMany(p => p.Participants)
+            .Select(p => p.Player)
+            .ToHashSet()
+            .ToArray();
+
+        return (games, players);
     }
 }

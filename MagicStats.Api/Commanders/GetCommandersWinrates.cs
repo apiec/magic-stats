@@ -1,5 +1,7 @@
 ﻿using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
+using MagicStats.Persistence.EfCore.Entities;
+using MagicStats.Stats.Domain;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -16,65 +18,59 @@ public class GetCommandersWinrates : IEndpoint
 
     public record Response(IReadOnlyCollection<CommanderWinratesOverTime> CommanderWinrates);
 
-    public record CommanderWinratesOverTime(
-        int Id,
-        string Name,
-        List<DataPoint> DataPoints);
-
-    public record DataPoint(
-        DateOnly Date,
-        float? Winrate);
-
     private static async Task<Ok<Response>> Handle(
         [FromQuery] int? slidingWindowSize,
+        [FromQuery] int? podSize,
         StatsDbContext dbContext,
         CancellationToken ct)
     {
-        var games = await dbContext.Games
-            .Include(g => g.Participants)
-            .ThenInclude(p => p.Commander)
-            .ToListAsync(ct);
+        var dataProvider = new CommanderWinratesDataProvider(dbContext, ct);
+        var (games, commanders) = podSize is null
+            ? await dataProvider.GetAllData()
+            : await dataProvider.GetByPodSize(podSize.Value);
 
-        var window = slidingWindowSize ?? games.Count;
-        var commanders = await dbContext.Commanders
-            .Include(p => p.Participated)
-            .ThenInclude(p => p.Game)
-            .ToListAsync(ct);
+        slidingWindowSize ??= 10;
 
-        var meetings = games.GroupBy(g => g.PlayedAt.Date).OrderBy(g => g.Key).ToArray();
-        var commanderResults = commanders.ToDictionary(
-            c => c.Id,
-            c => new CommanderWinratesOverTime(c.Id, c.Name, new List<DataPoint>(meetings.Length)));
-        var commanderRecords = commanders.ToDictionary(p => p.Id, _ => new Queue<bool>(window));
+        var calculator = new CommanderWinratesCalculator(games, commanders);
+        var commanderResults = calculator.Calculate(slidingWindowSize.Value).ToArray();
 
-        foreach (var meeting in meetings)
+        var response = new Response(commanderResults);
+        return TypedResults.Ok(response);
+    }
+
+    private class CommanderWinratesDataProvider(StatsDbContext dbContext, CancellationToken ct)
+    {
+        public async Task<(Game[], Commander[])> GetAllData()
         {
-            foreach (var game in meeting)
-            {
-                foreach (var participant in game.Participants)
-                {
-                    var record = commanderRecords[participant.CommanderId];
-                    record.Enqueue(participant.IsWinner());
-                    while (record.Count > window)
-                    {
-                        record.Dequeue();
-                    }
-                }
-            }
+            var games = await dbContext.Games
+                .Include(g => g.Participants)
+                .ThenInclude(p => p.Commander)
+                .ToArrayAsync(ct);
 
-            var meetingDate = DateOnly.FromDateTime(meeting.Key.Date);
-            foreach (var (playerId, record) in commanderRecords)
-            {
-                var winCount = record.Count(isWin => isWin);
-                if (record.Count > 0)
-                {
-                    commanderResults[playerId]
-                        .DataPoints.Add(new DataPoint(meetingDate, (float)winCount / record.Count));
-                }
-            }
+            var commanders = games
+                .SelectMany(p => p.Participants)
+                .Select(p => p.Commander)
+                .ToHashSet()
+                .ToArray();
+
+            return (games, commanders);
         }
 
-        var response = new Response(commanderResults.Values.Where(x => x.DataPoints.Count > 0).ToArray());
-        return TypedResults.Ok(response);
+        public async Task<(Game[], Commander[])> GetByPodSize(int podSize)
+        {
+            var games = await dbContext.Games
+                .Include(g => g.Participants)
+                .ThenInclude(p => p.Commander)
+                .Where(g => g.Participants.Count == podSize)
+                .ToArrayAsync(ct);
+
+            var commanders = games
+                .SelectMany(p => p.Participants)
+                .Select(p => p.Commander)
+                .ToHashSet()
+                .ToArray();
+
+            return (games, commanders);
+        }
     }
 }

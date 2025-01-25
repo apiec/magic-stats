@@ -25,23 +25,16 @@ public class GetCommandersWithStats : IEndpoint
 
     private static async Task<Ok<Response>> Handle(
         [FromQuery] int? windowSize,
+        [FromQuery] int? podSize,
         StatsDbContext dbContext,
         CancellationToken ct)
     {
         windowSize ??= 10;
-        var query = dbContext.Commanders
-            .AsNoTracking()
-            .Select(commander => new RawStats(
-                commander.Id,
-                commander.Name,
-                commander.Participated.Count(),
-                commander.Participated.Count(part => part.Placement == 0),
-                commander.Participated
-                    .OrderByDescending(part => part.Game.PlayedAt)
-                    .Take(windowSize.Value)
-                    .Count(part => part.Placement == 0)));
 
-        var rawStats = await query.ToListAsync(ct);
+        var statsProvider = new CommanderStatsProvider(dbContext);
+        var rawStats = podSize is null
+            ? await statsProvider.GetAll(windowSize.Value, ct)
+            : await statsProvider.GetByPodSize(podSize.Value, windowSize.Value, ct);
 
         var dto = rawStats.Select(p =>
                 new CommanderWithStatsDto(
@@ -56,5 +49,50 @@ public class GetCommandersWithStats : IEndpoint
 
         var response = new Response(dto);
         return TypedResults.Ok(response);
+    }
+
+    private class CommanderStatsProvider(StatsDbContext dbContext)
+    {
+        public async Task<RawStats[]> GetAll(int windowSize, CancellationToken ct)
+        {
+            return await dbContext.Commanders
+                .AsNoTracking()
+                .Select(commander => new RawStats(
+                    commander.Id,
+                    commander.Name,
+                    commander.Participated.Count,
+                    commander.Participated.Count(p => p.Placement == 0),
+                    commander.Participated
+                        .OrderByDescending(p => p.Game.PlayedAt)
+                        .Take(windowSize)
+                        .Count(p => p.Placement == 0)))
+                .ToArrayAsync(ct);
+        }
+
+        public async Task<RawStats[]> GetByPodSize(int podSize, int windowSize, CancellationToken ct)
+        {
+            var games = await dbContext.Games
+                .Where(g => g.Participants.Count == podSize)
+                .Include(g => g.Participants)
+                .ThenInclude(p => p.Commander)
+                .ToArrayAsync(ct);
+
+            var commanders = games
+                .SelectMany(g => g.Participants)
+                .Select(p => p.Commander)
+                .ToHashSet();
+
+            return commanders
+                .Select(commander => new RawStats(
+                    commander.Id,
+                    commander.Name,
+                    commander.Participated.Count,
+                    commander.Participated.Count(p => p.Placement == 0),
+                    commander.Participated
+                        .OrderByDescending(p => p.Game.PlayedAt)
+                        .Take(windowSize)
+                        .Count(p => p.Placement == 0)))
+                .ToArray();
+        }
     }
 }
