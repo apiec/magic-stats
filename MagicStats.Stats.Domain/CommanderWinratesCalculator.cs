@@ -2,29 +2,29 @@
 
 namespace MagicStats.Stats.Domain;
 
-public record PlayerWinratesOverTime(
+public record CommanderWinratesOverTime(
     int Id,
     string Name,
     List<DataPoint> DataPoints);
 
-public class PlayerWinratesCalculator(IReadOnlyCollection<Game> games, IReadOnlyCollection<Player> players)
+public class CommanderWinratesCalculator(IReadOnlyCollection<Game> games, IReadOnlyCollection<Commander> commanders)
 {
-    public IEnumerable<PlayerWinratesOverTime> Calculate(int slidingWindowSize)
+    public IEnumerable<CommanderWinratesOverTime> Calculate(int slidingWindowSize)
     {
         var meetings = games.GroupBy(g => g.PlayedAt.Date).OrderBy(g => g.Key).ToArray();
 
-        var playerResults = players.ToDictionary(
+        var commanderResults = commanders.ToDictionary(
             p => p.Id,
-            p => new PlayerWinratesOverTime(p.Id, p.Name, new List<DataPoint>(meetings.Length)));
+            p => new CommanderWinratesOverTime(p.Id, p.Name, new List<DataPoint>(meetings.Length)));
 
-        var playerRecords = players.ToDictionary(p => p.Id, _ => new Queue<bool>(slidingWindowSize));
+        var commanderRecords = commanders.ToDictionary(p => p.Id, _ => new Queue<bool>(slidingWindowSize));
         foreach (var meeting in meetings)
         {
             foreach (var game in meeting)
             {
                 foreach (var participant in game.Participants)
                 {
-                    var record = playerRecords[participant.PlayerId];
+                    var record = commanderRecords[participant.CommanderId];
                     record.Enqueue(participant.IsWinner());
                     while (record.Count > slidingWindowSize)
                     {
@@ -34,16 +34,16 @@ public class PlayerWinratesCalculator(IReadOnlyCollection<Game> games, IReadOnly
             }
 
             var meetingDate = DateOnly.FromDateTime(meeting.Key.Date);
-            foreach (var (playerId, record) in playerRecords)
+            foreach (var (commanderId, record) in commanderRecords)
             {
                 if (record.Count == 0)
                     continue;
 
                 var winCount = record.Count(isWin => isWin);
-                playerResults[playerId].DataPoints.Add(new DataPoint(meetingDate, (float)winCount / record.Count));
+                commanderResults[commanderId].DataPoints.Add(new DataPoint(meetingDate, (float)winCount / record.Count));
             }
         }
 
-        return playerResults.Values;
+        return commanderResults.Values;
     }
 }

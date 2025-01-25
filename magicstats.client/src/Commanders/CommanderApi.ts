@@ -56,13 +56,31 @@ export default class CommanderApi {
         return response.commanders;
     }
 
-    async getAllWithStats(windowSize: number): Promise<CommanderWithStats[]> {
-        const path = this.path + 'stats' + (windowSize ? '?windowSize=' + windowSize : '');
+    async getAllWithStats(windowSize: number, podSize?: number): Promise<CommanderWithStats[]> {
+        const queryParams = new URLSearchParams();
+        queryParams.append('windowSize', windowSize.toString());
+        if (podSize !== undefined) {
+            queryParams.append('podSize', podSize.toString());
+        }
+        const query = queryParams.size > 0 ? '?' + queryParams.toString() : '';
+
+        const path = this.path + 'stats' + query;
         const response = await this.api.get<GetCommandersWithStatsResponse>(path);
         return response.commanders;
     }
-    async getWinrates(slidingWindowSize?: number): Promise<CommanderWithWinrates[]> {
-        const path = this.path + 'winrates' + (slidingWindowSize ? '?slidingWindowSize=' + slidingWindowSize : '');
+
+    async getWinrates(slidingWindowSize?: number, podSize?: number): Promise<CommanderWithWinrates[]> {
+        const queryParams = new URLSearchParams();
+
+        if (slidingWindowSize !== undefined) {
+            queryParams.append('slidingWindowSize', slidingWindowSize.toString());
+        }
+        if (podSize !== undefined) {
+            queryParams.append('podSize', podSize.toString());
+        }
+
+        const query = queryParams.size > 0 ? '?' + queryParams.toString() : '';
+        const path = this.path + 'winrates' + query;
         const response = await this.api.get<GetCommanderWinratesResponse>(path);
         return response.commanderWinrates;
     }

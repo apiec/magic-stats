@@ -10,15 +10,16 @@ import Select from "react-select";
 export default function Commanders() {
     const [commanders, setCommanders] = useImmer<CommanderWithStats[] | undefined>(undefined);
     const [slidingWindowSize, setSlidingWindowSize] = useState<number | undefined>(startingWindowValue);
+    const [podSize, setPodSize] = useState<number | undefined>(startingPodSizeValue);
     const lastX = slidingWindowSize ?? 10;
 
     useEffect(() => {
         populateCommanderData().then();
-    }, [slidingWindowSize]);
+    }, [slidingWindowSize, podSize]);
 
     async function populateCommanderData() {
         const api = new CommanderApi();
-        const commanders = await api.getAllWithStats(lastX);
+        const commanders = await api.getAllWithStats(lastX, podSize);
         setCommanders(() => commanders);
     }
 
@@ -42,29 +43,35 @@ export default function Commanders() {
                 <ValueDisplay title={'Highest WRL' + lastX}
                               values={[highestWinrateCommanderLast.name, toPercentage(highestWinrateLast)]}/>
             </section>
-            <div className='sliding-window-pick'>
-                <p>Sliding window:</p>
-                <Select className='black-text' options={options}
-                        value={options.find(o => o.value === slidingWindowSize)}
-                        onChange={(x) => {
-                            setSlidingWindowSize(x?.value);
-                        }}/>
-            </div>
+            <section className='players-controls'>
+                <div>
+                    <p>Sliding window:</p>
+                    <Select className='black-text'
+                            options={slidingWindowOptions}
+                            value={slidingWindowOptions.find(o => o.value === slidingWindowSize)}
+                            onChange={(x) => {
+                                setSlidingWindowSize(x?.value);
+                            }}/>
+                </div>
+                <div>
+                    <p>Pod size:</p>
+                    <Select className='black-text'
+                            options={podSizeOptions}
+                            value={podSizeOptions.find(o => o.value === podSize)}
+                            onChange={(x) => {
+                                setPodSize(x?.value);
+                            }}/>
+                </div>
+            </section>
             <CommandersTable commanders={commanders} lastXWindowSize={lastX}/>
-            <CommandersWinrateGraph slidingWindowSize={slidingWindowSize}/>
+            <CommandersWinrateGraph slidingWindowSize={slidingWindowSize} podSize={podSize}/>
         </section>
     );
 }
 
-const windowValues = [
-    undefined,
-    5,
-    10,
-    20,
-    50,
-];
+const windowValues = [undefined, 5, 10, 20, 50,];
 
-const options = windowValues.map(v => {
+const slidingWindowOptions = windowValues.map(v => {
     return {
         label: v ? v.toString() : 'None',
         value: v,
@@ -72,17 +79,28 @@ const options = windowValues.map(v => {
 });
 const startingWindowValue = undefined;
 
+const podSizeValues = [undefined, 3, 4, 5, 6,];
+
+const podSizeOptions = podSizeValues.map(v => {
+    return {
+        label: v ? v.toString() : 'None',
+        value: v,
+    }
+});
+const startingPodSizeValue = undefined;
+
 
 type CommandersWinrateGraphProps = {
     slidingWindowSize: number | undefined;
+    podSize: number | undefined;
 }
 
-function CommandersWinrateGraph({slidingWindowSize}: CommandersWinrateGraphProps) {
+function CommandersWinrateGraph({slidingWindowSize, podSize}: CommandersWinrateGraphProps) {
     const [data, setData] = useState<DataSeries[]>([]);
 
     async function populateData() {
         const api = new CommanderApi();
-        const commanderWinrates = await api.getWinrates(slidingWindowSize);
+        const commanderWinrates = await api.getWinrates(slidingWindowSize, podSize);
         const data = commanderWinrates.map(p => {
             return {
                 name: p.name,
@@ -99,7 +117,7 @@ function CommandersWinrateGraph({slidingWindowSize}: CommandersWinrateGraphProps
 
     useEffect(() => {
         populateData().then();
-    }, [slidingWindowSize]);
+    }, [slidingWindowSize, podSize]);
 
     return (
         <WinrateGraph data={data} slidingWindowSize={slidingWindowSize}/>

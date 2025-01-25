@@ -57,10 +57,11 @@ internal class PlayerWinratesDataProvider(StatsDbContext dbContext, Cancellation
             .ThenInclude(p => p.Player)
             .ToArrayAsync(ct);
 
-        var players = await dbContext.Players
-            .Include(p => p.Participated)
-            .ThenInclude(p => p.Game)
-            .ToArrayAsync(ct);
+        var players = games
+            .SelectMany(p => p.Participants)
+            .Select(p => p.Player)
+            .ToHashSet()
+            .ToArray();
         return (games, players);
     }
 
@@ -72,10 +73,11 @@ internal class PlayerWinratesDataProvider(StatsDbContext dbContext, Cancellation
             .Where(g => g.Participants.Count == podSize)
             .ToArrayAsync(ct);
 
-        var players = await dbContext.Players
-            .Include(p => p.Participated)
-            .ThenInclude(p => p.Game)
-            .ToArrayAsync(ct);
+        var players = games
+            .SelectMany(p => p.Participants)
+            .Select(p => p.Player)
+            .ToHashSet()
+            .ToArray();
 
         return (games, players);
     }
@@ -89,11 +91,11 @@ internal class PlayerWinratesDataProvider(StatsDbContext dbContext, Cancellation
                         g.Participants.All(p => playerIds.Contains(p.PlayerId)))
             .ToArrayAsync(ct);
 
-        var players = await dbContext.Players
-            .Include(p => p.Participated)
-            .ThenInclude(p => p.Game)
-            .Where(p => playerIds.Contains(p.Id))
-            .ToArrayAsync(ct);
+        var players = games
+            .SelectMany(p => p.Participants)
+            .Select(p => p.Player)
+            .ToHashSet()
+            .ToArray();
 
         return (games, players);
     }
