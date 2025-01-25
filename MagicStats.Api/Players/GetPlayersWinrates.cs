@@ -30,7 +30,7 @@ public class GetPlayersWinrates : IEndpoint
             return TypedResults.BadRequest();
         }
 
-        var dataProvider = new DataProvider(dbContext, ct);
+        var dataProvider = new PlayerWinratesDataProvider(dbContext, ct);
         var (games, players) = (podSize, playerIds!.Length) switch
         {
             (null, 0) => await dataProvider.GetAllData(),
@@ -48,7 +48,7 @@ public class GetPlayersWinrates : IEndpoint
     }
 }
 
-internal class DataProvider(StatsDbContext dbContext, CancellationToken ct)
+internal class PlayerWinratesDataProvider(StatsDbContext dbContext, CancellationToken ct)
 {
     public async Task<(Game[], Player[])> GetAllData()
     {

@@ -1,5 +1,6 @@
 ﻿using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
+using MagicStats.Persistence.EfCore.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -22,25 +23,26 @@ public class GetPlayersWithStats : IEndpoint
 
     private record RawStats(int Id, string Name, int Games, int Wins, int WinsLastX);
 
-    private static async Task<Ok<Response>> Handle(
+    private static async Task<Results<Ok<Response>, BadRequest>> Handle(
         [FromQuery] int? windowSize,
+        [FromQuery] int? podSize,
+        [FromQuery] int[]? playerIds,
         StatsDbContext dbContext,
         CancellationToken ct)
     {
         windowSize ??= 10;
-        var query = dbContext.Players
-            .AsNoTracking()
-            .Select(player => new RawStats(
-                player.Id,
-                player.Name,
-                player.Participated.Count(),
-                player.Participated.Count(part => part.Placement == 0),
-                player.Participated
-                    .OrderByDescending(part => part.Game.PlayedAt)
-                    .Take(windowSize.Value)
-                    .Count(part => part.Placement == 0)));
+        if (podSize is not null && playerIds!.Length != 0)
+        {
+            return TypedResults.BadRequest();
+        }
 
-        var rawStats = await query.ToListAsync(ct);
+        var statsProvider = new PlayerStatsProvider(dbContext);
+        var rawStats = (podSize, playerIds!.Length) switch
+        {
+            (null, 0) => await statsProvider.GetAll(windowSize.Value, ct),
+            (not null, _) => await statsProvider.GetByPodSize(podSize.Value, windowSize.Value, ct),
+            (_, not 0) => await statsProvider.GetByPlayerIds(playerIds, windowSize.Value, ct),
+        };
 
         var dto = rawStats.Select(p =>
                 new PlayerWithStatsDto(
@@ -55,5 +57,80 @@ public class GetPlayersWithStats : IEndpoint
 
         var response = new Response(dto);
         return TypedResults.Ok(response);
+    }
+
+    private class PlayerStatsProvider(StatsDbContext dbContext)
+    {
+        public async Task<RawStats[]> GetAll(int windowSize, CancellationToken ct)
+        {
+            return await dbContext.Players
+                .AsNoTracking()
+                .Select(player => new RawStats(
+                    player.Id,
+                    player.Name,
+                    player.Participated.Count,
+                    player.Participated.Count(p => p.Placement == 0),
+                    player.Participated
+                        .OrderByDescending(p => p.Game.PlayedAt)
+                        .Take(windowSize)
+                        .Count(p => p.Placement == 0)))
+                .ToArrayAsync(ct);
+        }
+
+        public async Task<RawStats[]> GetByPodSize(int podSize, int windowSize, CancellationToken ct)
+        {
+            var games = await dbContext.Games
+                .Where(g => g.Participants.Count == podSize)
+                .Include(g => g.Participants)
+                .ThenInclude(p => p.Player)
+                .ToArrayAsync(ct);
+
+            var players = games
+                .SelectMany(g => g.Participants)
+                .Select(p => p.Player)
+                .ToHashSet();
+
+            return players
+                .Select(player => new RawStats(
+                    player.Id,
+                    player.Name,
+                    player.Participated.Count,
+                    player.Participated.Count(p => p.Placement == 0),
+                    player.Participated
+                        .OrderByDescending(p => p.Game.PlayedAt)
+                        .Take(windowSize)
+                        .Count(p => p.Placement == 0)))
+                .ToArray();
+        }
+
+        public async Task<RawStats[]> GetByPlayerIds(
+            IReadOnlyCollection<int> playerIds,
+            int windowSize,
+            CancellationToken ct)
+        {
+            var games = await dbContext.Games
+                .Where(g => g.Participants.Count == playerIds.Count &&
+                            g.Participants.All(p => playerIds.Contains(p.PlayerId)))
+                .Include(g => g.Participants)
+                .ThenInclude(p => p.Player)
+                .ToArrayAsync(ct);
+
+            var players = games
+                .SelectMany(g => g.Participants)
+                .Select(p => p.Player)
+                .ToHashSet();
+
+            return players
+                .Select(player => new RawStats(
+                    player.Id,
+                    player.Name,
+                    player.Participated.Count,
+                    player.Participated.Count(p => p.Placement == 0),
+                    player.Participated
+                        .OrderByDescending(p => p.Game.PlayedAt)
+                        .Take(windowSize)
+                        .Count(p => p.Placement == 0)))
+                .ToArray();
+        }
     }
 }

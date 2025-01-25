@@ -10,11 +10,24 @@
     color: black;
 }
 
-.sliding-window-pick {
+.players-controls {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 10px;
+    justify-items: flex-start;
+    gap: 80px;
+}
+
+.players-controls > * {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+
+.players-controls > * > * {
+    align-self: flex-start;
+    margin: 0;
 }
 
 .players-section-values {

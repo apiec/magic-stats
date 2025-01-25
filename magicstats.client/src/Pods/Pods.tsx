@@ -1,4 +1,5 @@
 ﻿import {
+    CellContext,
     createColumnHelper,
     flexRender,
     getCoreRowModel,
@@ -10,6 +11,7 @@ import PodApi, {Pod} from "./PodApi.ts";
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import {useImmer} from "use-immer";
 import {useEffect, useState} from "react";
+import {Link} from "react-router-dom";
 
 export default function Pods() {
     const [pods, setPods] = useState<Pod[]>([])
@@ -29,6 +31,7 @@ export default function Pods() {
         </section>
     );
 }
+
 type PodsTableProps = {
     pods: Pod[],
 }
@@ -99,10 +102,23 @@ const columns = [
     columnHelper.display({
         id: 'players',
         header: 'Players',
-        cell: ctx => <p>{ctx.row.original.players.map(p => p.name).sort().join(', ')}</p>
+        cell: ctx => <PodLink ctx={ctx}/>
     }),
     columnHelper.accessor('games', {
         id: 'games',
         header: ctx => <SortableHeader text='Games' context={ctx}/>,
     }),
 ];
+
+type PodLinkProps = {
+    ctx: CellContext<Pod, unknown>
+}
+
+function PodLink({ctx}: PodLinkProps) {
+    const playerNames = ctx.row.original.players.map(p => p.name).sort().join(', ');
+    const queryParams = new URLSearchParams();
+    ctx.row.original.players.forEach(p => queryParams.append('playerIds', p.id.toString()));
+    return (
+        <Link to={"/players" + '?' + queryParams.toString()}>{playerNames}</Link>
+    );
+}
