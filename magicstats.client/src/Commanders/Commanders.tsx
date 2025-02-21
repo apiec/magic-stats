@@ -6,16 +6,18 @@ import CommandersTable from "./CommandersTable.tsx";
 import WinrateGraph, {DataPoint, DataSeries} from "../Shared/WinrateGraph.tsx";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
 import Select from "react-select";
+import CommanderForm from "./CommanderForm.tsx";
 
 export default function Commanders() {
     const [commanders, setCommanders] = useImmer<CommanderWithStats[] | undefined>(undefined);
     const [slidingWindowSize, setSlidingWindowSize] = useState<number | undefined>(startingWindowValue);
     const [podSize, setPodSize] = useState<number | undefined>(startingPodSizeValue);
+    const [rerender, setRerender] = useState<number>(0);
     const lastX = slidingWindowSize ?? 10;
 
     useEffect(() => {
         populateCommanderData().then();
-    }, [slidingWindowSize, podSize]);
+    }, [slidingWindowSize, podSize, rerender]);
 
     async function populateCommanderData() {
         const api = new CommanderApi();
@@ -61,6 +63,15 @@ export default function Commanders() {
                             onChange={(x) => {
                                 setPodSize(x?.value);
                             }}/>
+                </div>
+                <div>
+                    <p>Add a new commander:</p>
+                    <CommanderForm onSubmit={c => {
+                        const api = new CommanderApi();
+                        api.create(c.name).then(_ => {
+                            setRerender(rerender + 1);
+                        });
+                    }}/>
                 </div>
             </section>
             <CommandersTable commanders={commanders} lastXWindowSize={lastX}/>

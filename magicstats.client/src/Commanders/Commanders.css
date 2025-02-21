@@ -1,4 +1,23 @@
-﻿.commanders-section {
+﻿.commander-form {
+    display: flex;
+    flex-direction: row;
+    align-items: start;
+    justify-items: center;
+}
+
+.commander-form > * {
+    width: 100%;
+    height: 30px;
+}
+
+.commander-form > button {
+    width: fit-content;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 1.5rem;
+}
+
+.commanders-section {
     display: flex;
     flex-direction: column;
     align-items: center;
