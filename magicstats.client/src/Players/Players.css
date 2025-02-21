@@ -1,4 +1,23 @@
-﻿.players-section {
+﻿.player-form {
+    display: flex;
+    flex-direction: row;
+    align-items: start;
+    justify-items: center;
+}
+
+.player-form > * {
+    width: 100%;
+    height: 30px;
+}
+
+.player-form > button {
+    width: fit-content;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 1.5rem;
+}
+
+.players-section {
     display: flex;
     flex-direction: column;
     align-items: center;

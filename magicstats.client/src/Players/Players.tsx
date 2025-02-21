@@ -7,18 +7,20 @@ import {useImmer} from 'use-immer';
 import Select from "react-select";
 import WinrateGraph, {DataSeries, DataPoint} from "../Shared/WinrateGraph.tsx";
 import {useLocation} from 'react-router-dom';
+import PlayerForm from "./PlayerForm.tsx";
 
 export default function Players() {
     const [players, setPlayers] = useImmer<PlayerWithStats[] | undefined>(undefined);
     const [slidingWindowSize, setSlidingWindowSize] = useState<number | undefined>(startingWindowValue);
     const [podSize, setPodSize] = useState<number | undefined>(startingPodSizeValue);
+    const [rerender, setRerender] = useState<number>(0);
     const query = useQuery();
     const playersFromQuery = query.getAll('playerIds');
     const lastX = slidingWindowSize ?? 10;
 
     useEffect(() => {
         populatePlayerData().then();
-    }, [slidingWindowSize, podSize, query]);
+    }, [slidingWindowSize, podSize, query, rerender]);
 
     async function populatePlayerData() {
         const api = new PlayerApi();
@@ -67,6 +69,15 @@ export default function Players() {
                             onChange={(x) => {
                                 setPodSize(x?.value);
                             }}/>
+                </div>
+                <div>
+                    <p>Add a new player:</p>
+                    <PlayerForm onSubmit={p => {
+                        const api = new PlayerApi();
+                        api.create(p.name).then(_ => {
+                            setRerender(rerender + 1);
+                        });
+                    }}/>
                 </div>
             </section>
             <PlayersTable players={players} lastXWindowSize={lastX}/>
