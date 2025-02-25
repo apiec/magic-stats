@@ -1,7 +1,15 @@
-﻿import {CommanderWithStats} from "./CommanderApi.ts";
+﻿import CommanderApi, {CommanderWithStats} from "./CommanderApi.ts";
 import SortableHeader from "../Shared/SortableHeader.tsx";
-import { useImmer } from "use-immer";
-import {createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, TableState, useReactTable } from "@tanstack/react-table";
+import {useImmer} from "use-immer";
+import {
+    createColumnHelper,
+    flexRender,
+    getCoreRowModel,
+    getSortedRowModel,
+    TableState,
+    useReactTable
+} from "@tanstack/react-table";
+import {FaTrash} from "react-icons/fa";
 
 type CommanderTableProps = {
     commanders: CommanderWithStats[],
@@ -16,8 +24,8 @@ export default function CommandersTable({commanders}: CommanderTableProps) {
         initialState: {
             sorting: [
                 {
-                    id: 'name',
-                    desc: false,
+                    id: 'stats.winrate',
+                    desc: true,
                 }
             ],
         },
@@ -89,9 +97,28 @@ const columns = [
         header: ctx => <SortableHeader text='WRLX' context={ctx}/>,
         cell: props => toPercentage(props.row.original.stats.winrateLastX)
     }),
+    columnHelper.display({
+        id: 'delete',
+        header: 'Delete',
+        cell: props => <DeleteCommanderButton commanderId={props.row.original.id}/>,
+    })
 ];
+
+type DeleteCommanderButtonProps = {
+    commanderId: string,
+}
+
+function DeleteCommanderButton({commanderId}: DeleteCommanderButtonProps) {
+    return (
+        <FaTrash className='button-like' onClick={(e) => {
+            e.stopPropagation();
+            const api = new CommanderApi();
+            api.delete(commanderId)
+                .then(() => window.location.reload());
+        }}/>
+    );
+}
 
 function toPercentage(num: number): string {
     return (100 * num).toFixed(0);
 }
-

@@ -10,6 +10,8 @@ import {
 import {PlayerWithStats} from './PlayerApi';
 import {useImmer} from 'use-immer';
 import SortableHeader from "../Shared/SortableHeader.tsx";
+import PlayerApi from "../Players/PlayerApi.ts";
+import {FaTrash} from 'react-icons/fa';
 
 type PlayersTableProps = {
     players: PlayerWithStats[],
@@ -25,8 +27,8 @@ export default function PlayersTable({players}: PlayersTableProps) {
         initialState: {
             sorting: [
                 {
-                    id: 'name',
-                    desc: false,
+                    id: 'stats.winrate',
+                    desc: true,
                 }
             ],
         },
@@ -96,7 +98,27 @@ const columns = [
         header: ctx => <SortableHeader text={'WRLX'} context={ctx}/>,
         cell: props => toPercentage(props.row.original.stats.winrateLastX)
     }),
+    columnHelper.display({
+        id: 'delete',
+        header: 'Delete',
+        cell: props => <DeletePlayerButton playerId={props.row.original.id}/>,
+    })
 ];
+
+type DeletePlayerButtonProps = {
+    playerId: string,
+}
+
+function DeletePlayerButton({playerId}: DeletePlayerButtonProps) {
+    return (
+        <FaTrash className='button-like' onClick={(e) => {
+            e.stopPropagation();
+            const api = new PlayerApi();
+            api.delete(playerId)
+                .then(() => window.location.reload());
+        }}/>
+    );
+}
 
 function toPercentage(num: number): string {
     return (100 * num).toFixed(0);
