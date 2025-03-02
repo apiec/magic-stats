@@ -37,8 +37,7 @@ internal class ParticipantConfiguration : IEntityTypeConfiguration<Participant>
             .IsUnique();
 
         builder
-            .HasIndex(x => new { x.GameId, x.PlayerId, x.Placement })
-            .IsUnique();
+            .HasIndex(x => new { x.GameId, x.PlayerId, x.Placement });
 
         builder
             .HasOne<Player>(x => x.Player)

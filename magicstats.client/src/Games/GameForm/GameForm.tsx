@@ -4,7 +4,7 @@ import './GameForm.css';
 import AddParticipantDialog from "./AddParticipantDialog.tsx";
 import {useEffect, useRef} from "react";
 import DragAndDropParticipantsList from "./DragAndDropParticipantsList.tsx";
-import {AddParticipantRequest, Game, GamesApi, Participant} from "../GamesApi.ts";
+import {AddParticipantRequest, Game, GamesApi, Participant, Placements} from "../GamesApi.ts";
 import {useParams} from "react-router-dom";
 import {useImmer} from "use-immer";
 
@@ -41,6 +41,7 @@ export default function GameForm() {
             <p>Loading...</p>
         );
     }
+
     return (
         <div id='game-form-component'>
             <dialog id='participant-dialog' ref={dialogRef} onClick={(e) => {
@@ -77,18 +78,20 @@ export default function GameForm() {
                 <h3>Starting order</h3>
                 <DragAndDropParticipantsList
                     orderedColumnName='#'
-                    orderedData={game.participants.slice().sort(((a, b) => a.startingOrder - b.startingOrder))}
+                    participants={game.participants.slice()}
                     onParticipantDeleted={handleDeleteParticipant}
-                    onDataReordered={handleStartingOrderChanged}/>
+                    onDataReordered={handleStartingOrderChanged}
+                    orderedValueGetter={p => p.startingOrder + 1}/>
             </div>
             <div id='placement-section'>
                 <h3>Placement</h3>
                 <DragAndDropParticipantsList
                     stylePlacement={true}
                     orderedColumnName='#'
-                    orderedData={game.participants.slice().sort(((a, b) => a.placement - b.placement))}
+                    participants={game.participants.slice()}
                     onParticipantDeleted={handleDeleteParticipant}
-                    onDataReordered={handlePlacementChanged}/>
+                    onDataReordered={handlePlacementChanged}
+                    orderedValueGetter={p => p.placement + 1}/>
             </div>
         </div>
     );
@@ -143,7 +146,9 @@ export default function GameForm() {
             return;
         }
         const api = new GamesApi();
-        await api.updatePlacement(game.id, newData.map(p => p.player.id));
+        const placements = {} as Placements;
+        newData.forEach((p, i) => placements[p.player.id] = i);
+        await api.updatePlacement(game.id, placements);
         setGame((draft) => {
             if (draft !== undefined) {
                 newData.forEach((p, i) => {

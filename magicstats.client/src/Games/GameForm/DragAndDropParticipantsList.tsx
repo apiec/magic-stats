@@ -19,31 +19,41 @@ import "./DragAndDropParticipantsList.css";
 
 type DragAndDropListProps = {
     stylePlacement?: boolean,
-    orderedData: Participant[],
+    participants: Participant[],
     onDataReordered: (values: Participant[]) => void,
     onParticipantDeleted: (playerId: string) => void,
     orderedColumnName: string,
+    orderedValueGetter: (p: Participant) => number,
 }
 
 type ParticipantRow = Participant & {
     onRowDeleted: () => void,
+    orderedValue: () => number,
 }
 
 export default function DragAndDropParticipantsList(
     {
         stylePlacement,
-        orderedData,
+        participants,
         onDataReordered,
         onParticipantDeleted,
         orderedColumnName,
+        orderedValueGetter,
     }: DragAndDropListProps) {
+
     const columns = useMemo<ColumnDef<ParticipantRow, any>[]>(() => getColumnDefinition(orderedColumnName), []);
-    const data = orderedData.map(p => {
-        return {...p, onRowDeleted: () => onParticipantDeleted(p.player.id)} as ParticipantRow
-    });
+    const sortedData = participants
+        .sort((a, b) => orderedValueGetter(a) - orderedValueGetter(b))
+        .map(p => {
+            return {
+                ...p,
+                onRowDeleted: () => onParticipantDeleted(p.player.id),
+                orderedValue: () => orderedValueGetter(p)
+            } as ParticipantRow
+        });
     const table = useReactTable({
         columns: columns,
-        data: data,
+        data: sortedData,
         getCoreRowModel: getCoreRowModel(),
         getRowId: row => row.player.id,
     });
@@ -51,9 +61,9 @@ export default function DragAndDropParticipantsList(
     function handleDragEnd(event: DragEndEvent) {
         const {active, over} = event;
         if (active && over && active.id !== over.id) {
-            const oldIndex = orderedData.findIndex(p => p.player.id === active.id);
-            const newIndex = orderedData.findIndex(p => p.player.id === over.id);
-            const newData = arrayMove(orderedData, oldIndex, newIndex);
+            const oldIndex = sortedData.findIndex(p => p.player.id === active.id);
+            const newIndex = sortedData.findIndex(p => p.player.id === over.id);
+            const newData = arrayMove(sortedData, oldIndex, newIndex);
             onDataReordered(newData);
         }
     }
@@ -89,7 +99,7 @@ export default function DragAndDropParticipantsList(
                 </thead>
                 <tbody>
                 <SortableContext
-                    items={orderedData.map(p => p.player.id)}
+                    items={sortedData.map(p => p.player.id)}
                     strategy={verticalListSortingStrategy}>
                     {table.getRowModel().rows.map(row => (
                         <DraggableRow key={row.id} row={row} stylePlacement={stylePlacement}/>
@@ -113,7 +123,7 @@ function getColumnDefinition(orderedColumnName: string): ColumnDef<ParticipantRo
         columnHelper.display({
             id: 'ordering',
             header: orderedColumnName,
-            cell: ({row}) => row.index + 1,
+            cell: ({row}) => row.original.orderedValue(),
             size: 60,
         }),
         columnHelper.accessor('player.name', {
@@ -162,7 +172,7 @@ function DraggableRow({row, stylePlacement}: DraggableRowProps) {
     const {transform, transition, setNodeRef, isDragging} = useSortable({
         id: row.original.player.id,
     });
-    
+
     const style: CSSProperties = {
         transform: CSS.Transform.toString(transform),
         transition: transition,

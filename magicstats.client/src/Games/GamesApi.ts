@@ -83,8 +83,8 @@ export class GamesApi {
         await this.api.delete(this.participantPath(gameId, playerId));
     }
 
-    async updatePlacement(gameId: string, playerIds: string[]) {
-        const request = {participantPlacements: playerIds};
+    async updatePlacement(gameId: string, placements: Placements) {
+        const request = {participantPlacements: placements};
         await this.api.postNoResponse(this.path + gameId + '/participants/placement', request);
     }
 
@@ -96,4 +96,8 @@ export class GamesApi {
     private participantPath(gameId: string, playerId: string) {
         return `${this.path}${gameId}/participants/${playerId}`;
     }
+}
+
+export interface Placements {
+    [key: string]: number
 }

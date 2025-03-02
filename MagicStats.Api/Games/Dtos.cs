@@ -22,10 +22,10 @@ internal static class GameMapper
         var participants = g.Participants.Select(MapParticipant).ToArray();
         var winner = participants.MinBy(p => p.Placement);
         return new GameDto(g.Id.ToString(), g.LastModified, g.PlayedAt, winner!, participants);
-    } 
+    }
 
     public static ParticipantDto MapParticipant(Participant p) =>
-        new(MapCommander(p.Commander), MapPlayer(p.Player), p.StartingOrder + 1, p.Placement + 1);
+        new(MapCommander(p.Commander), MapPlayer(p.Player), p.StartingOrder, p.Placement);
 
     private static PlayerDto MapPlayer(Player p) => new(p.Id.ToString(), p.Name);
     private static CommanderDto MapCommander(Commander c) => new(c.Id.ToString(), c.Name);
