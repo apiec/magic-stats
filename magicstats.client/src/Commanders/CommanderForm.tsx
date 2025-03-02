@@ -14,9 +14,10 @@ export default function CommanderForm({onSubmit}: CommanderFormProps) {
                 const commander = {name: name} as Commander;
                 onSubmit(commander);
             }}>
-            <input id="name-input" placeholder='Name' autoFocus={true} value={name} onChange={e => {
-                setName(e.currentTarget.value);
-            }}/>
+            <input id="name-input" placeholder='Name' value={name}
+                   onChange={e => {
+                       setName(e.currentTarget.value);
+                   }}/>
             <button type='submit' disabled={!name || name.length < 3}>+</button>
         </form>
     );
