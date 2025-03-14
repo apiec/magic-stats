@@ -1,5 +1,5 @@
 ﻿import './Navbar.css'
-import {FaHome, FaIdBadge, FaUser, FaUsers} from 'react-icons/fa'
+import {FaHome, FaHouseUser, FaIdBadge, FaUser, FaUsers} from 'react-icons/fa'
 import {GiStack} from 'react-icons/gi';
 import {Link} from "react-router-dom";
 
@@ -34,6 +34,12 @@ export default function Navbar() {
                 <div className="navbar-section">
                     <GiStack className="navbar-icon"/>
                     <p>Games</p>
+                </div>
+            </Link>
+            <Link to="/hosts">
+                <div className="navbar-section">
+                    <FaHouseUser className="navbar-icon"/>
+                    <p>Hosts</p>
                 </div>
             </Link>
         </nav>

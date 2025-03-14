@@ -51,7 +51,7 @@ public class UpdateGame : IEndpoint
 
         if (request.TurnCount is not null)
         {
-            game.TurnCount = request.TurnCount;
+            game.TurnCount = request.TurnCount > 0 ? request.TurnCount : null;
         }
 
 

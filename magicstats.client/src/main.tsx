@@ -10,6 +10,7 @@ import GameForm from "./Games/GameForm/GameForm.tsx";
 import Games from "./Games/Games.tsx";
 import HomePage from "./Home/HomePage.tsx";
 import Pods from "./Pods/Pods.tsx";
+import Hosts from "./Hosts/Hosts.tsx";
 
 const router = createBrowserRouter([
     {
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
                     }
                 ],
             },
+            {
+                path: "hosts",
+                element: <Hosts/>,
+            }
         ]
     },
 ]);

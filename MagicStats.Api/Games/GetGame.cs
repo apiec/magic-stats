@@ -27,6 +27,7 @@ public class GetGame : IEndpoint
             .ThenInclude(p => p.Player)
             .Include(g => g.Participants)
             .ThenInclude(p => p.Commander)
+            .Include(g => g.Host)
             .SingleOrDefaultAsync(g => g.Id == id, ct);
 
         return game is not null

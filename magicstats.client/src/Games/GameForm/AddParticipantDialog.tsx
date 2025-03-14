@@ -1,10 +1,10 @@
 ﻿// import {Participant} from "../Games";
 import CommanderApi, {Commander} from "../../Commanders/CommanderApi.ts";
 import PlayerApi, {Player} from "../../Players/PlayerApi.ts";
-import Select from "react-select";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import './AddParticipantDialog.css';
 import {Participant} from "../GamesApi.ts";
+import {Picker, PickerOption} from "../../Shared/Picker.tsx";
 
 type AddParticipantDialogProps = {
     onAdd: (participant: Participant) => void;
@@ -61,30 +61,3 @@ function PlayerPicker({onPlayerChange}: PlayerPickerProps) {
     return <Picker className='player-picker' getOptions={getPlayers} onValueChange={onPlayerChange}/>
 }
 
-type PickerProps<T> = {
-    className: string,
-    getOptions: () => Promise<PickerOption<T>[]>,
-    onValueChange: (value: T | undefined) => void;
-}
-
-type PickerOption<T> = {
-    value: T,
-    label: string,
-}
-
-function Picker<T>({className, getOptions, onValueChange}: PickerProps<T>) {
-    const [options, setOptions] = useState<PickerOption<T>[]>();
-
-    const populateOptions = async () => setOptions(await getOptions());
-    useEffect(() => {
-        populateOptions();
-    }, []);
-
-    return <Select
-        maxMenuHeight={200}
-        className={className}
-        options={options}
-        onChange={(x) => {
-            onValueChange(x?.value);
-        }}/>
-}

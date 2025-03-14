@@ -7,7 +7,7 @@ public record GameDto(
     DateTimeOffset LastModified,
     DateTimeOffset PlayedAt,
     ParticipantDto Winner,
-    int? TurnCount,
+    int? Turns,
     string Host,
     bool Irl,
     IEnumerable<ParticipantDto> Participants);

@@ -118,10 +118,6 @@ const columns: ColumnDef<Game, any>[] = [
         header: 'Played at',
         cell: props => format(props.row.original.playedAt, "dd/MM/yyyy HH:mm"),
     }),
-    columnHelper.accessor(game => game.participants.length, {
-        id: 'pod_size',
-        header: 'Pod size',
-    }),
     columnHelper.group({
         header: 'Winner',
         columns: [
@@ -131,6 +127,24 @@ const columns: ColumnDef<Game, any>[] = [
             }),
             columnHelper.accessor((g) => g.winner?.player.name ?? 'no data', {id: 'winning_player', header: 'Player'}),
         ],
+    }),
+    columnHelper.accessor(game => game.participants.length, {
+        id: 'pod_size',
+        header: 'Pod size',
+    }),
+    columnHelper.accessor('turns', {
+        id: 'turns',
+        header: 'Turns',
+        cell: props => props.row.original.turns ?? '?',
+    }),
+    columnHelper.accessor('host', {
+        id: 'host',
+        header: 'Host',
+    }),
+    columnHelper.accessor('irl', {
+        id: 'irl',
+        header: 'IRL/online',
+        cell: props => props.row.original.irl ? 'IRL' : 'online',
     }),
     columnHelper.display({
         id: 'edit',
