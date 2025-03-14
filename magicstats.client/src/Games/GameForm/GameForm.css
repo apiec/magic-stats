@@ -2,14 +2,15 @@
 #game-form-component {
     display: grid;
     grid-template-areas:
-        "date add-button"
+        "turns date"
+        "host add-button"
         "placement starting-order";
 
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 50px 1fr;
+    grid-template-rows: 50px 70px 1fr;
 
-    align-items: end;
-    justify-items: center;
+    align-items: center;
+    justify-items: left;
     gap: 5px;
     border: solid 2px grey;
     border-radius: 5px;
@@ -40,6 +41,7 @@
     grid-area: date;
     display: flex;
     flex-direction: column;
+    z-index: 2;
 }
 
 #add-participant-button {
@@ -65,4 +67,18 @@
 .dnd-participant-list {
     border-radius: 5px;
     overflow: clip;
+}
+
+#host {
+    grid-area: host;
+}
+
+#turns {
+    grid-area: turns;
+    display: flex;
+    flex-direction: column;
+}
+#add-turns-button {
+    height: fit-content;
+    padding: 10px;
 }

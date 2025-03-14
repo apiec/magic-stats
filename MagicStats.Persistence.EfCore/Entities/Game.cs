@@ -8,6 +8,9 @@ public class Game
     public int Id { get; init; }
     public DateTimeOffset LastModified { get; set; }
     public DateTimeOffset PlayedAt { get; set; }
+    public int? TurnCount { get; set; }
+    public Host Host { get; set; } = null!;
+    public int HostId { get; set; }
     public ICollection<Participant> Participants { get; init; } = new List<Participant>();
 
     public Participant AddParticipant(int playerId, int commanderId, int? startingOrder, int? placement)
@@ -57,5 +60,12 @@ internal class GameConfiguration : IEntityTypeConfiguration<Game>
             .HasForeignKey(p => p.GameId)
             .HasPrincipalKey(g => g.Id)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasOne<Host>(g => g.Host)
+            .WithMany(h => h.Games)
+            .HasForeignKey(g => g.HostId)
+            .HasPrincipalKey(h => h.Id)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

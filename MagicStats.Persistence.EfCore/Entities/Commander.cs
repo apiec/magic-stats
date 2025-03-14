@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MagicStats.Persistence.EfCore.Entities;
@@ -6,6 +7,7 @@ namespace MagicStats.Persistence.EfCore.Entities;
 public class Commander
 {
     public int Id { get; init; }
+    [MaxLength(128)]
     public required string Name { get; init; }
 
     public List<Participant> Participated { get; init; }

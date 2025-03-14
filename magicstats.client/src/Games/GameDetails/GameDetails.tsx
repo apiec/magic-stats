@@ -35,6 +35,8 @@ export function GameDetails({game}: GameDetailsProps) {
             <section className='game-details-header'>
                 <div>{game.participants.length} player game</div>
                 <div>{format(game.playedAt, "dd/MM/yyyy HH:mm")}</div>
+                <div>Played at: {game.host}</div>
+                {game.turns && <div>{game.turns} turns</div>}
             </section>
             <table className='game-details-table'>
                 <thead>
@@ -51,7 +53,7 @@ export function GameDetails({game}: GameDetailsProps) {
                 </thead>
                 <tbody>
                 {table.getRowModel().rows.map(row => (
-                    <tr key ={row.id}>
+                    <tr key={row.id}>
                         {row.getVisibleCells().map(cell => (
                             <td key={cell.id}>
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}

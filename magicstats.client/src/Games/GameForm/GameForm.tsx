@@ -7,10 +7,11 @@ import DragAndDropParticipantsList from "./DragAndDropParticipantsList.tsx";
 import {AddParticipantRequest, Game, GamesApi, Participant, Placements} from "../GamesApi.ts";
 import {useParams} from "react-router-dom";
 import {useImmer} from "use-immer";
+import {HostPicker} from "./HostPicker.tsx";
+import {Host} from "../../Hosts/HostApi.ts";
 
 export default function GameForm() {
     const [game, setGame] = useImmer<Game | undefined>(undefined);
-
     const {gameId} = useParams<string>();
 
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -72,7 +73,29 @@ export default function GameForm() {
                     maxDate={new Date()}/>
             </div>
 
-            <button id='add-participant-button' onClick={toggleDialog}>+1 byczq</button>
+            <div id='turns'>
+                <label>Turns</label>
+                {
+                    game.turns
+                        ? <input id='turns-input' type='number' min='0' value={game.turns} onChange={e => {
+                            handleTurnsChanged(e.currentTarget.valueAsNumber).then();
+                        }}/>
+                        : <button id='add-turns-button' onClick={() => {
+                            handleTurnsChanged(1).then();
+                        }}>
+                            Add turn count
+                        </button>
+                }
+            </div>
+
+            <div id='host-picker'>
+                <label>Host</label>
+                <HostPicker currentHost={{name: game.host, irl: game.irl} as Host} onHostChange={host => {
+                    handleHostChanged(host).then();
+                }}/>
+            </div>
+
+            <button id='add-participant-button' onClick={toggleDialog}>Add participant</button>
 
             <div id='starting-order-section'>
                 <h3>Starting order</h3>
@@ -157,5 +180,32 @@ export default function GameForm() {
                 })
             }
         })
+    }
+
+    async function handleHostChanged(host: Host) {
+        if (game === undefined) {
+            return;
+        }
+        const api = new GamesApi();
+        await api.updateHost(game.id, host.id);
+        setGame((draft) => {
+            if (draft !== undefined) {
+                draft.host = host.name;
+                draft.irl = host.irl;
+            }
+        });
+    }
+
+    async function handleTurnsChanged(turns: number) {
+        if (game === undefined) {
+            return;
+        }
+        const api = new GamesApi();
+        await api.updateTurnCount(game.id, turns);
+        setGame((draft) => {
+            if (draft !== undefined) {
+                draft.turns = turns;
+            }
+        });
     }
 }

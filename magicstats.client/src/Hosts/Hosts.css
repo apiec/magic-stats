@@ -1,0 +1,42 @@
+﻿.add-host-label {
+    margin-bottom: 0px;
+}
+
+.host-form {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.host-form > * {
+    width: 100%;
+}
+
+.host-form > button {
+    width: fit-content;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 1.5rem;
+}
+
+.host-form-inputs {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 5px;
+}
+
+.irl-input {
+    transform: scale(1.7);
+    padding: 10px;
+    margin-left: 10px;
+}
+
+.hosts-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+}

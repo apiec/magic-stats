@@ -26,6 +26,7 @@ public class GetGames : IEndpoint
             .ThenInclude(p => p.Player)
             .Include(g => g.Participants)
             .ThenInclude(p => p.Commander)
+            .Include(g => g.Host)
             .OrderByDescending(g => g.PlayedAt)
             .ToListAsync(ct);
 

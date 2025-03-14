@@ -6,6 +6,9 @@ export type Game = {
     id: string,
     lastModified: Date,
     playedAt: Date,
+    host: string,
+    irl: boolean,
+    turns?: number,
     participants: Participant[],
     winner: Participant | undefined,
 }
@@ -33,10 +36,16 @@ export type CreateGameRequest = {
     playedAt: Date,
     participants: NewParticipantDto[],
 }
+
 export type CreateGameResponse = {
     id: string,
 }
 
+type UpdateGameRequest = {
+    playedAt?: Date;
+    hostId?: string;
+    turnCount?: number;
+}
 type GetGamesResponse = {
     games: Game[],
 }
@@ -69,7 +78,17 @@ export class GamesApi {
     }
 
     async updatePlayedAt(gameId: string, playedAt: Date): Promise<void> {
-        const request = {playedAt: playedAt};
+        const request = {playedAt: playedAt} as UpdateGameRequest;
+        await this.api.put(this.path + gameId, request);
+    }
+
+    async updateHost(gameId: string, hostId: string): Promise<void> {
+        const request = {hostId: hostId} as UpdateGameRequest;
+        await this.api.put(this.path + gameId, request);
+    }
+
+    async updateTurnCount(gameId: string, turnCount: number | undefined): Promise<void> {
+        const request = {turnCount: turnCount} as UpdateGameRequest;
         await this.api.put(this.path + gameId, request);
     }
 

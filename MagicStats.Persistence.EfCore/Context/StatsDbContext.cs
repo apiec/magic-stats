@@ -14,6 +14,7 @@ public class StatsDbContext : DbContext
     public DbSet<Player> Players { get; set; }
     public DbSet<Game> Games { get; set; }
     public DbSet<Participant> Participants { get; set; }
+    public DbSet<Host> Hosts { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
