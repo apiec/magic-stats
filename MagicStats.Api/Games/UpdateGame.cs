@@ -54,7 +54,6 @@ public class UpdateGame : IEndpoint
             game.TurnCount = request.TurnCount > 0 ? request.TurnCount : null;
         }
 
-
         game.LastModified = timeProvider.GetUtcNow();
 
         dbContext.Update(game);
