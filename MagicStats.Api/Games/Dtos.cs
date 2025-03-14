@@ -7,6 +7,9 @@ public record GameDto(
     DateTimeOffset LastModified,
     DateTimeOffset PlayedAt,
     ParticipantDto Winner,
+    int? TurnCount,
+    string Host,
+    bool Irl,
     IEnumerable<ParticipantDto> Participants);
 
 public record ParticipantDto(CommanderDto Commander, PlayerDto Player, int StartingOrder, int Placement);
@@ -21,7 +24,15 @@ internal static class GameMapper
     {
         var participants = g.Participants.Select(MapParticipant).ToArray();
         var winner = participants.MinBy(p => p.Placement);
-        return new GameDto(g.Id.ToString(), g.LastModified, g.PlayedAt, winner!, participants);
+        return new GameDto(
+            g.Id.ToString(),
+            g.LastModified,
+            g.PlayedAt,
+            winner!,
+            g.TurnCount,
+            g.Host.Name,
+            g.Host.Irl,
+            participants);
     }
 
     public static ParticipantDto MapParticipant(Participant p) =>

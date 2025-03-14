@@ -15,7 +15,7 @@ public class UpdateGame : IEndpoint
         .MapPut("/{id:int}", Handle)
         .WithName("Update game");
 
-    public record Request(DateTimeOffset PlayedAt);
+    public record Request(DateTimeOffset? PlayedAt, int? HostId, int? TurnCount);
 
     private static async Task<Results<Ok, NotFound>> Handle(
         [FromRoute] int id,
@@ -32,7 +32,29 @@ public class UpdateGame : IEndpoint
             return TypedResults.NotFound();
         }
 
-        game.PlayedAt = request.PlayedAt;
+        if (request.HostId is not null)
+        {
+            var host = await dbContext.Hosts.SingleOrDefaultAsync(h => h.Id == request.HostId, ct);
+            if (host is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            game.Host = host;
+            game.HostId = host.Id;
+        }
+
+        if (request.PlayedAt is not null)
+        {
+            game.PlayedAt = request.PlayedAt.Value;
+        }
+
+        if (request.TurnCount is not null)
+        {
+            game.TurnCount = request.TurnCount;
+        }
+
+
         game.LastModified = timeProvider.GetUtcNow();
 
         dbContext.Update(game);

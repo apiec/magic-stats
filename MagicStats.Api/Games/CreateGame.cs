@@ -15,7 +15,11 @@ public class CreateGame : IEndpoint
         .MapPost("/", Handle)
         .WithSummary("Create a new game");
 
-    public record Request(DateTimeOffset PlayedAt, IReadOnlyList<ParticipantDto> Participants);
+    public record Request(
+        DateTimeOffset PlayedAt,
+        int HostId,
+        int? TurnCount,
+        IReadOnlyList<ParticipantDto> Participants);
 
     public record ParticipantDto(int PlayerId, int CommanderId, int StartingOrder, int Placement);
 
@@ -31,7 +35,9 @@ public class CreateGame : IEndpoint
         var game = new Game
         {
             LastModified = now,
-            PlayedAt = now,
+            PlayedAt = request.PlayedAt,
+            HostId = request.HostId,
+            TurnCount = request.TurnCount,
             Participants = request.Participants
                 .Select(p =>
                     new Participant

@@ -1,6 +1,7 @@
 ﻿using MagicStats.Api.Commanders;
 using MagicStats.Api.Games;
 using MagicStats.Api.Home;
+using MagicStats.Api.Hosts;
 using MagicStats.Api.Players;
 using MagicStats.Api.Pods;
 using MagicStats.Api.Shared;
@@ -26,6 +27,7 @@ public static class StartupExtensions
         endpoints.AddHomeEndpoints();
         endpoints.AddCommanderEndpoints();
         endpoints.AddPlayerEndpoints();
+        endpoints.AddHostsEndpoints();
         endpoints.AddGameEndpoints();
         endpoints.AddPodsEndpoints();
 
