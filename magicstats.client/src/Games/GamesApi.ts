@@ -6,8 +6,8 @@ export type Game = {
     id: string,
     lastModified: Date,
     playedAt: Date,
-    host: string,
-    irl: boolean,
+    host: string | undefined,
+    irl: boolean | undefined,
     turns?: number,
     participants: Participant[],
     winner: Participant | undefined,
@@ -37,10 +37,6 @@ export type CreateGameRequest = {
     participants: NewParticipantDto[],
 }
 
-export type CreateGameResponse = {
-    id: string,
-}
-
 type UpdateGameRequest = {
     playedAt?: Date;
     hostId?: string;
@@ -67,10 +63,9 @@ export class GamesApi {
         return response;
     }
 
-    async createNewGame(): Promise<string> {
+    async createNewGame(): Promise<Game> {
         const request = {playedAt: new Date(), participants: []} as CreateGameRequest;
-        const response = await this.api.post<CreateGameRequest, CreateGameResponse>(this.path, request);
-        return response.id.toString();
+        return await this.api.post<CreateGameRequest, Game>(this.path, request);
     }
 
     async delete(gameId: string): Promise<void> {

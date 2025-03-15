@@ -42,12 +42,12 @@ type Stats = {
     meetings: number,
     gamesPerMeeting: number,
     mostGamesPlayer: {
-        id: number,
+        id: string,
         name: string,
         gamesPlayed: number,
     }
     mostGamesCommander: {
-        id: number,
+        id: string,
         name: string,
         gamesPlayed: number,
     }

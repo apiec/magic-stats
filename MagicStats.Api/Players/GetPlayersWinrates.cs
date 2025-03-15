@@ -21,7 +21,7 @@ public class GetPlayersWinrates : IEndpoint
     private static async Task<Results<Ok<Response>, BadRequest>> Handle(
         [FromQuery] int? slidingWindowSize,
         [FromQuery] int? podSize,
-        [FromQuery] int[]? playerIds,
+        [FromQuery] string[]? playerIds,
         StatsDbContext dbContext,
         CancellationToken ct)
     {
@@ -30,12 +30,13 @@ public class GetPlayersWinrates : IEndpoint
             return TypedResults.BadRequest();
         }
 
+        var intIds = playerIds?.Select(int.Parse).ToArray() ?? [];
         var dataProvider = new PlayerWinratesDataProvider(dbContext, ct);
         var (games, players) = (podSize, playerIds!.Length) switch
         {
             (null, 0) => await dataProvider.GetAllData(),
             (not null, _) => await dataProvider.GetByPodSize(podSize.Value),
-            (_, not 0) => await dataProvider.GetByPlayers(playerIds),
+            (_, not 0) => await dataProvider.GetByPlayers(intIds),
         };
 
         slidingWindowSize ??= 10;

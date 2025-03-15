@@ -12,23 +12,24 @@ namespace MagicStats.Api.Games;
 public class GetGame : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app) => app
-        .MapGet("/{id:int}", Handle)
+        .MapGet("/{id}", Handle)
         .WithSummary("Get a game by id");
 
 
     private static async Task<Results<Ok<GameDto>, NotFound>> Handle(
-        [FromRoute] int id,
+        [FromRoute] string id,
         StatsDbContext dbContext,
         TimeProvider timeProvider,
         CancellationToken ct)
     {
+        var intId = int.Parse(id);
         var game = await dbContext.Games
             .Include(g => g.Participants)
             .ThenInclude(p => p.Player)
             .Include(g => g.Participants)
             .ThenInclude(p => p.Commander)
             .Include(g => g.Host)
-            .SingleOrDefaultAsync(g => g.Id == id, ct);
+            .SingleOrDefaultAsync(g => g.Id == intId, ct);
 
         return game is not null
             ? TypedResults.Ok(GameMapper.MapGame(game))

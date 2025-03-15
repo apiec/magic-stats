@@ -8,8 +8,8 @@ public record GameDto(
     DateTimeOffset PlayedAt,
     ParticipantDto Winner,
     int? Turns,
-    string Host,
-    bool Irl,
+    string? Host, // todo: just return a host obj here man ;_;
+    bool? Irl,
     IEnumerable<ParticipantDto> Participants);
 
 public record ParticipantDto(CommanderDto Commander, PlayerDto Player, int StartingOrder, int Placement);
@@ -30,8 +30,8 @@ internal static class GameMapper
             g.PlayedAt,
             winner!,
             g.TurnCount,
-            g.Host.Name,
-            g.Host.Irl,
+            g.Host?.Name,
+            g.Host?.Irl,
             participants);
     }
 

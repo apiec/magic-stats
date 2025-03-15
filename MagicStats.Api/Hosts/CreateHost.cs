@@ -16,9 +16,7 @@ public class CreateHost : IEndpoint
 
     public record Request(string Name, bool Irl);
 
-    public record Response(int Id);
-
-    private static async Task<Ok<Response>> Handle(
+    private static async Task<Ok<HostDto>> Handle(
         Request request,
         StatsDbContext dbContext,
         CancellationToken ct)
@@ -31,7 +29,7 @@ public class CreateHost : IEndpoint
         dbContext.Hosts.Add(host);
         await dbContext.SaveChangesAsync(ct);
 
-        var response = new Response(host.Id);
+        var response = new HostDto(host.Id.ToString(), host.Name, host.Irl);
         return TypedResults.Ok(response);
     }
 }

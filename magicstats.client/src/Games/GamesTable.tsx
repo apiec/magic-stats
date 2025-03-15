@@ -48,8 +48,8 @@ export default function GamesTable() {
 
     async function handleNewGame() {
         const api = new GamesApi();
-        const gameId = await api.createNewGame();
-        await navigate(gameId);
+        const game = await api.createNewGame();
+        await navigate(game.id);
     }
 
     function toggleDialog() {
@@ -135,16 +135,17 @@ const columns: ColumnDef<Game, any>[] = [
     columnHelper.accessor('turns', {
         id: 'turns',
         header: 'Turns',
-        cell: props => props.row.original.turns ?? '?',
+        cell: props => props.row.original.turns ?? '-',
     }),
     columnHelper.accessor('host', {
         id: 'host',
         header: 'Host',
+        cell: props => props.row.original.host ?? '-',
     }),
     columnHelper.accessor('irl', {
         id: 'irl',
         header: 'IRL/online',
-        cell: props => props.row.original.irl ? 'IRL' : 'online',
+        cell: props => props.row.original.irl === null ? '-' : props.row.original ? 'IRL' : 'online',
     }),
     columnHelper.display({
         id: 'edit',

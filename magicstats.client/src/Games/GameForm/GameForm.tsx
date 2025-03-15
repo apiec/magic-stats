@@ -90,9 +90,10 @@ export default function GameForm() {
 
             <div id='host-picker'>
                 <label>Host</label>
-                <HostPicker currentHost={{name: game.host, irl: game.irl} as Host} onHostChange={host => {
-                    handleHostChanged(host).then();
-                }}/>
+                <HostPicker currentHost={game.host ? {name: game.host, irl: game.irl} as Host : undefined}
+                            onHostChange={host => {
+                                handleHostChanged(host).then();
+                            }}/>
             </div>
 
             <button id='add-participant-button' onClick={toggleDialog}>Add participant</button>

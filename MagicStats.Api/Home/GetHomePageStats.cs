@@ -20,9 +20,9 @@ public class GetHomePageStats : IEndpoint
         PlayerWithMostGamesDto? MostGamesPlayer,
         CommanderWithMostGamesDto? MostGamesCommander);
 
-    private record PlayerWithMostGamesDto(int Id, string Name, int GamesPlayed);
+    private record PlayerWithMostGamesDto(string Id, string Name, int GamesPlayed);
 
-    private record CommanderWithMostGamesDto(int Id, string Name, int GamesPlayed);
+    private record CommanderWithMostGamesDto(string Id, string Name, int GamesPlayed);
 
     private static async Task<Ok<Response>> Handle(StatsDbContext dbContext, CancellationToken ct)
     {

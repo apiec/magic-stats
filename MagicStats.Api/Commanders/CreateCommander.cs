@@ -16,7 +16,7 @@ public class CreateCommander : IEndpoint
         .WithSummary("Create a commander");
 
     public record Request(string Name);
-    public record Response(int Id);
+    public record Response(string Id);
 
     private static async Task<Ok<Response>> Handle(
         [FromBody] Request request,
@@ -30,7 +30,7 @@ public class CreateCommander : IEndpoint
         dbContext.Commanders.Add(commander);
         await dbContext.SaveChangesAsync(ct);
 
-        var response = new Response(commander.Id);
+        var response = new Response(commander.Id.ToString());
         return TypedResults.Ok(response);
     }
 }
