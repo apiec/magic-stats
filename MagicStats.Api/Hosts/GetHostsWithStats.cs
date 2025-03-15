@@ -16,7 +16,7 @@ public class GetHostsWithStats : IEndpoint
 
     public record Response(IReadOnlyCollection<HostWithStatsDto> Hosts);
 
-    public record HostWithStatsDto(int Id, string Name, bool Irl, int Games);
+    public record HostWithStatsDto(string Id, string Name, bool Irl, int Games);
 
     private static async Task<Results<Ok<Response>, BadRequest>> Handle(
         StatsDbContext dbContext,
@@ -24,7 +24,7 @@ public class GetHostsWithStats : IEndpoint
     {
         var dtos = await dbContext.Hosts
             .Select(host => new HostWithStatsDto(
-                host.Id,
+                host.Id.ToString(),
                 host.Name,
                 host.Irl,
                 host.Games.Count))

@@ -9,8 +9,8 @@ public class Game
     public DateTimeOffset LastModified { get; set; }
     public DateTimeOffset PlayedAt { get; set; }
     public int? TurnCount { get; set; }
-    public Host Host { get; set; } = null!;
-    public int HostId { get; set; }
+    public Host? Host { get; set; }
+    public int? HostId { get; set; }
     public ICollection<Participant> Participants { get; init; } = new List<Participant>();
 
     public Participant AddParticipant(int playerId, int commanderId, int? startingOrder, int? placement)

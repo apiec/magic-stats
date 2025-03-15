@@ -26,10 +26,6 @@ type CreateHostRequest = {
     irl: boolean;
 }
 
-type CreateHostResponse = {
-    id: string;
-}
-
 export default class HostApi {
     private path: string = 'hosts/';
     private api = new Api();
@@ -45,10 +41,9 @@ export default class HostApi {
         return response.hosts;
     }
 
-    async create(name: string, irl: boolean): Promise<string> {
+    async create(name: string, irl: boolean): Promise<Host> {
         const request = {name: name, irl: irl} as CreateHostRequest;
-        const response = await this.api.post<CreateHostRequest, CreateHostResponse>(this.path, request);
-        return response.id.toString();
+        return await this.api.post<CreateHostRequest, Host>(this.path, request);
     }
 
     async delete(id: string): Promise<void> {

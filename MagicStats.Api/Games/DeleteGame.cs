@@ -12,16 +12,17 @@ namespace MagicStats.Api.Games;
 public class DeleteGame : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app) => app
-        .MapDelete("/{id:int}", Handle)
+        .MapDelete("/{id}", Handle)
         .WithSummary("Delete a game");
 
     private static async Task<Results<Ok, NotFound>> Handle(
-        [FromRoute] int id,
+        [FromRoute] string id,
         StatsDbContext dbContext,
         CancellationToken ct)
     {
+        var intId = int.Parse(id);
         var rowsDeleted = await dbContext.Games
-            .Where(g => g.Id == id)
+            .Where(g => g.Id == intId)
             .ExecuteDeleteAsync(ct);
         
         return rowsDeleted > 0

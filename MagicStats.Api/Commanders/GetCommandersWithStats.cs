@@ -1,5 +1,4 @@
-﻿using MagicStats.Api.Players;
-using MagicStats.Api.Shared;
+﻿using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -17,7 +16,7 @@ public class GetCommandersWithStats : IEndpoint
 
     public record Response(IReadOnlyCollection<CommanderWithStatsDto> Commanders);
 
-    public record CommanderWithStatsDto(int Id, string Name, CommanderStats Stats);
+    public record CommanderWithStatsDto(string Id, string Name, CommanderStats Stats);
 
     public record CommanderStats(int Wins, int Games, float? Winrate, float? WinrateLastX);
 
@@ -38,7 +37,7 @@ public class GetCommandersWithStats : IEndpoint
 
         var dto = rawStats.Select(p =>
                 new CommanderWithStatsDto(
-                    p.Id,
+                    p.Id.ToString(),
                     p.Name,
                     new CommanderStats(
                         Wins: p.Wins,

@@ -1,4 +1,5 @@
-﻿using MagicStats.Api.Shared;
+﻿using MagicStats.Api.Games;
+using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -18,8 +19,6 @@ public class GetPods : IEndpoint
 
     public record PodDto(IReadOnlyCollection<PlayerDto> Players, int Games);
 
-    public record PlayerDto(int Id, string Name);
-
     private record PodsRaw(string PlayerIds, int Games);
 
     private static async Task<Ok<Response>> Handle(StatsDbContext dbContext, CancellationToken ct)
@@ -27,7 +26,7 @@ public class GetPods : IEndpoint
         var players = await dbContext.Players
             .ToDictionaryAsync(
                 pl => pl.Id.ToString(),
-                pl => new PlayerDto(pl.Id, pl.Name),
+                pl => new PlayerDto(pl.Id.ToString(), pl.Name),
                 ct);
 
         var pods = await dbContext.Database

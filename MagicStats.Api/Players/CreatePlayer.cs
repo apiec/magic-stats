@@ -1,4 +1,5 @@
-﻿using MagicStats.Api.Shared;
+﻿using MagicStats.Api.Games;
+using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
 using MagicStats.Persistence.EfCore.Entities;
 using Microsoft.AspNetCore.Builder;
@@ -15,9 +16,8 @@ public class CreatePlayer : IEndpoint
         .WithSummary("Create a player");
 
     public record Request(string Name);
-    public record Response(int Id);
 
-    private static async Task<Ok<Response>> Handle(
+    private static async Task<Ok<PlayerDto>> Handle(
         Request request,
         StatsDbContext dbContext,
         CancellationToken ct)
@@ -29,7 +29,7 @@ public class CreatePlayer : IEndpoint
         dbContext.Players.Add(player);
         await dbContext.SaveChangesAsync(ct);
 
-        var response = new Response(player.Id);
+        var response = new PlayerDto(player.Id.ToString(), player.Name);
         return TypedResults.Ok(response);
     }
 }

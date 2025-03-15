@@ -17,10 +17,6 @@ type CreatePlayerRequest = {
     name: string;
 }
 
-type CreatePlayerResponse = {
-    id: string;
-}
-
 export type PlayerWithStats = {
     id: string,
     name: string,
@@ -39,7 +35,7 @@ type GetPlayerWinratesResponse = {
 }
 
 export type PlayerWithWinrates = {
-    id: number,
+    id: string,
     name: string,
     dataPoints: DataPoint[],
 }
@@ -74,7 +70,7 @@ export default class PlayerApi {
     async getStatsForPod(playerIds: string[], windowSize: number): Promise<PlayerWithStats[]> {
         const queryParams = new URLSearchParams();
         queryParams.append('windowSize', windowSize.toString());
-        playerIds.forEach(id => queryParams.append('playerIds', id.toString()));
+        playerIds.forEach(id => queryParams.append('playerIds', id));
         const query = queryParams.size > 0 ? '?' + queryParams.toString() : '';
 
         const path = this.path + 'stats' + query;
@@ -112,12 +108,9 @@ export default class PlayerApi {
         return response.playerWinrates;
     }
 
-    async create(name: string): Promise<string> {
+    async create(name: string): Promise<Player> {
         const request = {name: name} as CreatePlayerRequest;
-        const response = await this.api.post<CreatePlayerRequest, CreatePlayerResponse>(
-            this.path,
-            request);
-        return response.id.toString(); // todo: make them as string in backend
+        return await this.api.post<CreatePlayerRequest, Player>(this.path, request);
     }
 
     async delete(id: string): Promise<void> {

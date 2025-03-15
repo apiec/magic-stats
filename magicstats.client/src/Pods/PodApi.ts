@@ -8,7 +8,7 @@ export type Pod = {
 }
 
 export type Player = {
-    id: number,
+    id: string,
     name: string,
 }
 

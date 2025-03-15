@@ -29,7 +29,7 @@ type GetCommanderWinratesResponse = {
 }
 
 export type CommanderWithWinrates = {
-    id: number,
+    id: string,
     name: string,
     dataPoints: DataPoint[],
 }
@@ -41,10 +41,6 @@ export type DataPoint = {
 
 type CreateCommanderRequest = {
     name: string;
-}
-
-type CreateCommanderResponse = {
-    id: string;
 }
 
 export default class CommanderApi {
@@ -85,10 +81,9 @@ export default class CommanderApi {
         return response.commanderWinrates;
     }
 
-    async create(name: string): Promise<string> {
+    async create(name: string): Promise<Commander> {
         const request = {name: name} as CreateCommanderRequest;
-        const response = await this.api.post<CreateCommanderRequest, CreateCommanderResponse>(this.path, request);
-        return response.id.toString(); // todo: make those strings in api
+        return await this.api.post<CreateCommanderRequest, Commander>(this.path, request);
     }
 
     async delete(id: string): Promise<void> {

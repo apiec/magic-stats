@@ -48,8 +48,8 @@ export default function GamesTable() {
 
     async function handleNewGame() {
         const api = new GamesApi();
-        const gameId = await api.createNewGame();
-        await navigate(gameId);
+        const game = await api.createNewGame();
+        await navigate(game.id);
     }
 
     function toggleDialog() {

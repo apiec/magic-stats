@@ -17,7 +17,7 @@ public class GetPlayersWithStats : IEndpoint
 
     public record Response(IReadOnlyCollection<PlayerWithStatsDto> Players);
 
-    public record PlayerWithStatsDto(int Id, string Name, PlayerStats Stats);
+    public record PlayerWithStatsDto(string Id, string Name, PlayerStats Stats);
 
     public record PlayerStats(int Wins, int Games, float? Winrate, float? WinrateLastX);
 
@@ -46,7 +46,7 @@ public class GetPlayersWithStats : IEndpoint
 
         var dto = rawStats.Select(p =>
                 new PlayerWithStatsDto(
-                    p.Id,
+                    p.Id.ToString(),
                     p.Name,
                     new PlayerStats(
                         Wins: p.Wins,

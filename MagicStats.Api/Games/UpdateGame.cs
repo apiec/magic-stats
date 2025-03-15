@@ -12,20 +12,21 @@ namespace MagicStats.Api.Games;
 public class UpdateGame : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app) => app
-        .MapPut("/{id:int}", Handle)
+        .MapPut("/{id}", Handle)
         .WithName("Update game");
 
     public record Request(DateTimeOffset? PlayedAt, int? HostId, int? TurnCount);
 
     private static async Task<Results<Ok, NotFound>> Handle(
-        [FromRoute] int id,
+        [FromRoute] string id,
         [FromBody] Request request,
         StatsDbContext dbContext,
         TimeProvider timeProvider,
         CancellationToken ct)
     {
+        var intId = int.Parse(id);
         var game = await dbContext.Games
-            .SingleOrDefaultAsync(g => g.Id == id, ct);
+            .SingleOrDefaultAsync(g => g.Id == intId, ct);
 
         if (game is null)
         {

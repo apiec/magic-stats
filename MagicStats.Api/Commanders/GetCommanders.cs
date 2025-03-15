@@ -1,4 +1,5 @@
-﻿using MagicStats.Api.Shared;
+﻿using MagicStats.Api.Games;
+using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -15,13 +16,11 @@ public class GetCommanders : IEndpoint
 
     public record Response(IReadOnlyCollection<CommanderDto> Commanders);
 
-    public record CommanderDto(int Id, string Name);
-
     private static async Task<Ok<Response>> Handle(StatsDbContext dbContext, CancellationToken ct)
     {
         var commanders = await dbContext.Commanders
             .OrderBy(c => c.Name)
-            .Select(c => new CommanderDto(c.Id, c.Name))
+            .Select(c => new CommanderDto(c.Id.ToString(), c.Name))
             .AsNoTracking()
             .ToListAsync(ct);
         

@@ -3,6 +3,7 @@ using MagicStats.Persistence.EfCore.Context;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,18 +12,17 @@ namespace MagicStats.Api.Commanders;
 public class DeleteCommander : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app) => app
-        .MapDelete("/{id:int}", Handle)
+        .MapDelete("/{id}", Handle)
         .WithSummary("Deletes a commander");
 
-    public record Request(int Id);
-
     private static async Task<Results<Ok, NotFound>> Handle(
-        [AsParameters] Request request,
+        [FromRoute] string id,
         StatsDbContext dbContext,
         CancellationToken ct)
     {
+        var intId = int.Parse(id);
         var rowsDeleted = await dbContext.Commanders
-            .Where(x => x.Id == request.Id)
+            .Where(x => x.Id == intId)
             .ExecuteDeleteAsync(ct);
 
         return rowsDeleted > 0

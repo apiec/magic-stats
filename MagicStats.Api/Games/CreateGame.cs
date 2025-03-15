@@ -17,15 +17,13 @@ public class CreateGame : IEndpoint
 
     public record Request(
         DateTimeOffset PlayedAt,
-        int HostId,
+        string? HostId,
         int? TurnCount,
         IReadOnlyList<ParticipantDto> Participants);
 
-    public record ParticipantDto(int PlayerId, int CommanderId, int StartingOrder, int Placement);
+    public record ParticipantDto(string PlayerId, string CommanderId, int StartingOrder, int Placement);
 
-    public record Response(int Id);
-
-    private static async Task<Ok<Response>> Handle(
+    private static async Task<Ok<GameDto>> Handle(
         [FromBody] Request request,
         StatsDbContext dbContext,
         TimeProvider timeProvider,
@@ -36,14 +34,14 @@ public class CreateGame : IEndpoint
         {
             LastModified = now,
             PlayedAt = request.PlayedAt,
-            HostId = request.HostId,
+            HostId = request.HostId is not null ? int.Parse(request.HostId) : null,
             TurnCount = request.TurnCount,
             Participants = request.Participants
                 .Select(p =>
                     new Participant
                     {
-                        PlayerId = p.PlayerId,
-                        CommanderId = p.CommanderId,
+                        PlayerId = int.Parse(p.PlayerId),
+                        CommanderId = int.Parse(p.CommanderId),
                         StartingOrder = p.StartingOrder,
                         Placement = p.Placement,
                     })
@@ -53,7 +51,7 @@ public class CreateGame : IEndpoint
         dbContext.Games.Add(game);
         await dbContext.SaveChangesAsync(ct);
 
-        var response = new Response(game.Id);
+        var response = GameMapper.MapGame(game);
         return TypedResults.Ok(response);
     }
 }

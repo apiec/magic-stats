@@ -1,4 +1,5 @@
-﻿using MagicStats.Api.Shared;
+﻿using MagicStats.Api.Games;
+using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -15,13 +16,11 @@ public class GetPlayers : IEndpoint
 
     public record Response(IReadOnlyCollection<PlayerDto> Players);
 
-    public record PlayerDto(int Id, string Name);
-
     private static async Task<Ok<Response>> Handle(StatsDbContext dbContext, CancellationToken ct)
     {
         var players = await dbContext.Players
             .OrderBy(p => p.Name)
-            .Select(c => new PlayerDto(c.Id, c.Name))
+            .Select(c => new PlayerDto(c.Id.ToString(), c.Name))
             .AsNoTracking()
             .ToListAsync(ct);
 
