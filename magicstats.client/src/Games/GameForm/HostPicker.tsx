@@ -3,7 +3,7 @@ import {Picker} from "../../Shared/Picker";
 import {PickerOption} from "../../Shared/Picker.tsx";
 
 type HostPickerProps = {
-    currentHost: Host;
+    currentHost: Host | undefined;
     onHostChange: (host: Host) => void;
 }
 
@@ -19,7 +19,7 @@ export function HostPicker({currentHost, onHostChange}: HostPickerProps) {
         <Picker
             className='host-picker'
             getOptions={getHosts}
-            value={{value: currentHost, label: currentHost.name}}
+            value={currentHost ? {value: currentHost, label: currentHost.name} : undefined}
             onValueChange={(host) => {
                 if (host) {
                     onHostChange(host);
