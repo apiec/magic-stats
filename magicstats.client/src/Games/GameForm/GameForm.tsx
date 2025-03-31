@@ -9,6 +9,7 @@ import {useParams} from "react-router-dom";
 import {useImmer} from "use-immer";
 import {HostPicker} from "./HostPicker.tsx";
 import {Host} from "../../Hosts/HostApi.ts";
+import GroupedDndList from "./GroupedDndList.tsx";
 
 export default function GameForm() {
     const [game, setGame] = useImmer<Game | undefined>(undefined);
@@ -109,9 +110,7 @@ export default function GameForm() {
             </div>
             <div id='placement-section'>
                 <h3>Placement</h3>
-                <DragAndDropParticipantsList
-                    stylePlacement={true}
-                    orderedColumnName='#'
+                <GroupedDndList
                     participants={game.participants.slice()}
                     onParticipantDeleted={handleDeleteParticipant}
                     onDataReordered={handlePlacementChanged}
