@@ -17,62 +17,36 @@ import {Participant} from "../GamesApi.ts";
 import {FaGripLines, FaTrash} from "react-icons/fa";
 import "./DragAndDropParticipantsList.css";
 
-type ParticipantRowGroup = {
-    participants: ParticipantRow[],
-    orderedValue: number,
-}
-
-type ParticipantRow = Participant & {
-    onRowDeleted: () => void,
-    orderedValue: () => number,
-}
-
-type GroupedDndListProps = {
+type StartingOrderList = {
     participants: Participant[],
-    onDataReordered: (values: Participant[]) => void,
+    onStartingOrdersChanged: (values: Participant[]) => void,
     onParticipantDeleted: (playerId: string) => void,
-    orderedValueGetter: (p: Participant) => number,
 }
 
-export default function GroupedDndList(
+export default function StartingOrderList(
     {
         participants,
-        onDataReordered,
+        onStartingOrdersChanged,
         onParticipantDeleted,
-        orderedValueGetter,
-    }: GroupedDndListProps) {
+    }: StartingOrderList) {
 
-    const columns = useMemo<ColumnDef<ParticipantRowGroup, any>[]>(() => getColumnDefinition(), []);
-    const mappedRows = participants
-        .map(p => {
-            return {
-                ...p,
-                onRowDeleted: () => onParticipantDeleted(p.player.id),
-                orderedValue: () => orderedValueGetter(p)
-            } as ParticipantRow
-        });
-    const groups = groupBy(mappedRows, (p) => p.orderedValue());
-    const groupedData = Array.from(groups.entries())
-        .map(([key, value]) => {
-            return {orderedValue: key, participants: value} as ParticipantRowGroup
-        })
-        .sort((a, b) => a.orderedValue - b.orderedValue);
-
+    const columns = useMemo<ColumnDef<Participant, any>[]>(() => getColumnDefinition(onParticipantDeleted), []);
+    const sorted = participants.sort((a, b) => a.startingOrder - b.startingOrder);
     const table = useReactTable({
         columns: columns,
-        data: groupedData,
+        data: sorted,
         getCoreRowModel: getCoreRowModel(),
-        getRowId: row => row.orderedValue.toString(),
+        getRowId: row => row.player.id,
     });
 
     function handleDragEnd(event: DragEndEvent) {
         const {active, over} = event;
         if (active && over && active.id !== over.id) {
-            const oldIndex = groupedData.findIndex(p => p.orderedValue.toString() === active.id);
-            const newIndex = groupedData.findIndex(p => p.orderedValue.toString() === over.id);
-            const newData = arrayMove(groupedData, oldIndex, newIndex);
-            const reorderedData = newData.flatMap(d => d.participants);
-            onDataReordered(reorderedData);
+            const oldIndex = sorted.findIndex(p => p.player.id === active.id);
+            const newIndex = sorted.findIndex(p => p.player.id === over.id);
+            const newData = arrayMove(sorted, oldIndex, newIndex);
+            newData.forEach((p, i) => p.startingOrder = i);
+            onStartingOrdersChanged(newData);
         }
     }
 
@@ -107,10 +81,10 @@ export default function GroupedDndList(
                 </thead>
                 <tbody>
                 <SortableContext
-                    items={groupedData.map(g => g.orderedValue.toString())}
+                    items={participants.map(p => p.player.id)}
                     strategy={verticalListSortingStrategy}>
                     {table.getRowModel().rows.map(row => (
-                        <DraggableRow key={row.id} row={row}/>
+                        <DraggableRow key={row.id} row={row} />
                     ))}
                 </SortableContext>
                 </tbody>
@@ -119,64 +93,21 @@ export default function GroupedDndList(
     );
 }
 
-function getColumnDefinition(): ColumnDef<ParticipantRowGroup, any>[] {
-    const columnHelper = createColumnHelper<ParticipantRowGroup>();
+function getColumnDefinition(onParticipantDeleted: (playerId: string) => void): ColumnDef<Participant, any>[] {
+    const columnHelper = createColumnHelper<Participant>();
     return [
         columnHelper.display({
-            id: 'drag-handle',
+            id: 'dragHandle',
             header: 'Move',
             cell: ({row}) => <RowDragHandleCell rowId={row.id}/>,
             size: 60,
         }),
-        columnHelper.accessor('orderedValue', {
-            id: 'ordering',
+        columnHelper.display({
+            id: 'startingOrder',
             header: '#',
+            cell: ({row}) => row.original.startingOrder + 1,
             size: 60,
         }),
-        columnHelper.display({
-            id: 'row-data',
-            header: '',
-            cell: ({row}) => <InnerTable key={row.original.orderedValue} data={row.original.participants}/>,
-        }),
-    ];
-}
-
-type RowDragHandleCellProps = {
-    rowId: string,
-}
-
-type InnerTableProps = {
-    data: ParticipantRow[],
-}
-
-function InnerTable({data}: InnerTableProps) {
-    const columns = useMemo<ColumnDef<ParticipantRow, any>[]>(() => getInnerTableColumnDefinition(), []);
-    const table = useReactTable({
-        columns: columns,
-        data: data,
-        getCoreRowModel: getCoreRowModel(),
-        getRowId: row => row.player.id,
-    });
-    return (
-        <table className='dnd-participant-list'>
-            <tbody>
-            {table.getRowModel().rows.map(row => (
-                <tr key={row.id}>
-                    {row.getVisibleCells().map(cell => (
-                        <td key={cell.id} style={{width: cell.column.getSize()}}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                    ))}
-                </tr>
-            ))}
-            </tbody>
-        </table>
-    );
-}
-
-function getInnerTableColumnDefinition(): ColumnDef<ParticipantRow, any>[] {
-    const columnHelper = createColumnHelper<ParticipantRow>();
-    return [
         columnHelper.accessor('player.name', {
             id: 'playerName',
             header: 'Player',
@@ -193,11 +124,15 @@ function getInnerTableColumnDefinition(): ColumnDef<ParticipantRow, any>[] {
                     className='dnd-delete-button'
                     onClick={(e) => {
                         e.stopPropagation();
-                        row.original.onRowDeleted();
+                        onParticipantDeleted(row.original.player.id);
                     }}/>,
             size: 60,
         }),
     ];
+}
+
+type RowDragHandleCellProps = {
+    rowId: string,
 }
 
 function RowDragHandleCell({rowId}: RowDragHandleCellProps) {
@@ -211,12 +146,12 @@ function RowDragHandleCell({rowId}: RowDragHandleCellProps) {
 }
 
 type DraggableRowProps = {
-    row: Row<ParticipantRowGroup>,
+    row: Row<Participant>,
 }
 
 function DraggableRow({row}: DraggableRowProps) {
     const {transform, transition, setNodeRef, isDragging} = useSortable({
-        id: row.original.orderedValue.toString(),
+        id: row.original.player.id,
     });
 
     const style: CSSProperties = {
@@ -229,24 +164,11 @@ function DraggableRow({row}: DraggableRowProps) {
 
     return (
         <tr ref={setNodeRef} style={style}>
-            {row.getVisibleCells().map(cell => (
+            {row.getAllCells().map(cell => (
                 <td key={cell.id} style={{width: cell.column.getSize()}}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
             ))}
         </tr>
     );
-}
-
-function groupBy<T, K>(values: T[], grouping: (value: T) => K): Map<K, T[]> {
-    const map = new Map<K, T[]>();
-    values.forEach(v => {
-        const key = grouping(v);
-        if (!map.has(key)) {
-            map.set(key, [v]);
-        } else {
-            map.get(key)!.push(v);
-        }
-    })
-    return map;
 }

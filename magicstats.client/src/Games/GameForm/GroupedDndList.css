@@ -1,0 +1,18 @@
+﻿.dnd-inner-table {
+    color: inherit;
+    border-radius: 0;
+    border: 0;
+    border-collapse: collapse;
+    overflow: clip;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+}
+
+.dnd-inner-table > tbody {
+    border: 0;
+}
+.dnd-inner-table > tbody > tr > td {
+    border-top: 0;
+    border-bottom: 0;
+}

@@ -4,10 +4,11 @@
     grid-template-areas:
         "turns date"
         "host add-button"
-        "placement starting-order";
+        "placement placement"
+        "starting-order starting-order";
 
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 50px 70px 1fr;
+    grid-template-rows: 50px 70px 1fr 1fr;
 
     align-items: center;
     justify-items: left;
