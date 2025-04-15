@@ -99,7 +99,7 @@ public class ImportFromCsv : IEndpoint
                 Game = game,
                 Player = players[record.Player],
                 Commander = commanders[record.Commander],
-                StartingOrder = record.Order,
+                StartingOrder = record.Order - 1,
                 Placement = record.Pod - record.Points,
             };
             game.Participants.Add(participant);
