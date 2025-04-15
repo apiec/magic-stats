@@ -2,23 +2,25 @@
 import 'react-datepicker/dist/react-datepicker.css';
 import './GameForm.css';
 import AddParticipantDialog from "./AddParticipantDialog.tsx";
-import {useEffect, useRef} from "react";
-import DragAndDropParticipantsList from "./DragAndDropParticipantsList.tsx";
+import {useEffect, useRef, useState} from "react";
+import StartingOrderList from "./StartingOrderList.tsx";
 import {AddParticipantRequest, Game, GamesApi, Participant, Placements} from "../GamesApi.ts";
 import {useParams} from "react-router-dom";
 import {useImmer} from "use-immer";
 import {HostPicker} from "./HostPicker.tsx";
 import {Host} from "../../Hosts/HostApi.ts";
+import PlacementList from "./PlacementList.tsx";
 
 export default function GameForm() {
     const [game, setGame] = useImmer<Game | undefined>(undefined);
+    const [rerender, setRerender] = useState<number>(0);
     const {gameId} = useParams<string>();
 
     const dialogRef = useRef<HTMLDialogElement>(null);
 
     useEffect(() => {
         populateGameData();
-    }, []);
+    }, [rerender]);
 
     async function populateGameData() {
         const api = new GamesApi();
@@ -29,12 +31,7 @@ export default function GameForm() {
     async function handleDeleteParticipant(playerId: string) {
         const api = new GamesApi();
         await api.deleteParticipant(game!.id, playerId);
-        setGame((draft) => {
-            if (draft === undefined) {
-                return;
-            }
-            draft.participants = draft.participants.filter(p => p.player.id !== playerId);
-        });
+        setRerender(rerender + 1);
     }
 
     if (game === undefined || game === null) {
@@ -96,26 +93,21 @@ export default function GameForm() {
                             }}/>
             </div>
 
-            <button id='add-participant-button' onClick={toggleDialog}>Add participant</button>
+            <button id='add-participant-button' onClick={toggleDialog}>Add a participant</button>
 
             <div id='starting-order-section'>
                 <h3>Starting order</h3>
-                <DragAndDropParticipantsList
-                    orderedColumnName='#'
+                <StartingOrderList
                     participants={game.participants.slice()}
                     onParticipantDeleted={handleDeleteParticipant}
-                    onDataReordered={handleStartingOrderChanged}
-                    orderedValueGetter={p => p.startingOrder + 1}/>
+                    onStartingOrdersChanged={handleStartingOrderChanged}/>
             </div>
             <div id='placement-section'>
                 <h3>Placement</h3>
-                <DragAndDropParticipantsList
-                    stylePlacement={true}
-                    orderedColumnName='#'
+                <PlacementList
                     participants={game.participants.slice()}
                     onParticipantDeleted={handleDeleteParticipant}
-                    onDataReordered={handlePlacementChanged}
-                    orderedValueGetter={p => p.placement + 1}/>
+                    onPlacementsChanged={handlePlacementChanged}/>
             </div>
         </div>
     );
@@ -154,15 +146,9 @@ export default function GameForm() {
             return;
         }
         const api = new GamesApi();
-        await api.updateStartingOrder(game.id, newData.map(p => p.player.id));
-        setGame((draft) => {
-            if (draft !== undefined) {
-                newData.forEach((p, i) => {
-                    const dp = draft.participants.find(dp => dp.player.id == p.player.id);
-                    dp!.startingOrder = i;
-                })
-            }
-        })
+        const sorted = newData.sort((a, b) => a.startingOrder - b.startingOrder);
+        await api.updateStartingOrder(game.id, sorted.map(p => p.player.id));
+        setRerender(rerender + 1);
     }
 
     async function handlePlacementChanged(newData: Participant[]) {
@@ -171,16 +157,9 @@ export default function GameForm() {
         }
         const api = new GamesApi();
         const placements = {} as Placements;
-        newData.forEach((p, i) => placements[p.player.id] = i);
+        newData.forEach(p => placements[p.player.id] = p.placement);
         await api.updatePlacement(game.id, placements);
-        setGame((draft) => {
-            if (draft !== undefined) {
-                newData.forEach((p, i) => {
-                    const dp = draft.participants.find(dp => dp.player.id == p.player.id);
-                    dp!.placement = i;
-                })
-            }
-        })
+        setRerender(rerender + 1);
     }
 
     async function handleHostChanged(host: Host) {
@@ -189,12 +168,7 @@ export default function GameForm() {
         }
         const api = new GamesApi();
         await api.updateHost(game.id, host.id);
-        setGame((draft) => {
-            if (draft !== undefined) {
-                draft.host = host.name;
-                draft.irl = host.irl;
-            }
-        });
+        setRerender(rerender + 1);
     }
 
     async function handleTurnsChanged(turns: number) {
@@ -203,10 +177,6 @@ export default function GameForm() {
         }
         const api = new GamesApi();
         await api.updateTurnCount(game.id, turns);
-        setGame((draft) => {
-            if (draft !== undefined) {
-                draft.turns = turns;
-            }
-        });
+        setRerender(rerender + 1);
     }
 }

@@ -17,43 +17,24 @@ import {Participant} from "../GamesApi.ts";
 import {FaGripLines, FaTrash} from "react-icons/fa";
 import "./DragAndDropParticipantsList.css";
 
-type DragAndDropListProps = {
-    stylePlacement?: boolean,
+type StartingOrderList = {
     participants: Participant[],
-    onDataReordered: (values: Participant[]) => void,
+    onStartingOrdersChanged: (values: Participant[]) => void,
     onParticipantDeleted: (playerId: string) => void,
-    orderedColumnName: string,
-    orderedValueGetter: (p: Participant) => number,
 }
 
-type ParticipantRow = Participant & {
-    onRowDeleted: () => void,
-    orderedValue: () => number,
-}
-
-export default function DragAndDropParticipantsList(
+export default function StartingOrderList(
     {
-        stylePlacement,
         participants,
-        onDataReordered,
+        onStartingOrdersChanged,
         onParticipantDeleted,
-        orderedColumnName,
-        orderedValueGetter,
-    }: DragAndDropListProps) {
+    }: StartingOrderList) {
 
-    const columns = useMemo<ColumnDef<ParticipantRow, any>[]>(() => getColumnDefinition(orderedColumnName), []);
-    const sortedData = participants
-        .sort((a, b) => orderedValueGetter(a) - orderedValueGetter(b))
-        .map(p => {
-            return {
-                ...p,
-                onRowDeleted: () => onParticipantDeleted(p.player.id),
-                orderedValue: () => orderedValueGetter(p)
-            } as ParticipantRow
-        });
+    const columns = useMemo<ColumnDef<Participant, any>[]>(() => getColumnDefinition(onParticipantDeleted), []);
+    const sorted = participants.sort((a, b) => a.startingOrder - b.startingOrder);
     const table = useReactTable({
         columns: columns,
-        data: sortedData,
+        data: sorted,
         getCoreRowModel: getCoreRowModel(),
         getRowId: row => row.player.id,
     });
@@ -61,10 +42,11 @@ export default function DragAndDropParticipantsList(
     function handleDragEnd(event: DragEndEvent) {
         const {active, over} = event;
         if (active && over && active.id !== over.id) {
-            const oldIndex = sortedData.findIndex(p => p.player.id === active.id);
-            const newIndex = sortedData.findIndex(p => p.player.id === over.id);
-            const newData = arrayMove(sortedData, oldIndex, newIndex);
-            onDataReordered(newData);
+            const oldIndex = sorted.findIndex(p => p.player.id === active.id);
+            const newIndex = sorted.findIndex(p => p.player.id === over.id);
+            const newData = arrayMove(sorted, oldIndex, newIndex);
+            newData.forEach((p, i) => p.startingOrder = i);
+            onStartingOrdersChanged(newData);
         }
     }
 
@@ -99,10 +81,10 @@ export default function DragAndDropParticipantsList(
                 </thead>
                 <tbody>
                 <SortableContext
-                    items={sortedData.map(p => p.player.id)}
+                    items={participants.map(p => p.player.id)}
                     strategy={verticalListSortingStrategy}>
                     {table.getRowModel().rows.map(row => (
-                        <DraggableRow key={row.id} row={row} stylePlacement={stylePlacement}/>
+                        <DraggableRow key={row.id} row={row} />
                     ))}
                 </SortableContext>
                 </tbody>
@@ -111,19 +93,19 @@ export default function DragAndDropParticipantsList(
     );
 }
 
-function getColumnDefinition(orderedColumnName: string): ColumnDef<ParticipantRow, any>[] {
-    const columnHelper = createColumnHelper<ParticipantRow>();
+function getColumnDefinition(onParticipantDeleted: (playerId: string) => void): ColumnDef<Participant, any>[] {
+    const columnHelper = createColumnHelper<Participant>();
     return [
         columnHelper.display({
-            id: 'drag-handle',
+            id: 'dragHandle',
             header: 'Move',
             cell: ({row}) => <RowDragHandleCell rowId={row.id}/>,
             size: 60,
         }),
         columnHelper.display({
-            id: 'ordering',
-            header: orderedColumnName,
-            cell: ({row}) => row.original.orderedValue(),
+            id: 'startingOrder',
+            header: '#',
+            cell: ({row}) => row.original.startingOrder + 1,
             size: 60,
         }),
         columnHelper.accessor('player.name', {
@@ -142,7 +124,7 @@ function getColumnDefinition(orderedColumnName: string): ColumnDef<ParticipantRo
                     className='dnd-delete-button'
                     onClick={(e) => {
                         e.stopPropagation();
-                        row.original.onRowDeleted();
+                        onParticipantDeleted(row.original.player.id);
                     }}/>,
             size: 60,
         }),
@@ -165,10 +147,9 @@ function RowDragHandleCell({rowId}: RowDragHandleCellProps) {
 
 type DraggableRowProps = {
     row: Row<Participant>,
-    stylePlacement?: boolean,
 }
 
-function DraggableRow({row, stylePlacement}: DraggableRowProps) {
+function DraggableRow({row}: DraggableRowProps) {
     const {transform, transition, setNodeRef, isDragging} = useSortable({
         id: row.original.player.id,
     });
@@ -179,12 +160,11 @@ function DraggableRow({row, stylePlacement}: DraggableRowProps) {
         opacity: isDragging ? 0.8 : 1,
         zIndex: isDragging ? 1 : 0,
         position: 'relative',
-        background: stylePlacement && row.index === 0 ? 'yellow' : undefined,
     }
 
     return (
         <tr ref={setNodeRef} style={style}>
-            {row.getVisibleCells().map(cell => (
+            {row.getAllCells().map(cell => (
                 <td key={cell.id} style={{width: cell.column.getSize()}}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
