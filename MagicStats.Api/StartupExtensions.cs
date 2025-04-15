@@ -2,6 +2,7 @@
 using MagicStats.Api.Games;
 using MagicStats.Api.Home;
 using MagicStats.Api.Hosts;
+using MagicStats.Api.Migration;
 using MagicStats.Api.Players;
 using MagicStats.Api.Pods;
 using MagicStats.Api.Shared;
@@ -30,6 +31,7 @@ public static class StartupExtensions
         endpoints.AddHostsEndpoints();
         endpoints.AddGameEndpoints();
         endpoints.AddPodsEndpoints();
+        endpoints.AddMigrationEndpoints();
 
         return app;
     }

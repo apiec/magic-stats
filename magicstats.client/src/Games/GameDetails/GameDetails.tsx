@@ -68,8 +68,21 @@ export function GameDetails({game}: GameDetailsProps) {
 
 const columnHelper = createColumnHelper<Participant>();
 const columns: ColumnDef<Participant, any>[] = [
-    columnHelper.accessor('placement', {id: 'placement', header: 'Placement'}),
-    columnHelper.accessor('commander.name', {id: 'commanderName', header: 'Commander'}),
-    columnHelper.accessor('player.name', {id: 'playerName', header: 'Player'}),
-    columnHelper.accessor('startingOrder', {id: 'startingOrder', header: 'Started'}),
+    columnHelper.accessor('placement', {
+        id: 'placement',
+        header: 'Placement',
+        cell: ({row}) => row.original.placement + 1,
+    }),
+    columnHelper.accessor('commander.name', {
+        id: 'commanderName',
+        header: 'Commander'
+    }),
+    columnHelper.accessor('player.name', {
+        id: 'playerName',
+        header: 'Player'
+    }),
+    columnHelper.accessor('startingOrder', {
+        id: 'startingOrder',
+        header: 'Started'
+    }),
 ];
