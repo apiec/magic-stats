@@ -9,7 +9,7 @@ public record PlayerWinratesOverTime(
 
 public class PlayerWinratesCalculator(IReadOnlyCollection<Game> games, IReadOnlyCollection<Player> players)
 {
-    public IEnumerable<PlayerWinratesOverTime> Calculate(int slidingWindowSize)
+    public IEnumerable<PlayerWinratesOverTime> Calculate(int? slidingWindowSize)
     {
         var meetings = games.GroupBy(g => g.PlayedAt.Date).OrderBy(g => g.Key).ToArray();
 
@@ -17,7 +17,7 @@ public class PlayerWinratesCalculator(IReadOnlyCollection<Game> games, IReadOnly
             p => p.Id,
             p => new PlayerWinratesOverTime(p.Id, p.Name, new List<DataPoint>(meetings.Length)));
 
-        var playerRecords = players.ToDictionary(p => p.Id, _ => new Queue<bool>(slidingWindowSize));
+        var playerRecords = players.ToDictionary(p => p.Id, _ => new Queue<bool>());
         foreach (var meeting in meetings)
         {
             foreach (var game in meeting)
@@ -26,7 +26,7 @@ public class PlayerWinratesCalculator(IReadOnlyCollection<Game> games, IReadOnly
                 {
                     var record = playerRecords[participant.PlayerId];
                     record.Enqueue(participant.IsWinner());
-                    while (record.Count > slidingWindowSize)
+                    while (slidingWindowSize is not null && record.Count > slidingWindowSize)
                     {
                         record.Dequeue();
                     }

@@ -39,10 +39,8 @@ public class GetPlayersWinrates : IEndpoint
             (_, not 0) => await dataProvider.GetByPlayers(intIds),
         };
 
-        slidingWindowSize ??= 10;
-
         var calculator = new PlayerWinratesCalculator(games, players);
-        var playerResults = calculator.Calculate(slidingWindowSize.Value).ToArray();
+        var playerResults = calculator.Calculate(slidingWindowSize).ToArray();
 
         var response = new Response(playerResults);
         return TypedResults.Ok(response);

@@ -145,7 +145,7 @@ const columns: ColumnDef<Game, any>[] = [
     columnHelper.accessor('irl', {
         id: 'irl',
         header: 'IRL/online',
-        cell: props => props.row.original.irl === null ? '-' : props.row.original ? 'IRL' : 'online',
+        cell: props => props.row.original.irl === null ? '-' : props.row.original.irl ? 'IRL' : 'online',
     }),
     columnHelper.display({
         id: 'edit',

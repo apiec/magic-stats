@@ -60,9 +60,11 @@ public class GetHomePageStats : IEndpoint
         {
             return await _dbContext.Database.SqlQuery<int>(
                     $"""
-                     SELECT COUNT(1) value
-                     FROM Games g
-                     GROUP BY DATE(g.PlayedAt)
+                     SELECT COUNT(1) Value
+                     FROM (SELECT 1 c
+                           FROM Games g
+                           GROUP BY DATE(g.PlayedAt, 'unixepoch'))
+                     GROUP BY c
                      """)
                 .FirstOrDefaultAsync(ct);
         }
@@ -76,7 +78,7 @@ public class GetHomePageStats : IEndpoint
                      INNER JOIN (SELECT PlayerId, COUNT(1) gamesPlayed
                          FROM Participants
                          GROUP BY PlayerId
-                         ORDER BY gamesPlayed
+                         ORDER BY gamesPlayed DESC
                          LIMIT 1) ON p.Id = PlayerId
                      """)
                 .FirstOrDefaultAsync(ct);
@@ -91,7 +93,7 @@ public class GetHomePageStats : IEndpoint
                      INNER JOIN (SELECT CommanderId, COUNT(1) gamesPlayed
                          FROM Participants
                          GROUP BY CommanderId
-                         ORDER BY gamesPlayed
+                         ORDER BY gamesPlayed DESC
                          LIMIT 1) ON c.Id = CommanderId
                      """)
                 .FirstOrDefaultAsync(ct);
