@@ -24,7 +24,7 @@ import {CSS} from '@dnd-kit/utilities';
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers";
 import {Participant} from "../GamesApi.ts";
 import {FaGripLines, FaTrash} from "react-icons/fa";
-import "./GroupedDndList.css";
+import "./DragAndDropParticipantsList.css";
 
 type PlacementListProps = {
     participants: Participant[],
