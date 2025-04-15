@@ -5,7 +5,8 @@
     getCoreRowModel,
     Row,
     RowSelectionState,
-    useReactTable
+    useReactTable,
+    VisibilityState
 } from "@tanstack/react-table";
 import {CSSProperties, useMemo, useState} from "react";
 import {
@@ -23,7 +24,7 @@ import {CSS} from '@dnd-kit/utilities';
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers";
 import {Participant} from "../GamesApi.ts";
 import {FaGripLines, FaTrash} from "react-icons/fa";
-import "./DragAndDropParticipantsList.css";
+import "./GroupedDndList.css";
 
 type PlacementListProps = {
     participants: Participant[],
@@ -38,6 +39,15 @@ export default function PlacementList(
         onParticipantDeleted,
     }: PlacementListProps) {
 
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+        'dragHandle': true,
+        'select': false,
+        'placement': true,
+        'playerName': true,
+        'commanderName': true,
+        'delete': true,
+    });
+
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
     const columns = useMemo<ColumnDef<Participant, any>[]>(() => getColumnDefinition(onParticipantDeleted), []);
     const sortedData = participants.sort((a, b) => a.placement - b.placement);
@@ -47,9 +57,11 @@ export default function PlacementList(
         data: sortedData,
         state: {
             rowSelection,
+            columnVisibility,
         },
         enableRowSelection: true,
         onRowSelectionChange: setRowSelection,
+        onColumnVisibilityChange: setColumnVisibility,
         getCoreRowModel: getCoreRowModel(),
         getRowId: row => row.player.id.toString(),
     });
@@ -61,7 +73,6 @@ export default function PlacementList(
         for (const p of selectedParticipants) {
             p.placement = maxPlacement;
         }
-        console.log(selectedParticipants);
         const sortedParticipants = rows.map(r => r.original).sort((a, b) => a.placement - b.placement);
 
         let lastPlacement = sortedParticipants.length - 1;
@@ -96,21 +107,42 @@ export default function PlacementList(
         useSensor(KeyboardSensor, {}),
     )
 
+    function toggleDrawsView(draws: boolean) {
+        table.getColumn('select')!.toggleVisibility(draws);
+        table.getColumn('dragHandle')!.toggleVisibility(!draws);
+    }
+
     return (
         <div>
-            <button disabled={Object.keys(rowSelection).length <= 1} onClick={(e) => {
-                e.stopPropagation();
-                handleDraw();
-                setRowSelection({});
-            }}>
-                Draw
-            </button>
-            <button disabled={Object.keys(rowSelection).length <= 1} onClick={(e) => {
-                e.stopPropagation();
-                setRowSelection({});
-            }}>
-                Clear
-            </button>
+            <div className='draw-buttons'>
+                {
+                    table.getColumn('select')!.getIsVisible() ?
+                        <>
+                            <button disabled={Object.keys(rowSelection).length <= 1} onClick={(e) => {
+                                e.stopPropagation();
+                                handleDraw();
+                                table.resetRowSelection();
+                                toggleDrawsView(false);
+                            }}>
+                                Confirm
+                            </button>
+                            <button onClick={(e) => {
+                                e.stopPropagation();
+                                table.resetRowSelection();
+                                toggleDrawsView(false);
+                            }}>
+                                Close
+                            </button>
+                        </>
+                        :
+                        <button onClick={(e) => {
+                            e.stopPropagation();
+                            toggleDrawsView(true);
+                        }}>
+                            Add a draw
+                        </button>
+                }
+            </div>
             <DndContext
                 collisionDetection={closestCenter}
                 modifiers={[restrictToVerticalAxis]}
@@ -198,12 +230,14 @@ type RowDragHandleCellProps = {
 }
 
 function RowDragHandleCell({rowId}: RowDragHandleCellProps) {
-    const {attributes, listeners} = useSortable({
+    const {attributes, listeners, setNodeRef} = useSortable({
         id: rowId,
     });
 
     return (
-        <FaGripLines {...attributes} {...listeners} className='move-row-icon'/>
+        <div ref={setNodeRef}>
+            <FaGripLines {...attributes} {...listeners} className='move-row-icon'/>
+        </div>
     )
 }
 
@@ -212,18 +246,19 @@ type DraggableRowProps = {
     stylePlacement?: boolean,
 }
 
-function DraggableRow({row, stylePlacement}: DraggableRowProps) {
+function DraggableRow({row}: DraggableRowProps) {
     const {transform, transition, setNodeRef, isDragging} = useSortable({
         id: row.original.player.id,
     });
 
+    const placementColors = ['gold', 'silver', 'orange'];
     const style: CSSProperties = {
         transform: CSS.Transform.toString(transform),
         transition: transition,
         opacity: isDragging ? 0.8 : 1,
         zIndex: isDragging ? 1 : 0,
         position: 'relative',
-        background: stylePlacement && row.index === 0 ? 'yellow' : undefined,
+        background: row.original.placement < placementColors.length ? placementColors[row.original.placement] : undefined,
     }
 
     return (

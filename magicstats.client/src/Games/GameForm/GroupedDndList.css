@@ -12,7 +12,19 @@
 .dnd-inner-table > tbody {
     border: 0;
 }
+
 .dnd-inner-table > tbody > tr > td {
     border-top: 0;
     border-bottom: 0;
+}
+
+.draw-buttons {
+    padding-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.draw-buttons > button {
+    padding: 8px;
 }

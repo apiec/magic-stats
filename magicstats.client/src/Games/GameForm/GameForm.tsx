@@ -93,7 +93,7 @@ export default function GameForm() {
                             }}/>
             </div>
 
-            <button id='add-participant-button' onClick={toggleDialog}>Add participant</button>
+            <button id='add-participant-button' onClick={toggleDialog}>Add a participant</button>
 
             <div id='starting-order-section'>
                 <h3>Starting order</h3>
