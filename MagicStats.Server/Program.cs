@@ -13,10 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddHttpLogging(o => { });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
-});
+builder.Services.AddSwaggerGen(options => { options.CustomSchemaIds(type => type.FullName?.Replace("+", ".")); });
 builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddPersistenceEfCore(config);
@@ -29,11 +26,8 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseMagicStatsApi();
