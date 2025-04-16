@@ -83,6 +83,7 @@ const columns: ColumnDef<Participant, any>[] = [
     }),
     columnHelper.accessor('startingOrder', {
         id: 'startingOrder',
-        header: 'Started'
+        header: 'Started',
+        cell: ({row}) => row.original.startingOrder + 1,
     }),
 ];
