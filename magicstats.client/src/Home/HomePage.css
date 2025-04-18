@@ -4,13 +4,13 @@
 .home-page-values-container {
     display: flex;
     flex-direction: row;
-    width: 700px;
+    max-width: 700px;
     flex-wrap: wrap;
     align-self: center;
     justify-self: center;
     align-items: start;
     justify-content: center;
-    margin: 50px;
+    margin-top: 50px;
     gap: 50px;
 }
 
@@ -21,4 +21,21 @@
 
 .value-display-value:last-child {
     background: #1a1a1a;
+}
+
+@media screen and (max-width: 768px) {
+    .home-page {
+        width: 100%;
+    }
+    .home-page-values-container {
+        width: 100%;
+        padding-left: 20px;
+        padding-right: 20px;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .value-display {
+        width: 100%;
+    }
 }
