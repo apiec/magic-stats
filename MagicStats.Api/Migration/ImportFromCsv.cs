@@ -69,39 +69,19 @@ public class ImportFromCsv : IEndpoint
 
         var now = DateTimeOffset.UtcNow;
         var firstRecord = records.First();
-        var game = new Game
-        {
-            LastModified = now,
-            PlayedAt = firstRecord.Date.AddHours(17 + firstRecord.Game),
-            TurnCount = null,
-            Host = hosts[firstRecord.Host],
-            Participants = [],
-        };
+        var game = ToGame(firstRecord, hosts, now);
         var currentGameId = firstRecord.GameId;
-        foreach (var record in records.Skip(1))
+
+        foreach (var record in records)
         {
             if (record.GameId != currentGameId)
             {
                 dbContext.Games.Add(game);
-                game = new Game
-                {
-                    LastModified = now,
-                    PlayedAt = record.Date.AddHours(17 + record.Game),
-                    TurnCount = null,
-                    Host = hosts[record.Host],
-                    Participants = [],
-                };
+                game = ToGame(record, hosts, now);
                 currentGameId = record.GameId;
             }
 
-            var participant = new Participant
-            {
-                Game = game,
-                Player = players[record.Player],
-                Commander = commanders[record.Commander],
-                StartingOrder = record.Order - 1,
-                Placement = record.Pod - record.Points,
-            };
+            var participant = ToParticipant(game, record, players, commanders);
             game.Participants.Add(participant);
         }
 
@@ -109,6 +89,34 @@ public class ImportFromCsv : IEndpoint
 
         await dbContext.SaveChangesAsync(ct);
         return TypedResults.Ok();
+    }
+
+    private static Game ToGame(GameRecord record, Dictionary<string, Host> hosts, DateTimeOffset now)
+    {
+        return new Game
+        {
+            LastModified = now,
+            PlayedAt = record.Date.AddHours(17 + record.Game),
+            TurnCount = null,
+            Host = hosts[record.Host],
+            Participants = [],
+        };
+    }
+
+    private static Participant ToParticipant(
+        Game game,
+        GameRecord record,
+        Dictionary<string, Player> players,
+        Dictionary<string, Commander> commanders)
+    {
+        return new Participant
+        {
+            Game = game,
+            Player = players[record.Player],
+            Commander = commanders[record.Commander],
+            StartingOrder = record.Order - 1,
+            Placement = record.Pod - record.Points,
+        };
     }
 }
 
