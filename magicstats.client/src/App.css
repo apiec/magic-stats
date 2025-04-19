@@ -2,10 +2,17 @@
     height: 100vh;
     width: 100%;
     display: grid;
-    grid-template-areas: "nav .";
+    grid-template-areas: 
+            "top-bar top-bar"
+            "nav content";
     grid-template-columns: 200px 1fr;
+    grid-template-rows: fit-content(80px) 1fr;
 }
 
+.content {
+    margin-top: 20px;
+    grid-area: content;
+}
 @media screen and (max-width: 768px) {
     #root {
         height: 100%;
@@ -15,7 +22,7 @@
         grid-template-areas: 
                 "top-bar"
                 "nav"
-                ".";
+                "content";
         grid-template-columns: 1fr;
     }
 }

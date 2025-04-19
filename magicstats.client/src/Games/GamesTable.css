@@ -6,6 +6,10 @@
     gap: 20px;
 }
 
+.game-details-dialog {
+    background-color: #242424;
+}
+
 .new-game-button {
     padding: 14px 20px;
     font-size: 1.3rem;

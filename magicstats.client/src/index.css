@@ -4,7 +4,6 @@ html {
     font-weight: 400;
     font-size: 16px;
 
-    color-scheme: light dark;
     color: rgba(255, 255, 255, 0.87);
     background-color: #242424;
 
@@ -12,6 +11,11 @@ html {
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+dialog {
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #242424;
 }
 
 @media screen and (max-width: 768px) {
@@ -49,6 +53,7 @@ html {
 
 button {
     background-color: #051545;
+    color: rgba(255, 255, 255, 0.87);
     border: 0;
     border-radius: 5px;
     box-shadow: 3px 3px 5px #1a1a1a;

@@ -1,5 +1,4 @@
-﻿
-#game-form-component {
+﻿#game-form-component {
     display: grid;
     grid-template-areas:
         "turns date"
@@ -82,4 +81,8 @@
 #add-turns-button {
     height: fit-content;
     padding: 10px;
+}
+
+.host-picker {
+    color: black;
 }

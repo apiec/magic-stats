@@ -22,8 +22,7 @@ export default function Navbar() {
     return (
         <>
             <div className={'top-bar ' + expandedClass}>
-                <img alt='logo' src='/stats-white.svg'/>
-                <span>Magic stats</span>
+                <MagicStatsLogo/>
                 <FaBars className={'expand-button button-like ' + expandedClass} onClick={toggleExpanded}/>
             </div>
             <nav className={expandedClass}>
@@ -65,5 +64,14 @@ export default function Navbar() {
                 </Link>
             </nav>
         </>
+    );
+}
+
+function MagicStatsLogo() {
+    return (
+        <Link to='/' className='magicstats-logo'>
+            <img alt='logo' src='/stats-white.svg'/>
+            <span>Magic stats</span>
+        </Link>
     );
 }

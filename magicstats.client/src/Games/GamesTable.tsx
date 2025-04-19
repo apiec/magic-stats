@@ -63,7 +63,7 @@ export default function GamesTable() {
 
     return (
         <div className='games-table-component'>
-            <dialog ref={dialogRef} onClick={(e) => {
+            <dialog className='game-details-dialog' ref={dialogRef} onClick={(e) => {
                 if (e.currentTarget === e.target) {
                     toggleDialog();
                 }
