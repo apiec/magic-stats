@@ -49,6 +49,7 @@ export default function GameForm() {
             }}>
                 <AddParticipantDialog onAdd={handleAddParticipant}/>
             </dialog>
+
             <div id='date-picker'>
                 <label htmlFor='date-picker-el'>Played at:</label>
                 <DatePicker

@@ -7,7 +7,7 @@ import {
     getSortedRowModel,
     useReactTable
 } from "@tanstack/react-table";
-import {Fragment, useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {GameDetails} from "./GameDetails/GameDetails.tsx";
 import {format} from "date-fns";
 import {Game, GamesApi} from './GamesApi.ts';
@@ -92,17 +92,15 @@ export default function GamesTable() {
                 </thead>
                 <tbody>
                 {table.getRowModel().rows.map(row => (
-                    <Fragment key={row.id}>
-                        <tr onClick={() => {
-                            setCurrentGameId(row.original.id);
-                            toggleDialog();
-                        }}>
-                            {row.getVisibleCells().map(cell => (
-                                <td key={cell.id}>
-                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                </td>))}
-                        </tr>
-                    </Fragment>
+                    <tr key={row.id} onClick={() => {
+                        setCurrentGameId(row.original.id);
+                        toggleDialog();
+                    }}>
+                        {row.getVisibleCells().map(cell => (
+                            <td key={cell.id}>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </td>))}
+                    </tr>
                 ))}
                 </tbody>
             </table>

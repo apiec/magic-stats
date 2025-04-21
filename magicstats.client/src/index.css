@@ -18,10 +18,6 @@ dialog {
     background-color: #242424;
 }
 
-@media screen and (max-width: 768px) {
-    font-size: 30px;
-}
-
 a {
     font-weight: 500;
     color: #646cff;

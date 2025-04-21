@@ -13,6 +13,7 @@
     margin-top: 20px;
     grid-area: content;
 }
+
 @media screen and (max-width: 768px) {
     #root {
         height: 100%;

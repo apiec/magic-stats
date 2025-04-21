@@ -8,7 +8,7 @@
 }
 
 .dnd-participants-list {
-    width: 100%;
+    max-width: 100%;
 }
 
 .draw-buttons {
