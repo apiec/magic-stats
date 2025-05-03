@@ -5,7 +5,8 @@ import {
     flexRender,
     getCoreRowModel,
     getSortedRowModel,
-    useReactTable
+    useReactTable,
+    VisibilityState
 } from "@tanstack/react-table";
 import {useEffect, useRef, useState} from "react";
 import {GameDetails} from "./GameDetails/GameDetails.tsx";
@@ -17,6 +18,37 @@ import {FaPen, FaTrash} from 'react-icons/fa';
 export default function GamesTable() {
     const [games, setGames] = useState<Game[]>([]);
     const [currentGameId, setCurrentGameId] = useState<string>();
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+        'playedAt': true,
+        'winning_commander': true,
+        'winning_player': true,
+        'pod_size': true,
+        'turns': true,
+        'host': true,
+        'irl': true,
+        'edit': true,
+        'delete': true,
+    });
+
+    useEffect(() => {
+        const handleResize = () => {
+            const isMobile = window.innerWidth < 768;
+            setColumnVisibility({
+                'playedAt': true,
+                'winning_commander': true,
+                'winning_player': true,
+                'pod_size': true,
+                'turns': !isMobile,
+                'host': !isMobile,
+                'irl': !isMobile,
+                'edit': true,
+                'delete': true,
+            });
+        }
+        window.addEventListener('resize', handleResize);
+        handleResize();
+    }, []);
+
     const currentGame = games.find(g => g.id === currentGameId);
 
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -32,7 +64,10 @@ export default function GamesTable() {
                     desc: true,
                 }
             ]
-        }
+        },
+        state: {
+            columnVisibility,
+        },
     });
 
     async function populateGameData() {
@@ -44,6 +79,7 @@ export default function GamesTable() {
     useEffect(() => {
         populateGameData();
     }, []);
+
     const navigate = useNavigate();
 
     async function handleNewGame() {
