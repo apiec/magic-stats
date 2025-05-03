@@ -21,7 +21,9 @@ export default function WinrateGraph({data, slidingWindowSize}: WinrateGraphProp
         <div className='winrate-graph'>
             <h3>Winrates</h3>
             <p>{slidingWindowSize ? `Sliding window - ${slidingWindowSize}` : 'All time'}</p>
-            <Graph data={data}/>
+            <div className='graph-container'>
+                <Graph data={data}/>
+            </div>
         </div>
     );
 }
@@ -40,7 +42,7 @@ function Graph({data}: { data: DataSeries[] }) {
     const horizontalTicks = Array.from({length: topValue / 0.2 + 1}, (_, k) => 0.2 * k);
 
     return (
-        <ResponsiveContainer width={600} height='80%' minHeight={400} maxHeight={600}>
+        <ResponsiveContainer width={600} height='100%' minHeight={500} maxHeight={1000}>
             <LineChart>
                 <CartesianGrid vertical={false} horizontalValues={horizontalTicks} strokeWidth={1}
                                strokeDasharray='5 5'/>

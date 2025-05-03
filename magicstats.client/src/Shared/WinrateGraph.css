@@ -1,7 +1,15 @@
 ﻿.winrate-graph {
-    flex-grow: 1;
+    height: fit-content;
+    max-width: 100%;
+    align-items: flex-start;
     justify-items: center;
-    align-items: start;
+}
+
+@media screen and (max-width: 768px) {
+    .graph-container {
+        width: 100%;
+        align-self: flex-start;
+    }
 }
 
 .winrate-graph > h3 {

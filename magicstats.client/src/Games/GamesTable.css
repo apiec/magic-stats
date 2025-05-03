@@ -4,12 +4,10 @@
     align-items: center;
     gap: 20px;
     width: 100%;
-    overflow: scroll;
 }
 
 .game-details-dialog {
     background-color: #242424;
-    overflow: scroll;
 }
 
 .new-game-button {

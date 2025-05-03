@@ -45,7 +45,7 @@ export default function Commanders() {
                 <ValueDisplay title={'Highest WRL' + lastX}
                               values={[highestWinrateCommanderLast.name, toPercentage(highestWinrateLast)]}/>
             </section>
-            <section className='players-controls'>
+            <section className='commanders-controls'>
                 <div>
                     <p>Sliding window:</p>
                     <Select className='black-text'

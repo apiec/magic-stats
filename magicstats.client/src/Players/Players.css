@@ -1,7 +1,7 @@
 ﻿.player-form {
     display: flex;
     flex-direction: row;
-    align-items: start;
+    align-items: flex-start;
     justify-items: center;
 }
 
@@ -25,6 +25,18 @@
     gap: 30px;
 }
 
+@media screen and (max-width: 768px) {
+    .players-section {
+        align-items: flex-start;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    .players-controls {
+        align-self: center;
+        justify-content: center;
+    }
+}
+
 .black-text {
     color: black;
 }
@@ -34,13 +46,14 @@
     flex-direction: row;
     align-items: center;
     justify-items: flex-start;
-    gap: 80px;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
 .players-controls > * {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 1px;
 }
 
@@ -53,4 +66,11 @@
     display: flex;
     flex-direction: row;
     gap: 20px;
+    flex-wrap: wrap;
+}
+
+@media screen and (max-width: 768px) {
+    .players-section-values {
+        display: none;
+    }
 }
