@@ -11,6 +11,8 @@ import Games from "./Games/Games.tsx";
 import HomePage from "./Home/HomePage.tsx";
 import Pods from "./Pods/Pods.tsx";
 import Hosts from "./Hosts/Hosts.tsx";
+import PlayerPage from "./Players/PlayerDetails.tsx";
+import PlayersOutlet from "./Players/PlayersOutlet.tsx";
 
 const router = createBrowserRouter([
     {
@@ -27,7 +29,17 @@ const router = createBrowserRouter([
             },
             {
                 path: "players",
-                element: <Players/>,
+                element: <PlayersOutlet/>,
+                children: [
+                    {
+                        index: true,
+                        element: <Players/>
+                    },
+                    {
+                        path: ":playerId",
+                        element: <PlayerPage/>
+                    }
+                ],
             },
             {
                 path: "pods",
