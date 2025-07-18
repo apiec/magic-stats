@@ -1,7 +1,6 @@
 import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
 import App from './App.tsx'
-import './index.css'
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import Commanders from "./Commanders/Commanders.tsx";
 import Players from "./Players/Players.tsx";
@@ -11,6 +10,8 @@ import Games from "./Games/Games.tsx";
 import HomePage from "./Home/HomePage.tsx";
 import Pods from "./Pods/Pods.tsx";
 import Hosts from "./Hosts/Hosts.tsx";
+import "@radix-ui/themes/styles.css";
+import {Theme} from "@radix-ui/themes";
 
 const router = createBrowserRouter([
     {
@@ -57,6 +58,15 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <RouterProvider router={router}/>
+        <Theme
+            appearance='dark'
+            accentColor='indigo'
+            grayColor='gray'
+            panelBackground='solid'
+            scaling='110%'
+            radius='full'
+        >
+            <RouterProvider router={router}/>
+        </Theme>
     </StrictMode>,
 )

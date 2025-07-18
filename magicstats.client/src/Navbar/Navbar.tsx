@@ -1,77 +1,77 @@
-﻿import {useState} from 'react';
-import './Navbar.css'
-import {FaBars, FaHome, FaHouseUser, FaIdBadge, FaUser, FaUsers} from 'react-icons/fa'
+﻿import {FaHome, FaHouseUser, FaIdBadge, FaUser, FaUsers} from 'react-icons/fa'
 import {GiStack} from 'react-icons/gi';
 import {Link} from "react-router-dom";
+import {Box, Flex, TabNav, Heading} from '@radix-ui/themes';
 
 export default function Navbar() {
-    const [expanded, setExpanded] = useState<boolean | undefined>(undefined);
-
-    function toggleExpanded() {
-        setExpanded(expanded !== undefined ? !expanded : true);
-    }
-
-    function resetExpanded() {
-        setExpanded(expanded !== undefined ? !expanded : true);
-    }
-
-    const expandedClass = expanded === undefined
-        ? 'init'
-        : (expanded ? 'expanded' : 'not-expanded');
-
     return (
         <>
-            <div className={'top-bar ' + expandedClass}>
+            <Flex style={{gridArea: 'top-bar'}} height='60px' width='100%' m='1'>
                 <MagicStatsLogo/>
-                <FaBars className={'expand-button button-like ' + expandedClass} onClick={toggleExpanded}/>
-            </div>
-            <nav className={expandedClass}>
-                <Link to="/" className='navbar-link' onClick={resetExpanded}>
-                    <div className="navbar-section">
-                        <FaHome className="navbar-icon"/>
-                        <p>Home</p>
-                    </div>
-                </Link>
-                <Link to="/pods" className='navbar-link' onClick={resetExpanded}>
-                    <div className="navbar-section">
-                        <FaUsers className="navbar-icon"/>
-                        <p>Pods</p>
-                    </div>
-                </Link>
-                <Link to="/players" className='navbar-link' onClick={resetExpanded}>
-                    <div className="navbar-section">
-                        <FaUser className="navbar-icon"/>
-                        <p>Players</p>
-                    </div>
-                </Link>
-                <Link to="/commanders" className='navbar-link' onClick={resetExpanded}>
-                    <div className="navbar-section">
-                        <FaIdBadge className="navbar-icon"/>
-                        <p>Commanders</p>
-                    </div>
-                </Link>
-                <Link to="/games" className='navbar-link' onClick={resetExpanded}>
-                    <div className="navbar-section">
-                        <GiStack className="navbar-icon"/>
-                        <p>Games</p>
-                    </div>
-                </Link>
-                <Link to="/hosts" className='navbar-link' onClick={resetExpanded}>
-                    <div className="navbar-section">
-                        <FaHouseUser className="navbar-icon"/>
-                        <p>Hosts</p>
-                    </div>
-                </Link>
-            </nav>
+            </Flex>
+            <TabNav.Root style={{gridArea: 'nav'}}>
+                <Flex direction='column'>
+                    <TabNav.Link asChild={true}>
+                        <Link to="/">
+                            <FaHome/>
+                            <Box ml='2'>
+                                <p>Home</p>
+                            </Box>
+                        </Link>
+                    </TabNav.Link>
+                    <TabNav.Link asChild={true}>
+                        <Link to="/pods">
+                            <FaUsers/>
+                            <Box ml='2'>
+                                <p>Pods</p>
+                            </Box>
+                        </Link>
+                    </TabNav.Link>
+                    <TabNav.Link asChild={true}>
+                        <Link to="/players">
+                            <FaUser/>
+                            <Box ml='2'>
+                                <p>Players</p>
+                            </Box>
+                        </Link>
+                    </TabNav.Link>
+                    <TabNav.Link asChild={true}>
+                        <Link to="/commanders">
+                            <FaIdBadge/>
+                            <Box ml='2'>
+                                <p>Commanders</p>
+                            </Box>
+                        </Link>
+                    </TabNav.Link>
+                    <TabNav.Link asChild={true}>
+                        <Link to="/games">
+                            <GiStack/>
+                            <Box ml='2'>
+                                <p>Games</p>
+                            </Box>
+                        </Link>
+                    </TabNav.Link>
+                    <TabNav.Link asChild={true}>
+                        <Link to="/hosts">
+                            <FaHouseUser/>
+                            <Box ml='2'>
+                                <p>Hosts</p>
+                            </Box>
+                        </Link>
+                    </TabNav.Link>
+                </Flex>
+            </TabNav.Root>
         </>
     );
 }
 
 function MagicStatsLogo() {
     return (
-        <Link to='/' className='magicstats-logo'>
-            <img alt='logo' src='/stats-white.svg'/>
-            <span>Magic stats</span>
-        </Link>
+        <Flex asChild={true} gap='10px' align='center'>
+            <Link to='/' style={{textDecoration: 'none', color: 'var(--color)'}}>
+                <img alt='logo' src='/stats-white.svg' height='80%'/>
+                <Heading as='h3'>Magic stats</Heading>
+            </Link>
+        </Flex>
     );
 }
