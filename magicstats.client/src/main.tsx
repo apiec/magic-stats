@@ -12,6 +12,7 @@ import Pods from "./Pods/Pods.tsx";
 import Hosts from "./Hosts/Hosts.tsx";
 import "@radix-ui/themes/styles.css";
 import {Theme} from "@radix-ui/themes";
+import './index.css';
 
 const router = createBrowserRouter([
     {
@@ -64,7 +65,7 @@ createRoot(document.getElementById('root')!).render(
             grayColor='gray'
             panelBackground='solid'
             scaling='110%'
-            radius='full'
+            radius='small'
         >
             <RouterProvider router={router}/>
         </Theme>
