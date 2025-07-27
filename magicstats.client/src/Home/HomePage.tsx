@@ -1,5 +1,4 @@
 ﻿import {useEffect, useState} from "react";
-import "./HomePage.css";
 import Api from "../api/Api.ts";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
 import {Flex, Spinner} from "@radix-ui/themes";
@@ -19,8 +18,11 @@ export default function HomePage() {
     }, []);
 
     if (stats === undefined) {
-        return <Spinner/>;
+        return (
+            <Spinner/>
+        );
     }
+
     return (
         <Flex
             maxWidth='700px'

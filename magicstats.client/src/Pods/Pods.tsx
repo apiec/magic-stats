@@ -12,10 +12,11 @@ import SortableHeader from "../Shared/SortableHeader.tsx";
 import {useImmer} from "use-immer";
 import {useEffect, useState} from "react";
 import {Link as RouterLink} from "react-router-dom";
-import {Link, Text, Table} from "@radix-ui/themes";
+import {Link, Text, Table, Container, Spinner} from "@radix-ui/themes";
 
 export default function Pods() {
-    const [pods, setPods] = useState<Pod[]>([])
+    const [pods, setPods] = useState<Pod[] | undefined>(undefined)
+
     useEffect(() => {
         populatePodsData().then();
     }, []);
@@ -26,8 +27,16 @@ export default function Pods() {
         setPods(data);
     }
 
+    if (pods === undefined) {
+        return (
+            <Spinner/>
+        );
+    }
+
     return (
-        <PodsTable pods={pods}/>
+        <Container maxWidth='700px'>
+            <PodsTable pods={pods}/>
+        </Container>
     );
 }
 

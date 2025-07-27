@@ -1,5 +1,4 @@
 ﻿import Api from "../api/Api.ts";
-import './Pods.css'
 
 export type Pod = {
     players: Player[],

@@ -66,6 +66,7 @@ createRoot(document.getElementById('root')!).render(
             panelBackground='solid'
             scaling='100%'
             radius='small'
+            style={{height: '100%'}}
         >
             <RouterProvider router={router}/>
         </Theme>
