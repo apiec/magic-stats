@@ -11,13 +11,5 @@
 }
 
 .sortable-header {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    align-self: center;
-    justify-self: center;
-    padding-left: 15px;
-    padding-right: 5px;
-    gap: 3px;
     user-select: none;
 }
