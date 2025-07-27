@@ -27,25 +27,6 @@
     }
 }
 
-table {
-    border: 1px solid lightgray;
-    border-collapse: collapse;
-}
-
-tbody {
-    border-bottom: 1px solid lightgray;
-}
-
-th {
-    border-bottom: 1px solid gray;
-    border-right: 1px solid gray;
-    padding: 2px 4px;
-}
-
-td {
-    border: 1px solid gray;
-}
-
 .game-details-cell {
     padding: 0;
     border-top: 3px solid black;

@@ -2,6 +2,7 @@
 import "./HomePage.css";
 import Api from "../api/Api.ts";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
+import {Flex, Spinner} from "@radix-ui/themes";
 
 export default function HomePage() {
 
@@ -18,22 +19,27 @@ export default function HomePage() {
     }, []);
 
     if (stats === undefined) {
-        return <>Loading...</>;
+        return <Spinner/>;
     }
     return (
-        <div className='home-page'>
-            <div className='home-page-values-container'>
-                <ValueDisplay title='Total games' values={[stats.gamesTotal.toFixed(0)]}/>
-                <ValueDisplay title='Total meetings' values={[stats.meetings.toFixed(0)]}/>
-                <ValueDisplay title='Games per meeting' values={[stats.gamesPerMeeting.toFixed(1)]}/>
-                <ValueDisplay
-                    title='Most games'
-                    values={[stats.mostGamesPlayer.name, stats.mostGamesPlayer.gamesPlayed.toFixed(0)]}/>
-                <ValueDisplay
-                    title='Most played'
-                    values={[stats.mostGamesCommander.name, stats.mostGamesCommander.gamesPlayed.toFixed(0)]}/>
-            </div>
-        </div>
+        <Flex
+            maxWidth='700px'
+            direction={{initial: 'column', md: 'row'}}
+            wrap='wrap'
+            align={{initial: 'center', md: 'start'}}
+            justify='center'
+            gap={{initial: '2', md: '8'}}
+        >
+            <ValueDisplay title='Total games' values={[stats.gamesTotal.toFixed(0)]}/>
+            <ValueDisplay title='Total meetings' values={[stats.meetings.toFixed(0)]}/>
+            <ValueDisplay title='Games per meeting' values={[stats.gamesPerMeeting.toFixed(1)]}/>
+            <ValueDisplay
+                title='Most games'
+                values={[stats.mostGamesPlayer.name, stats.mostGamesPlayer.gamesPlayed.toFixed(0)]}/>
+            <ValueDisplay
+                title='Most played'
+                values={[stats.mostGamesCommander.name, stats.mostGamesCommander.gamesPlayed.toFixed(0)]}/>
+        </Flex>
     );
 }
 

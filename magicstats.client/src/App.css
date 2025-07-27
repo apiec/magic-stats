@@ -17,11 +17,12 @@
     grid-area: content;
     padding-top: 20px;
     padding-bottom: 20px;
-    overflow: auto;
+    overflow: scroll;
+    justify-self: center;
 }
 
 html, body {
-    overflow: hidden;
+    overflow: auto;
 }
 
 @media screen and (max-width: 768px) {
@@ -38,10 +39,6 @@ html, body {
                 "nav"
                 "content";
         grid-template-columns: 1fr;
-    }
-
-    .content {
-        align-self: flex-start;
     }
 
     html, body {

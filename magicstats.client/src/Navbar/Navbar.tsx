@@ -1,7 +1,7 @@
 ﻿import {FaBars, FaHome, FaHouseUser, FaIdBadge, FaUser, FaUsers} from 'react-icons/fa'
 import {GiStack} from 'react-icons/gi';
 import {Link} from "react-router-dom";
-import {Box, Flex, TabNav, Heading} from '@radix-ui/themes';
+import {Flex, TabNav, Heading, Text} from '@radix-ui/themes';
 import {ReactNode, useState} from 'react';
 import './Navbar.css';
 
@@ -52,19 +52,17 @@ type NavLinkProps = {
 }
 
 function NavLink({icon, text, link, onClick}: NavLinkProps) {
-    return <TabNav.Link className='navbar-section' asChild={true} onClick={onClick}>
+    return <TabNav.Link className='navbar-section' asChild onClick={onClick}>
         <Link to={link}>
             {icon}
-            <Box ml='2'>
-                <span>{text}</span>
-            </Box>
+            <Text size='3' ml='2'>{text}</Text>
         </Link>
     </TabNav.Link>
 }
 
 function MagicStatsLogo() {
     return (
-        <Flex className='magicstats-logo' asChild={true}>
+        <Flex className='magicstats-logo' asChild>
             <Link to='/'>
                 <img alt='logo' src='/stats-white.svg'/>
                 <Heading as='h3'>Magic stats</Heading>

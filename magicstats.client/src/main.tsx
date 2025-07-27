@@ -64,7 +64,7 @@ createRoot(document.getElementById('root')!).render(
             accentColor='indigo'
             grayColor='gray'
             panelBackground='solid'
-            scaling='110%'
+            scaling='100%'
             radius='small'
         >
             <RouterProvider router={router}/>

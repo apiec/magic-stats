@@ -1,4 +1,4 @@
-﻿import './ValueDisplay.css';
+﻿import {Box, Card, Flex, Text} from '@radix-ui/themes';
 
 type ValueDisplayProps = {
     title: string,
@@ -7,13 +7,19 @@ type ValueDisplayProps = {
 
 export default function ValueDisplay({title, values}: ValueDisplayProps) {
     return (
-        <div className='value-display'>
-            <p className='value-display-title'>{title}</p>
-            <div className='value-display-values-container'>
-                {values.map((v, i) =>
-                    <p key={i} className='value-display-value'>{v}</p>
-                )}
-            </div>
-        </div>
+        <Box width={{initial: '100%', md: 'fit-content'}}>
+            <Card>
+                <Text as='div' size='4' weight='bold' align='center'>
+                    {title}
+                </Text>
+                <Flex gap='4' align='center' justify='center' pt='2'>
+                    {values.map((v, i) =>
+                        <Text as='div' size='4' key={i}>
+                            {v}
+                        </Text>
+                    )}
+                </Flex>
+            </Card>
+        </Box>
     );
 }
