@@ -1,5 +1,4 @@
-﻿import './Players.css'
-import {
+﻿import {
     createColumnHelper,
     flexRender,
     getCoreRowModel,
@@ -11,7 +10,8 @@ import {PlayerWithStats} from './PlayerApi';
 import {useImmer} from 'use-immer';
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import PlayerApi from "../Players/PlayerApi.ts";
-import {FaTrash} from 'react-icons/fa';
+import {IconButton, Table} from '@radix-ui/themes';
+import {Cross1Icon} from "@radix-ui/react-icons"
 
 type PlayersTableProps = {
     players: PlayerWithStats[],
@@ -46,31 +46,30 @@ export default function PlayersTable({players}: PlayersTableProps) {
     });
 
     return (
-        <table className='players-table'>
-            <thead>
-            {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                        <th key={header.id}>
-                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                        </th>
-                    ))}
-                </tr>
-            ))
-            }
-            </thead>
-            <tbody>
-            {table.getRowModel().rows.map(row => (
-                <tr key={row.id}>
-                    {row.getVisibleCells().map(cell => (
-                        <td key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>))}
-                </tr>
-            ))}
-            </tbody>
-        </table>
-    );
+        <Table.Root variant='surface'>
+            <Table.Header>
+                {table.getHeaderGroups().map(headerGroup => (
+                    <Table.Row key={headerGroup.id}>
+                        {headerGroup.headers.map(header => (
+                            <Table.RowHeaderCell key={header.id}>
+                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                            </Table.RowHeaderCell>
+                        ))}
+                    </Table.Row>))}
+            </Table.Header>
+            <Table.Body>
+                {table.getRowModel().rows.map(row => (
+                    <Table.Row key={row.id}>
+                        {row.getVisibleCells().map(cell => (
+                            <Table.Cell key={cell.id} align='center'>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </Table.Cell>))}
+                    </Table.Row>
+                ))}
+            </Table.Body>
+        </Table.Root>
+    )
+        ;
 }
 
 const columnHelper = createColumnHelper<PlayerWithStats>();
@@ -111,12 +110,14 @@ type DeletePlayerButtonProps = {
 
 function DeletePlayerButton({playerId}: DeletePlayerButtonProps) {
     return (
-        <FaTrash className='button-like' onClick={(e) => {
+        <IconButton size='1' variant='ghost' color='red' onClick={(e) => {
             e.stopPropagation();
             const api = new PlayerApi();
             api.delete(playerId)
                 .then(() => window.location.reload());
-        }}/>
+        }}>
+            <Cross1Icon/>
+        </IconButton>
     );
 }
 

@@ -1,5 +1,6 @@
 ﻿import {CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import './WinrateGraph.css';
+import {Box, Flex, Heading, Text} from "@radix-ui/themes";
 
 export type DataPoint = {
     date: number,
@@ -18,13 +19,13 @@ type WinrateGraphProps = {
 
 export default function WinrateGraph({data, slidingWindowSize}: WinrateGraphProps) {
     return (
-        <div className='winrate-graph'>
-            <h3>Winrates</h3>
-            <p>{slidingWindowSize ? `Sliding window - ${slidingWindowSize}` : 'All time'}</p>
-            <div className='graph-container'>
+        <Flex direction='column' align='center'>
+            <Heading as='h3'>Winrates</Heading>
+            <Text>{slidingWindowSize ? `Sliding window - ${slidingWindowSize}` : 'All time'}</Text>
+            <Box>
                 <Graph data={data}/>
-            </div>
-        </div>
+            </Box>
+        </Flex>
     );
 }
 

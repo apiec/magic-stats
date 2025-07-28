@@ -35,7 +35,7 @@ export default function Navbar() {
                     <Flex direction='column'>
                         <NavLink text='Home' link='/' icon=<FaHome/> onClick={resetExpanded}/>
                         <NavLink text='Pods' link='/pods' icon=<FaUsers/> onClick={resetExpanded}/>
-                        <NavLink text='Player' link='/players' icon=<FaUser/> onClick={resetExpanded}/>
+                        <NavLink text='Players' link='/players' icon=<FaUser/> onClick={resetExpanded}/>
                         <NavLink text='Commanders' link='/commanders' icon=<FaIdBadge/> onClick={resetExpanded}/>
                         <NavLink text='Games' link='/games' icon=<GiStack/> onClick={resetExpanded}/>
                         <NavLink text='Hosts' link='/hosts' icon=<FaHouseUser/> onClick={resetExpanded}/>

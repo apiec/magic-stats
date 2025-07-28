@@ -11,14 +11,14 @@
     grid-template-columns: 200px 1fr;
     grid-template-rows: 60px 1fr;
     height: 100%;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .content {
     grid-area: content;
     padding-top: 20px;
     padding-bottom: 20px;
-    overflow: scroll;
+    overflow: auto;
     justify-self: center;
     width: 100%;
     display: flex;
@@ -49,5 +49,9 @@ html, body {
 
     html, body {
         overflow: auto;
+    }
+    
+    .content {
+        align-self: flex-start;
     }
 }

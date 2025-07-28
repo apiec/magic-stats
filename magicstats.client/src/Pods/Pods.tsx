@@ -77,7 +77,7 @@ function PodsTable({pods}: PodsTableProps) {
                 {table.getHeaderGroups().map(headerGroup => (
                     <Table.Row key={headerGroup.id}>
                         {headerGroup.headers.map(header => (
-                            <Table.ColumnHeaderCell key={header.id}>
+                            <Table.ColumnHeaderCell key={header.id} align='center'>
                                 {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                             </Table.ColumnHeaderCell>
                         ))}
@@ -89,7 +89,7 @@ function PodsTable({pods}: PodsTableProps) {
                 {table.getRowModel().rows.map(row => (
                     <Table.Row key={row.id} align='center'>
                         {row.getVisibleCells().map(cell => (
-                            <Table.Cell key={cell.id}>
+                            <Table.Cell key={cell.id} align='center'>
                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
                             </Table.Cell>))}
                     </Table.Row>
