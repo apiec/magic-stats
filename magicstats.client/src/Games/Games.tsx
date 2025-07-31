@@ -1,9 +1,10 @@
-﻿import {Outlet} from "react-router-dom";
+﻿import {Container} from "@radix-ui/themes";
+import {Outlet} from "react-router-dom";
 
 export default function Games() {
     return (
-        <div className='games-component'>
+        <Container width='100%'>
             <Outlet/>
-        </div>
+        </Container>
     );
 }
