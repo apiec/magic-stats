@@ -10,8 +10,8 @@ import {PlayerWithStats} from './PlayerApi';
 import {useImmer} from 'use-immer';
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import PlayerApi from "../Players/PlayerApi.ts";
-import {IconButton, Table} from '@radix-ui/themes';
-import {Cross1Icon} from "@radix-ui/react-icons"
+import {Table} from '@radix-ui/themes';
+import DeleteButton from '../Shared/DeleteButton.tsx';
 
 type PlayersTableProps = {
     players: PlayerWithStats[],
@@ -68,8 +68,7 @@ export default function PlayersTable({players}: PlayersTableProps) {
                 ))}
             </Table.Body>
         </Table.Root>
-    )
-        ;
+    );
 }
 
 const columnHelper = createColumnHelper<PlayerWithStats>();
@@ -100,26 +99,14 @@ const columns = [
     columnHelper.display({
         id: 'delete',
         header: 'Delete',
-        cell: props => <DeletePlayerButton playerId={props.row.original.id}/>,
+        cell: props => <DeleteButton onClick={() => {
+            const api = new PlayerApi();
+            api.delete(props.row.original.id)
+                .then(() => window.location.reload());
+        }}/>,
     })
 ];
 
-type DeletePlayerButtonProps = {
-    playerId: string,
-}
-
-function DeletePlayerButton({playerId}: DeletePlayerButtonProps) {
-    return (
-        <IconButton size='1' variant='ghost' color='red' onClick={(e) => {
-            e.stopPropagation();
-            const api = new PlayerApi();
-            api.delete(playerId)
-                .then(() => window.location.reload());
-        }}>
-            <Cross1Icon/>
-        </IconButton>
-    );
-}
 
 function toPercentage(num: number): string {
     return (100 * num).toFixed(0);

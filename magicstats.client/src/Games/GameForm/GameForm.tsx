@@ -2,7 +2,7 @@
 import 'react-datepicker/dist/react-datepicker.css';
 import './GameForm.css';
 import AddParticipantDialog from "./AddParticipantDialog.tsx";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import StartingOrderList from "./StartingOrderList.tsx";
 import {AddParticipantRequest, Game, GamesApi, Participant, Placements} from "../GamesApi.ts";
 import {useParams} from "react-router-dom";
@@ -10,14 +10,12 @@ import {useImmer} from "use-immer";
 import {HostPicker} from "./HostPicker.tsx";
 import {Host} from "../../Hosts/HostApi.ts";
 import PlacementList from "./PlacementList.tsx";
-import { Spinner } from "@radix-ui/themes";
+import {Spinner} from "@radix-ui/themes";
 
 export default function GameForm() {
     const [game, setGame] = useImmer<Game | undefined>(undefined);
     const [rerender, setRerender] = useState<number>(0);
     const {gameId} = useParams<string>();
-
-    const dialogRef = useRef<HTMLDialogElement>(null);
 
     useEffect(() => {
         populateGameData();
@@ -106,15 +104,6 @@ export default function GameForm() {
         </div>
     );
 
-    function toggleDialog() {
-        if (!dialogRef.current) {
-            return;
-        }
-        dialogRef.current.hasAttribute("open")
-            ? dialogRef.current.close()
-            : dialogRef.current.showModal();
-    }
-
     async function handleAddParticipant(newParticipant: Participant) {
         if (game === undefined) {
             return;
@@ -132,7 +121,6 @@ export default function GameForm() {
                 draft.participants.push(participantResponse);
             }
         })
-        toggleDialog();
     }
 
     async function handleStartingOrderChanged(newData: Participant[]) {

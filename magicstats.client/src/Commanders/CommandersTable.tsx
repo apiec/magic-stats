@@ -10,8 +10,8 @@ import {CommanderWithStats} from './CommanderApi';
 import {useImmer} from 'use-immer';
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import CommanderApi from "../Commanders/CommanderApi.ts";
-import {IconButton, Table} from '@radix-ui/themes';
-import {Cross1Icon} from "@radix-ui/react-icons"
+import {Table} from '@radix-ui/themes';
+import DeleteButton from '../Shared/DeleteButton.tsx';
 
 type CommanderTableProps = {
     commanders: CommanderWithStats[],
@@ -98,27 +98,13 @@ const columns = [
     columnHelper.display({
         id: 'delete',
         header: 'Delete',
-        cell: props => <DeleteCommanderButton commanderId={props.row.original.id}/>,
+        cell: props => <DeleteButton onClick={() => {
+            const api = new CommanderApi();
+            api.delete(props.row.original.id)
+                .then(() => window.location.reload());
+        }}/>,
     })
 ];
-
-
-type DeleteCommanderButtonProps = {
-    commanderId: string,
-}
-
-function DeleteCommanderButton({commanderId}: DeleteCommanderButtonProps) {
-    return (
-        <IconButton size='1' variant='ghost' color='red' onClick={(e) => {
-            e.stopPropagation();
-            const api = new CommanderApi();
-            api.delete(commanderId)
-                .then(() => window.location.reload());
-        }}>
-            <Cross1Icon/>
-        </IconButton>
-    );
-}
 
 function toPercentage(num: number): string {
     return (100 * num).toFixed(0);

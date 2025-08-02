@@ -17,7 +17,6 @@ export function HostPicker({currentHost, onHostChange}: HostPickerProps) {
 
     return (
         <Picker
-            className='host-picker'
             getOptions={getHosts}
             value={currentHost ? {value: currentHost, label: currentHost.name} : undefined}
             onValueChange={(host) => {
