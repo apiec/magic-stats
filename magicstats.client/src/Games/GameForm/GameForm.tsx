@@ -10,6 +10,7 @@ import {useImmer} from "use-immer";
 import {HostPicker} from "./HostPicker.tsx";
 import {Host} from "../../Hosts/HostApi.ts";
 import PlacementList from "./PlacementList.tsx";
+import { Spinner } from "@radix-ui/themes";
 
 export default function GameForm() {
     const [game, setGame] = useImmer<Game | undefined>(undefined);
@@ -36,20 +37,12 @@ export default function GameForm() {
 
     if (game === undefined || game === null) {
         return (
-            <p>Loading...</p>
+            <Spinner/>
         );
     }
 
     return (
         <div id='game-form-component'>
-            <dialog id='participant-dialog' ref={dialogRef} onClick={(e) => {
-                if (e.currentTarget === e.target) {
-                    toggleDialog();
-                }
-            }}>
-                <AddParticipantDialog onAdd={handleAddParticipant}/>
-            </dialog>
-
             <div id='date-picker'>
                 <label htmlFor='date-picker-el'>Played at:</label>
                 <DatePicker
@@ -94,7 +87,7 @@ export default function GameForm() {
                             }}/>
             </div>
 
-            <button id='add-participant-button' onClick={toggleDialog}>Add a participant</button>
+            <AddParticipantDialog onAdd={handleAddParticipant}/>
 
             <div id='starting-order-section'>
                 <h3>Starting order</h3>
