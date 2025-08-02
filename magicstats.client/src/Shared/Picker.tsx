@@ -30,7 +30,7 @@ export function Picker<T>({getOptions, onValueChange, value}: PickerProps<T>) {
             <Select.Trigger/>
             <Select.Content>
                 {options?.map(o =>
-                    <Select.Item value={o.label}>{o.label}</Select.Item>)}
+                    <Select.Item key={o.label} value={o.label}>{o.label}</Select.Item>)}
             </Select.Content>
         </Select.Root>
     </Skeleton>

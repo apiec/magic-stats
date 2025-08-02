@@ -6,19 +6,21 @@ import {Picker, PickerOption} from "../../Shared/Picker.tsx";
 import {Button, Dialog, Flex, Text} from "@radix-ui/themes";
 
 type AddParticipantDialogProps = {
-    onAdd: (participant: Participant) => void;
+    onAdd: (participant: Participant) => Promise<void>;
 }
 
 export default function AddParticipantDialog({onAdd}: AddParticipantDialogProps) {
     const formId = 'add-participant-form'
     const [commander, setCommander] = useState<Commander | undefined>();
     const [player, setPlayer] = useState<Player | undefined>();
+    const [open, setOpen] = useState(false);
+
     return (
-        <Dialog.Root>
+        <Dialog.Root open={open} onOpenChange={setOpen}>
             <Dialog.Trigger>
                 <Button>Add a participant</Button>
             </Dialog.Trigger>
-            <Dialog.Content width='2' maxWidth='300px' >
+            <Dialog.Content width='2' maxWidth='300px'>
                 <Dialog.Title>
                     Add a game participant
                 </Dialog.Title>
@@ -28,7 +30,7 @@ export default function AddParticipantDialog({onAdd}: AddParticipantDialogProps)
                         onSubmit={(e) => {
                             e.preventDefault();
                             const participant = {commander: commander, player: player} as Participant;
-                            onAdd(participant);
+                            onAdd(participant).then(() => setOpen(false));
                         }}>
                         <Text as='label'>Player:</Text>
                         <PlayerPicker onPlayerChange={(p) => setPlayer(p)} value={player}/>

@@ -17,6 +17,10 @@ export default function GameForm() {
     const [rerender, setRerender] = useState<number>(0);
     const {gameId} = useParams<string>();
 
+    function forceUpdate() {
+        setRerender(value => value + 1);
+    }
+
     useEffect(() => {
         populateGameData();
     }, [rerender]);
@@ -30,13 +34,11 @@ export default function GameForm() {
     async function handleDeleteParticipant(playerId: string) {
         const api = new GamesApi();
         await api.deleteParticipant(game!.id, playerId);
-        setRerender(rerender + 1);
+        forceUpdate();
     }
 
     if (game === undefined || game === null) {
-        return (
-            <Spinner/>
-        );
+        return <Spinner/>;
     }
 
     return (
@@ -121,6 +123,7 @@ export default function GameForm() {
                 draft.participants.push(participantResponse);
             }
         })
+        forceUpdate();
     }
 
     async function handleStartingOrderChanged(newData: Participant[]) {
@@ -130,7 +133,7 @@ export default function GameForm() {
         const api = new GamesApi();
         const sorted = newData.sort((a, b) => a.startingOrder - b.startingOrder);
         await api.updateStartingOrder(game.id, sorted.map(p => p.player.id));
-        setRerender(rerender + 1);
+        forceUpdate();
     }
 
     async function handlePlacementChanged(newData: Participant[]) {
@@ -141,7 +144,7 @@ export default function GameForm() {
         const placements = {} as Placements;
         newData.forEach(p => placements[p.player.id] = p.placement);
         await api.updatePlacement(game.id, placements);
-        setRerender(rerender + 1);
+        forceUpdate();
     }
 
     async function handleHostChanged(host: Host) {
@@ -150,7 +153,7 @@ export default function GameForm() {
         }
         const api = new GamesApi();
         await api.updateHost(game.id, host.id);
-        setRerender(rerender + 1);
+        forceUpdate();
     }
 
     async function handleTurnsChanged(turns: number) {
@@ -159,6 +162,6 @@ export default function GameForm() {
         }
         const api = new GamesApi();
         await api.updateTurnCount(game.id, turns);
-        setRerender(rerender + 1);
+        forceUpdate();
     }
 }

@@ -12,7 +12,7 @@ import {Participant} from "../GamesApi.ts";
 import DndTable from "../../Shared/DndTable.tsx";
 import DeleteButton from "../../Shared/DeleteButton.tsx";
 import {FaTrophy} from "react-icons/fa";
-import { Flex } from "@radix-ui/themes";
+import {Button, Flex} from "@radix-ui/themes";
 
 type PlacementListProps = {
     participants: Participant[],
@@ -79,39 +79,40 @@ export default function PlacementList(
 
     function toggleDrawsView(draws: boolean) {
         table.getColumn('select')!.toggleVisibility(draws);
+        table.getColumn('placement')!.toggleVisibility(!draws);
     }
 
     return (
-        <div>
-            <div className='draw-buttons'>
+        <Flex direction='column'>
+            <Flex direction='row' gap='2'>
                 {
                     table.getColumn('select')!.getIsVisible() ?
                         <>
-                            <button disabled={Object.keys(rowSelection).length <= 1} onClick={(e) => {
+                            <Button size='1' disabled={Object.keys(rowSelection).length <= 1} onClick={(e) => {
                                 e.stopPropagation();
                                 handleDraw();
                                 table.resetRowSelection();
                                 toggleDrawsView(false);
                             }}>
                                 Confirm
-                            </button>
-                            <button onClick={(e) => {
+                            </Button>
+                            <Button size='1' onClick={(e) => {
                                 e.stopPropagation();
                                 table.resetRowSelection();
                                 toggleDrawsView(false);
                             }}>
                                 Close
-                            </button>
+                            </Button>
                         </>
                         :
-                        <button onClick={(e) => {
+                        <Button size='2' onClick={(e) => {
                             e.stopPropagation();
                             toggleDrawsView(true);
                         }}>
                             Add a draw
-                        </button>
+                        </Button>
                 }
-            </div>
+            </Flex>
             <DndTable table={table} onItemsSwap={(rowAId, rowBId) => {
                 const oldIndex = sortedData.findIndex(p => p.player.id === rowAId);
                 const newIndex = sortedData.findIndex(p => p.player.id === rowBId);
@@ -119,7 +120,7 @@ export default function PlacementList(
                 newData.forEach((p, i) => p.placement = i);
                 onPlacementsChanged(newData);
             }}/>
-        </div>
+        </Flex>
     );
 }
 
