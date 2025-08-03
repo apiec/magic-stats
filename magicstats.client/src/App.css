@@ -52,6 +52,8 @@ html, body {
     }
     
     .content {
-        align-self: flex-start;
+        justify-content: flex-start;
+        padding-left: 14px;
+        padding-right: 14px;
     }
 }
