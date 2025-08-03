@@ -26,7 +26,7 @@ export default function CommandersTable({commanders}: CommanderTableProps) {
         initialState: {
             sorting: [
                 {
-                    id: 'stats.winrate',
+                    id: 'winrate',
                     desc: true,
                 }
             ],
