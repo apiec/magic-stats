@@ -11,10 +11,12 @@ import PodApi, {Pod} from "./PodApi.ts";
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import {useImmer} from "use-immer";
 import {useEffect, useState} from "react";
-import {Link} from "react-router-dom";
+import {Link as RouterLink} from "react-router-dom";
+import {Link, Text, Table, Container, Spinner} from "@radix-ui/themes";
 
 export default function Pods() {
-    const [pods, setPods] = useState<Pod[]>([])
+    const [pods, setPods] = useState<Pod[] | undefined>(undefined)
+
     useEffect(() => {
         populatePodsData().then();
     }, []);
@@ -25,10 +27,16 @@ export default function Pods() {
         setPods(data);
     }
 
+    if (pods === undefined) {
+        return (
+            <Spinner/>
+        );
+    }
+
     return (
-        <section className='pods-section'>
+        <Container maxWidth='700px'>
             <PodsTable pods={pods}/>
-        </section>
+        </Container>
     );
 }
 
@@ -64,30 +72,30 @@ function PodsTable({pods}: PodsTableProps) {
     });
 
     return (
-        <table className='pods-table'>
-            <thead>
-            {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                        <th key={header.id}>
-                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                        </th>
-                    ))}
-                </tr>
-            ))
-            }
-            </thead>
-            <tbody>
-            {table.getRowModel().rows.map(row => (
-                <tr key={row.id}>
-                    {row.getVisibleCells().map(cell => (
-                        <td key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>))}
-                </tr>
-            ))}
-            </tbody>
-        </table>
+        <Table.Root size='1' variant='surface'>
+            <Table.Header>
+                {table.getHeaderGroups().map(headerGroup => (
+                    <Table.Row key={headerGroup.id}>
+                        {headerGroup.headers.map(header => (
+                            <Table.ColumnHeaderCell key={header.id} align='center'>
+                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                            </Table.ColumnHeaderCell>
+                        ))}
+                    </Table.Row>
+                ))
+                }
+            </Table.Header>
+            <Table.Body>
+                {table.getRowModel().rows.map(row => (
+                    <Table.Row key={row.id} align='center'>
+                        {row.getVisibleCells().map(cell => (
+                            <Table.Cell key={cell.id} align='center'>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </Table.Cell>))}
+                    </Table.Row>
+                ))}
+            </Table.Body>
+        </Table.Root>
     );
 }
 
@@ -97,7 +105,7 @@ const columns = [
     columnHelper.accessor('size', {
         id: 'size',
         header: ctx => <SortableHeader text='Size' context={ctx}/>,
-        cell: ctx => <p className='size-cell'>{ctx.getValue()}</p>
+        cell: ctx => <Text weight='bold'>{ctx.getValue()}</Text>
     }),
     columnHelper.display({
         id: 'players',
@@ -119,6 +127,8 @@ function PodLink({ctx}: PodLinkProps) {
     const queryParams = new URLSearchParams();
     ctx.row.original.players.forEach(p => queryParams.append('playerIds', p.id.toString()));
     return (
-        <Link to={"/players" + '?' + queryParams.toString()}>{playerNames}</Link>
+        <Link asChild>
+            <RouterLink to={"/players" + '?' + queryParams.toString()}>{playerNames}</RouterLink>
+        </Link>
     );
 }

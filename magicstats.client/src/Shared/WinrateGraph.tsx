@@ -1,5 +1,5 @@
 ﻿import {CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
-import './WinrateGraph.css';
+import {Box, Flex, Heading, Text} from "@radix-ui/themes";
 
 export type DataPoint = {
     date: number,
@@ -18,13 +18,13 @@ type WinrateGraphProps = {
 
 export default function WinrateGraph({data, slidingWindowSize}: WinrateGraphProps) {
     return (
-        <div className='winrate-graph'>
-            <h3>Winrates</h3>
-            <p>{slidingWindowSize ? `Sliding window - ${slidingWindowSize}` : 'All time'}</p>
-            <div className='graph-container'>
+        <Flex direction='column' align='center'>
+            <Heading as='h3'>Winrates</Heading>
+            <Text>{slidingWindowSize ? `Sliding window - ${slidingWindowSize}` : 'All time'}</Text>
+            <Box>
                 <Graph data={data}/>
-            </div>
-        </div>
+            </Box>
+        </Flex>
     );
 }
 
@@ -60,7 +60,7 @@ function Graph({data}: { data: DataSeries[] }) {
                        tickFormatter={(tickItem: number) => tickItem.toFixed(1)}/>
                 <Tooltip formatter={(value: number, _) => (value * 100).toFixed(0) + '%'}
                          filterNull={true}
-                         contentStyle={{background: '#242424'}} // todo: figure out how to style all of the shit
+                         contentStyle={{background: 'var(--gray-2)'}} // todo: figure out how to style all of the shit
                          labelFormatter={(label: number, _) => new Date(label).toLocaleDateString()}/>
                 <Legend/>
                 {data.map((s, i) => (

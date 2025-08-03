@@ -1,5 +1,6 @@
 ﻿import {HeaderContext} from "@tanstack/react-table";
 import {FaSort, FaSortDown, FaSortUp} from 'react-icons/fa';
+import {Flex, Text} from '@radix-ui/themes';
 import './SortableHeader.css';
 
 type SortableHeaderProps = {
@@ -30,12 +31,13 @@ export default function SortableHeader({text, context}: SortableHeaderProps) {
     }
 
     return (
-        <div className='sortable-header' onClick={e => {
-            e.stopPropagation();
-            handleSort();
-        }}>
-            <p>{text}</p>
+        <Flex className='sortable-header' pl='3' pr='1' gap='1' justify='center' align='center'
+              onClick={e => {
+                  e.stopPropagation();
+                  handleSort();
+              }}>
+            <Text>{text}</Text>
             {sortingIcon()}
-        </div>
+        </Flex>
     );
 }

@@ -1,15 +1,17 @@
-﻿import CommanderApi, {CommanderWithStats} from "./CommanderApi.ts";
-import SortableHeader from "../Shared/SortableHeader.tsx";
-import {useImmer} from "use-immer";
-import {
+﻿import {
     createColumnHelper,
     flexRender,
     getCoreRowModel,
     getSortedRowModel,
     TableState,
     useReactTable
-} from "@tanstack/react-table";
-import {FaTrash} from "react-icons/fa";
+} from '@tanstack/react-table';
+import {CommanderWithStats} from './CommanderApi';
+import {useImmer} from 'use-immer';
+import SortableHeader from "../Shared/SortableHeader.tsx";
+import CommanderApi from "../Commanders/CommanderApi.ts";
+import {Table} from '@radix-ui/themes';
+import DeleteButton from '../Shared/DeleteButton.tsx';
 
 type CommanderTableProps = {
     commanders: CommanderWithStats[],
@@ -24,7 +26,7 @@ export default function CommandersTable({commanders}: CommanderTableProps) {
         initialState: {
             sorting: [
                 {
-                    id: 'stats.winrate',
+                    id: 'winrate',
                     desc: true,
                 }
             ],
@@ -43,30 +45,28 @@ export default function CommandersTable({commanders}: CommanderTableProps) {
     });
 
     return (
-        <table className='commanders-table'>
-            <thead>
-            {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                        <th key={header.id}>
-                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                        </th>
-                    ))}
-                </tr>
-            ))
-            }
-            </thead>
-            <tbody>
-            {table.getRowModel().rows.map(row => (
-                <tr key={row.id}>
-                    {row.getVisibleCells().map(cell => (
-                        <td key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>))}
-                </tr>
-            ))}
-            </tbody>
-        </table>
+        <Table.Root variant='surface'>
+            <Table.Header>
+                {table.getHeaderGroups().map(headerGroup => (
+                    <Table.Row key={headerGroup.id}>
+                        {headerGroup.headers.map(header => (
+                            <Table.RowHeaderCell key={header.id}>
+                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                            </Table.RowHeaderCell>
+                        ))}
+                    </Table.Row>))}
+            </Table.Header>
+            <Table.Body>
+                {table.getRowModel().rows.map(row => (
+                    <Table.Row key={row.id}>
+                        {row.getVisibleCells().map(cell => (
+                            <Table.Cell key={cell.id} align='center'>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </Table.Cell>))}
+                    </Table.Row>
+                ))}
+            </Table.Body>
+        </Table.Root>
     );
 }
 
@@ -98,24 +98,13 @@ const columns = [
     columnHelper.display({
         id: 'delete',
         header: 'Delete',
-        cell: props => <DeleteCommanderButton commanderId={props.row.original.id}/>,
+        cell: props => <DeleteButton onClick={() => {
+            const api = new CommanderApi();
+            api.delete(props.row.original.id)
+                .then(() => window.location.reload());
+        }}/>,
     })
 ];
-
-type DeleteCommanderButtonProps = {
-    commanderId: string,
-}
-
-function DeleteCommanderButton({commanderId}: DeleteCommanderButtonProps) {
-    return (
-        <FaTrash className='button-like' onClick={(e) => {
-            e.stopPropagation();
-            const api = new CommanderApi();
-            api.delete(commanderId)
-                .then(() => window.location.reload());
-        }}/>
-    );
-}
 
 function toPercentage(num: number): string {
     return (100 * num).toFixed(0);

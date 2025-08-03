@@ -1,16 +1,19 @@
+import './index.css';
+import "@radix-ui/themes/styles.css";
+import {Theme} from "@radix-ui/themes";
 import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
 import App from './App.tsx'
-import './index.css'
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import Commanders from "./Commanders/Commanders.tsx";
 import Players from "./Players/Players.tsx";
-import GamesTable from "./Games/GamesTable.tsx";
+import GamesTableComponent from "./Games/GamesTable.tsx";
 import GameForm from "./Games/GameForm/GameForm.tsx";
 import Games from "./Games/Games.tsx";
 import HomePage from "./Home/HomePage.tsx";
 import Pods from "./Pods/Pods.tsx";
 import Hosts from "./Hosts/Hosts.tsx";
+import {ThemeProvider} from 'next-themes';
 
 const router = createBrowserRouter([
     {
@@ -39,7 +42,7 @@ const router = createBrowserRouter([
                 children: [
                     {
                         index: true,
-                        element: <GamesTable/>,
+                        element: <GamesTableComponent/>,
                     },
                     {
                         path: ":gameId",
@@ -57,6 +60,17 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <RouterProvider router={router}/>
+        <ThemeProvider attribute='class'>
+            <Theme
+                accentColor='indigo'
+                grayColor='slate'
+                panelBackground='solid'
+                scaling='100%'
+                radius='medium'
+                style={{height: '100%'}}
+            >
+                <RouterProvider router={router}/>
+            </Theme>
+        </ThemeProvider>
     </StrictMode>,
 )

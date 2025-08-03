@@ -1,8 +1,11 @@
-﻿import {useState} from 'react';
-import './Navbar.css'
-import {FaBars, FaHome, FaHouseUser, FaIdBadge, FaUser, FaUsers} from 'react-icons/fa'
+﻿import {FaBars, FaHome, FaHouseUser, FaIdBadge, FaUser, FaUsers} from 'react-icons/fa'
 import {GiStack} from 'react-icons/gi';
-import {Link} from "react-router-dom";
+import {Link as RouterLink} from "react-router-dom";
+import {Flex, TabNav, Heading, Text, Box, IconButton, Tooltip} from '@radix-ui/themes';
+import {ReactNode, useState} from 'react';
+import './Navbar.css';
+import {useTheme} from 'next-themes';
+import {MoonIcon, SunIcon} from '@radix-ui/react-icons';
 
 export default function Navbar() {
     const [expanded, setExpanded] = useState<boolean | undefined>(undefined);
@@ -19,59 +22,75 @@ export default function Navbar() {
         ? 'init'
         : (expanded ? 'expanded' : 'not-expanded');
 
+    function expanding(className: string) {
+        return className + ' ' + expandedClass;
+    }
+
     return (
         <>
-            <div className={'top-bar ' + expandedClass}>
+            <Flex width='100%' direction='row' className={expanding('top-bar')}>
                 <MagicStatsLogo/>
-                <FaBars className={'expand-button button-like ' + expandedClass} onClick={toggleExpanded}/>
-            </div>
-            <nav className={expandedClass}>
-                <Link to="/" className='navbar-link' onClick={resetExpanded}>
-                    <div className="navbar-section">
-                        <FaHome className="navbar-icon"/>
-                        <p>Home</p>
-                    </div>
-                </Link>
-                <Link to="/pods" className='navbar-link' onClick={resetExpanded}>
-                    <div className="navbar-section">
-                        <FaUsers className="navbar-icon"/>
-                        <p>Pods</p>
-                    </div>
-                </Link>
-                <Link to="/players" className='navbar-link' onClick={resetExpanded}>
-                    <div className="navbar-section">
-                        <FaUser className="navbar-icon"/>
-                        <p>Players</p>
-                    </div>
-                </Link>
-                <Link to="/commanders" className='navbar-link' onClick={resetExpanded}>
-                    <div className="navbar-section">
-                        <FaIdBadge className="navbar-icon"/>
-                        <p>Commanders</p>
-                    </div>
-                </Link>
-                <Link to="/games" className='navbar-link' onClick={resetExpanded}>
-                    <div className="navbar-section">
-                        <GiStack className="navbar-icon"/>
-                        <p>Games</p>
-                    </div>
-                </Link>
-                <Link to="/hosts" className='navbar-link' onClick={resetExpanded}>
-                    <div className="navbar-section">
-                        <FaHouseUser className="navbar-icon"/>
-                        <p>Hosts</p>
-                    </div>
-                </Link>
-            </nav>
+                <Box ml='auto' mr='2'>
+                    <LightModeButton/>
+                </Box>
+                <Box mr='2' asChild>
+                    <FaBars className={expanding('button-like expand-button')} onClick={toggleExpanded}/>
+                </Box>
+            </Flex>
+            <Box className={expanding('navbar')}>
+                <TabNav.Root>
+                    <Flex direction='column'>
+                        <NavLink text='Home' link='/' icon=<FaHome/> onClick={resetExpanded}/>
+                        <NavLink text='Pods' link='/pods' icon=<FaUsers/> onClick={resetExpanded}/>
+                        <NavLink text='Players' link='/players' icon=<FaUser/> onClick={resetExpanded}/>
+                        <NavLink text='Commanders' link='/commanders' icon=<FaIdBadge/> onClick={resetExpanded}/>
+                        <NavLink text='Games' link='/games' icon=<GiStack/> onClick={resetExpanded}/>
+                        <NavLink text='Hosts' link='/hosts' icon=<FaHouseUser/> onClick={resetExpanded}/>
+                    </Flex>
+                </TabNav.Root>
+            </Box>
         </>
     );
 }
 
+type NavLinkProps = {
+    icon: ReactNode,
+    text: string,
+    link: string,
+    onClick: () => void;
+}
+
+function NavLink({icon, text, link, onClick}: NavLinkProps) {
+    return <TabNav.Link className='navbar-section' asChild onClick={onClick}>
+        <RouterLink to={link}>
+            <Text asChild size='4'>
+                {icon}
+            </Text>
+            <Text size='3' ml='2'>{text}</Text>
+        </RouterLink>
+    </TabNav.Link>
+}
+
 function MagicStatsLogo() {
     return (
-        <Link to='/' className='magicstats-logo'>
-            <img alt='logo' src='/stats-white.svg'/>
-            <span>Magic stats</span>
-        </Link>
+        <Flex className='magicstats-logo' asChild>
+            <RouterLink to='/'>
+                <img alt='logo' src='/stats-white.svg'/>
+                <Heading as='h3'>Magic stats</Heading>
+            </RouterLink>
+        </Flex>
+    );
+}
+
+function LightModeButton() {
+    const {resolvedTheme, setTheme} = useTheme();
+    const isDark = resolvedTheme === 'dark';
+    const otherTheme = isDark ? 'light' : 'dark';
+    return (
+        <Tooltip content={`Switch to ${otherTheme} mode`}>
+            <IconButton onClick={() => setTheme(otherTheme)} variant='surface'>
+                {isDark ? <SunIcon/> : <MoonIcon/>}
+            </IconButton>
+        </Tooltip>
     );
 }

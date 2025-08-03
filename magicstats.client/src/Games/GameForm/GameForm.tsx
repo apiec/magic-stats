@@ -1,8 +1,7 @@
 ﻿import DatePicker from "react-datepicker";
 import 'react-datepicker/dist/react-datepicker.css';
-import './GameForm.css';
 import AddParticipantDialog from "./AddParticipantDialog.tsx";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import StartingOrderList from "./StartingOrderList.tsx";
 import {AddParticipantRequest, Game, GamesApi, Participant, Placements} from "../GamesApi.ts";
 import {useParams} from "react-router-dom";
@@ -10,13 +9,25 @@ import {useImmer} from "use-immer";
 import {HostPicker} from "./HostPicker.tsx";
 import {Host} from "../../Hosts/HostApi.ts";
 import PlacementList from "./PlacementList.tsx";
+import {
+    Box,
+    Button,
+    Card,
+    Flex,
+    Inset,
+    Spinner,
+    Text,
+} from "@radix-ui/themes";
+import NumberField from "../../Shared/NumberField.tsx";
 
 export default function GameForm() {
     const [game, setGame] = useImmer<Game | undefined>(undefined);
     const [rerender, setRerender] = useState<number>(0);
     const {gameId} = useParams<string>();
 
-    const dialogRef = useRef<HTMLDialogElement>(null);
+    function forceUpdate() {
+        setRerender(value => value + 1);
+    }
 
     useEffect(() => {
         populateGameData();
@@ -31,96 +42,97 @@ export default function GameForm() {
     async function handleDeleteParticipant(playerId: string) {
         const api = new GamesApi();
         await api.deleteParticipant(game!.id, playerId);
-        setRerender(rerender + 1);
+        forceUpdate();
     }
 
     if (game === undefined || game === null) {
-        return (
-            <p>Loading...</p>
-        );
+        return <Spinner/>;
     }
 
     return (
-        <div id='game-form-component'>
-            <dialog id='participant-dialog' ref={dialogRef} onClick={(e) => {
-                if (e.currentTarget === e.target) {
-                    toggleDialog();
-                }
-            }}>
-                <AddParticipantDialog onAdd={handleAddParticipant}/>
-            </dialog>
-
-            <div id='date-picker'>
-                <label htmlFor='date-picker-el'>Played at:</label>
-                <DatePicker
-                    id='date-picker-el'
-                    name='startedAt'
-                    selected={game.playedAt}
-                    onChange={async (newDate) => {
-                        const api = new GamesApi();
-                        await api.updatePlayedAt(game.id, newDate!);
-                        setGame((draft) => {
-                            if (draft !== undefined) {
-                                draft.playedAt = newDate!;
-                            }
-                        });
-                    }}
-                    showIcon
-                    showTimeSelect
-                    dateFormat='dd-MM-yyyy HH:mm'
-                    maxDate={new Date()}/>
-            </div>
-
-            <div id='turns'>
-                <label>Turns</label>
-                {
-                    game.turns
-                        ? <input id='turns-input' type='number' min='0' value={game.turns} onChange={e => {
-                            handleTurnsChanged(e.currentTarget.valueAsNumber).then();
+        <Flex direction='column' align='center' gap='4'>
+            <Flex direction='row' gap='5' align='end'>
+                <Box>
+                    <Text mb='1' as='div'>Played at:</Text>
+                    {/* todo: change the datepicker because this one doesn't act well w/ radix styles*/}
+                    <DatePicker
+                        id='date-picker-el'
+                        name='startedAt'
+                        selected={game.playedAt}
+                        onChange={async (newDate) => {
+                            const api = new GamesApi();
+                            await api.updatePlayedAt(game.id, newDate!);
+                            setGame((draft) => {
+                                if (draft !== undefined) {
+                                    draft.playedAt = newDate!;
+                                }
+                            });
+                        }}
+                        showTimeSelect
+                        className='rt-reset rt-TextFieldInput'
+                        wrapperClassName='rt-TextFieldRoot rt-variant-surface'
+                        calendarIconClassName='rt-TextFieldSlot'
+                        dateFormat='dd-MM-yyyy HH:mm'
+                        maxDate={new Date()}
+                    />
+                </Box>
+                <Box>
+                    <Text as='div'>Host</Text>
+                    <HostPicker
+                        currentHost={game.host
+                            ? {name: game.host, irl: game.irl} as Host
+                            : undefined}
+                        onHostChange={host => {
+                            handleHostChanged(host).then();
                         }}/>
-                        : <button id='add-turns-button' onClick={() => {
-                            handleTurnsChanged(1).then();
-                        }}>
-                            Add turn count
-                        </button>
-                }
-            </div>
-
-            <div id='host-picker'>
-                <label>Host</label>
-                <HostPicker currentHost={game.host ? {name: game.host, irl: game.irl} as Host : undefined}
-                            onHostChange={host => {
-                                handleHostChanged(host).then();
-                            }}/>
-            </div>
-
-            <button id='add-participant-button' onClick={toggleDialog}>Add a participant</button>
-
-            <div id='starting-order-section'>
-                <h3>Starting order</h3>
-                <StartingOrderList
-                    participants={game.participants.slice()}
-                    onParticipantDeleted={handleDeleteParticipant}
-                    onStartingOrdersChanged={handleStartingOrderChanged}/>
-            </div>
-            <div id='placement-section'>
-                <h3>Placement</h3>
-                <PlacementList
-                    participants={game.participants.slice()}
-                    onParticipantDeleted={handleDeleteParticipant}
-                    onPlacementsChanged={handlePlacementChanged}/>
-            </div>
-        </div>
+                </Box>
+            </Flex>
+            <Flex direction='row' align='end' gap='5'>
+                <Box maxWidth='150px'>
+                    {
+                        game.turns ?
+                            <>
+                                <Text mb='1' as='div'>Turns</Text>
+                                <NumberField value={game.turns} onChange={v => handleTurnsChanged(v).then()}/>
+                            </>
+                            :
+                            <Button size='2' id='add-turns-button' onClick={() => {
+                                handleTurnsChanged(1).then();
+                            }}>
+                                Add turns
+                            </Button>
+                    }
+                </Box>
+                <Box>
+                    <AddParticipantDialog onAdd={handleAddParticipant}/>
+                </Box>
+            </Flex>
+            <Flex direction={{initial: 'column', md: 'row'}} gap='6'>
+                <Card>
+                    <Flex direction='column' align='center'>
+                        <Text as='span' size='5' mb='3'>Placement</Text>
+                        <Inset>
+                            <PlacementList
+                                participants={game.participants.slice()}
+                                onParticipantDeleted={handleDeleteParticipant}
+                                onPlacementsChanged={handlePlacementChanged}/>
+                        </Inset>
+                    </Flex>
+                </Card>
+                <Card>
+                    <Flex direction='column' align='center'>
+                        <Text as='span' size='5' mb='3'>Starting order</Text>
+                        <Inset>
+                            <StartingOrderList
+                                participants={game.participants.slice()}
+                                onParticipantDeleted={handleDeleteParticipant}
+                                onStartingOrdersChanged={handleStartingOrderChanged}/>
+                        </Inset>
+                    </Flex>
+                </Card>
+            </Flex>
+        </Flex>
     );
-
-    function toggleDialog() {
-        if (!dialogRef.current) {
-            return;
-        }
-        dialogRef.current.hasAttribute("open")
-            ? dialogRef.current.close()
-            : dialogRef.current.showModal();
-    }
 
     async function handleAddParticipant(newParticipant: Participant) {
         if (game === undefined) {
@@ -139,7 +151,7 @@ export default function GameForm() {
                 draft.participants.push(participantResponse);
             }
         })
-        toggleDialog();
+        forceUpdate();
     }
 
     async function handleStartingOrderChanged(newData: Participant[]) {
@@ -149,7 +161,7 @@ export default function GameForm() {
         const api = new GamesApi();
         const sorted = newData.sort((a, b) => a.startingOrder - b.startingOrder);
         await api.updateStartingOrder(game.id, sorted.map(p => p.player.id));
-        setRerender(rerender + 1);
+        forceUpdate();
     }
 
     async function handlePlacementChanged(newData: Participant[]) {
@@ -160,7 +172,7 @@ export default function GameForm() {
         const placements = {} as Placements;
         newData.forEach(p => placements[p.player.id] = p.placement);
         await api.updatePlacement(game.id, placements);
-        setRerender(rerender + 1);
+        forceUpdate();
     }
 
     async function handleHostChanged(host: Host) {
@@ -169,7 +181,7 @@ export default function GameForm() {
         }
         const api = new GamesApi();
         await api.updateHost(game.id, host.id);
-        setRerender(rerender + 1);
+        forceUpdate();
     }
 
     async function handleTurnsChanged(turns: number) {
@@ -178,6 +190,6 @@ export default function GameForm() {
         }
         const api = new GamesApi();
         await api.updateTurnCount(game.id, turns);
-        setRerender(rerender + 1);
+        forceUpdate();
     }
 }

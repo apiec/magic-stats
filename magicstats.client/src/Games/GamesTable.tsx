@@ -1,5 +1,4 @@
-﻿import './GamesTable.css';
-import {
+﻿import {
     ColumnDef,
     createColumnHelper,
     flexRender,
@@ -8,16 +7,58 @@ import {
     useReactTable,
     VisibilityState
 } from "@tanstack/react-table";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import {GameDetails} from "./GameDetails/GameDetails.tsx";
 import {format} from "date-fns";
 import {Game, GamesApi} from './GamesApi.ts';
-import {Link, useNavigate} from 'react-router-dom';
-import {FaPen, FaTrash} from 'react-icons/fa';
+import {Link as RouterLink, useNavigate} from 'react-router-dom';
+import {Button, Flex, IconButton, Spinner, Table, Text} from '@radix-ui/themes';
+import {Pencil1Icon} from '@radix-ui/react-icons';
+import DeleteButton from "../Shared/DeleteButton.tsx";
 
-export default function GamesTable() {
-    const [games, setGames] = useState<Game[]>([]);
-    const [currentGameId, setCurrentGameId] = useState<string>();
+export default function GamesTableComponent() {
+    const [games, setGames] = useState<Game[] | undefined>(undefined);
+
+    async function populateGameData() {
+        const api = new GamesApi();
+        const games = await api.getAll();
+        setGames(games);
+    }
+
+    useEffect(() => {
+        populateGameData();
+    }, []);
+
+    const navigate = useNavigate();
+
+    async function handleNewGame() {
+        const api = new GamesApi();
+        const game = await api.createNewGame();
+        await navigate(game.id);
+    }
+
+    if (games === undefined) {
+        return <Flex direction='column' align='center' gap='7'>
+            <Text>Loading games...</Text>
+            <Spinner/>
+        </Flex>;
+    }
+
+    return (
+        <Flex align='center' direction='column' gap='3'>
+            <Button size='4' onClick={handleNewGame}>
+                New game
+            </Button>
+            <GamesTable games={games}/>
+        </Flex>
+    );
+}
+
+type GamesTableProps = {
+    games: Game[],
+}
+
+function GamesTable({games}: GamesTableProps) {
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
         'playedAt': true,
         'winning_commander': true,
@@ -49,9 +90,6 @@ export default function GamesTable() {
         handleResize();
     }, []);
 
-    const currentGame = games.find(g => g.id === currentGameId);
-
-    const dialogRef = useRef<HTMLDialogElement>(null);
     const table = useReactTable({
         data: games,
         columns,
@@ -70,77 +108,32 @@ export default function GamesTable() {
         },
     });
 
-    async function populateGameData() {
-        const api = new GamesApi();
-        const games = await api.getAll();
-        setGames(games);
-    }
-
-    useEffect(() => {
-        populateGameData();
-    }, []);
-
-    const navigate = useNavigate();
-
-    async function handleNewGame() {
-        const api = new GamesApi();
-        const game = await api.createNewGame();
-        await navigate(game.id);
-    }
-
-    function toggleDialog() {
-        if (!dialogRef.current) {
-            return;
-        }
-        dialogRef.current.hasAttribute("open")
-            ? dialogRef.current.close()
-            : dialogRef.current.showModal();
-    }
-
     return (
-        <div className='games-table-component'>
-            <dialog className='game-details-dialog' ref={dialogRef} onClick={(e) => {
-                if (e.currentTarget === e.target) {
-                    toggleDialog();
-                }
-            }}>
-                {
-                    currentGame ? <GameDetails game={currentGame}/> : 'dupa'
-                }
-            </dialog>
-            <div>
-                <button className='new-game-button' onClick={handleNewGame}>
-                    New game
-                </button>
-            </div>
-            <table className='games-table'>
-                <thead>
+        <Table.Root variant='surface'>
+            <Table.Header>
                 {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
+                    <Table.Row key={headerGroup.id}>
                         {headerGroup.headers.map(header => (
-                            <th key={header.id} colSpan={header.colSpan}>
+                            <Table.Cell key={header.id} colSpan={header.colSpan} align='center'>
                                 {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                            </th>
+                            </Table.Cell>
                         ))}
-                    </tr>
-                ))
-                }
-                </thead>
-                <tbody>
-                {table.getRowModel().rows.map(row => (
-                    <tr key={row.id} onClick={() => {
-                        setCurrentGameId(row.original.id);
-                        toggleDialog();
-                    }}>
-                        {row.getVisibleCells().map(cell => (
-                            <td key={cell.id}>
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </td>))}
-                    </tr>
+                    </Table.Row>
                 ))}
-                </tbody>
-            </table>
-        </div>
+            </Table.Header>
+            <Table.Body>
+                {table.getRowModel().rows.map(row => (
+                    <GameDetails key={row.id} game={games.find(g => g.id === row.original.id)!} trigger={
+                        <Table.Row key={row.id}>
+                            {row.getVisibleCells().map(cell => (
+                                <Table.Cell key={cell.id} align='center'>
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </Table.Cell>))}
+                        </Table.Row>
+                    }/>
+                ))}
+            </Table.Body>
+        </Table.Root>
     );
 }
 
@@ -152,34 +145,22 @@ const columns: ColumnDef<Game, any>[] = [
         header: 'Played at',
         cell: props => format(props.row.original.playedAt, "dd/MM/yyyy HH:mm"),
     }),
-    columnHelper.group({
-        header: 'Winner',
-        columns: [
-            columnHelper.accessor((g) => g.winner?.commander.name ?? 'no data', {
-                id: 'winning_commander',
-                header: 'Commander'
-            }),
-            columnHelper.accessor((g) => g.winner?.player.name ?? 'no data', {id: 'winning_player', header: 'Player'}),
-        ],
-    }),
     columnHelper.accessor(game => game.participants.length, {
         id: 'pod_size',
         header: 'Pod size',
     }),
-    columnHelper.accessor('turns', {
-        id: 'turns',
-        header: 'Turns',
-        cell: props => props.row.original.turns ?? '-',
+    columnHelper.accessor((g) => g.winner?.commander.name ?? 'no data', {
+        id: 'winning_commander',
+        header: 'Commander'
+    }),
+    columnHelper.accessor((g) => g.winner?.player.name ?? 'no data', {
+        id: 'winning_player',
+        header: 'Player'
     }),
     columnHelper.accessor('host', {
         id: 'host',
         header: 'Host',
         cell: props => props.row.original.host ?? '-',
-    }),
-    columnHelper.accessor('irl', {
-        id: 'irl',
-        header: 'IRL/online',
-        cell: props => props.row.original.irl === null ? '-' : props.row.original.irl ? 'IRL' : 'online',
     }),
     columnHelper.display({
         id: 'edit',
@@ -189,7 +170,11 @@ const columns: ColumnDef<Game, any>[] = [
     columnHelper.display({
         id: 'delete',
         header: 'Delete',
-        cell: props => <DeleteGameButton gameId={props.row.original.id}/>,
+        cell: props => <DeleteButton onClick={() => {
+            const api = new GamesApi();
+            api.delete(props.row.original.id)
+                .then(() => window.location.reload());
+        }}/>,
     })
 ];
 
@@ -199,23 +184,10 @@ type EditGameButtonProps = {
 
 function EditGameButton({gameId}: EditGameButtonProps) {
     return (
-        <Link to={gameId} className='button-like edit-game' onClick={(e) => e.stopPropagation()}>
-            <FaPen/>
-        </Link>
-    );
-}
-
-type DeleteGameButtonProps = {
-    gameId: string,
-}
-
-function DeleteGameButton({gameId}: DeleteGameButtonProps) {
-    return (
-        <FaTrash className='button-like delete-game' onClick={(e) => {
-            e.stopPropagation();
-            const api = new GamesApi();
-            api.delete(gameId)
-                .then(() => window.location.reload());
-        }}/>
+        <IconButton size='1' variant='ghost' asChild>
+            <RouterLink to={gameId} onClick={(e) => e.stopPropagation()}>
+                <Pencil1Icon/>
+            </RouterLink>
+        </IconButton>
     );
 }

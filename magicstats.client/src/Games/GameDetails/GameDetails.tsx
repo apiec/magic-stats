@@ -1,5 +1,4 @@
-﻿import './GameDetails.css';
-import {
+﻿import {
     ColumnDef,
     createColumnHelper,
     flexRender,
@@ -9,12 +8,16 @@ import {
 } from "@tanstack/react-table";
 import {format} from 'date-fns';
 import {Game, Participant} from "../GamesApi.ts";
+import {Dialog, Inset, Table, Text} from '@radix-ui/themes';
+import {ReactNode} from 'react';
+import {FaTrophy} from 'react-icons/fa'
 
 interface GameDetailsProps {
     game: Game,
+    trigger: ReactNode,
 }
 
-export function GameDetails({game}: GameDetailsProps) {
+export function GameDetails({game, trigger}: GameDetailsProps) {
     const data = game.participants;
     const table = useReactTable({
         data,
@@ -31,38 +34,45 @@ export function GameDetails({game}: GameDetailsProps) {
         }
     })
     return (
-        <div className='game-details'>
-            <section className='game-details-header'>
-                <div>{game.participants.length} player game</div>
-                <div>{format(game.playedAt, "dd/MM/yyyy HH:mm")}</div>
-                <div>Played at: {game.host}</div>
-                {game.turns && <div>{game.turns} turns</div>}
-            </section>
-            <table className='game-details-table'>
-                <thead>
-                {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
-                        {headerGroup.headers.map(header => (
-                            <th key={header.id}>
-                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                            </th>
-                        ))}
-                    </tr>
-                ))
-                }
-                </thead>
-                <tbody>
-                {table.getRowModel().rows.map(row => (
-                    <tr key={row.id}>
-                        {row.getVisibleCells().map(cell => (
-                            <td key={cell.id}>
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </td>))}
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        </div>
+        <Dialog.Root>
+            <Dialog.Trigger>
+                {trigger}
+            </Dialog.Trigger>
+            <Dialog.Content>
+                <Dialog.Title align='center'>{game.participants.length} player game</Dialog.Title>
+                <Dialog.Description align='center'>
+                    <Text as='p' size='3'>{format(game.playedAt, "dd/MM/yyyy HH:mm")}</Text>
+                    <Text as='p' size='2'>Played at: {game.host}</Text>
+                    {game.turns && <Text as={'p'}>{game.turns} turns</Text>}
+                </Dialog.Description>
+                <Inset side='x' mt='3'>
+                    <Table.Root>
+                        <Table.Header>
+                            {table.getHeaderGroups().map(headerGroup => (
+                                <Table.Row key={headerGroup.id}>
+                                    {headerGroup.headers.map(header => (
+                                        <Table.Cell key={header.id} align='center'>
+                                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                        </Table.Cell>
+                                    ))}
+                                </Table.Row>
+                            ))
+                            }
+                        </Table.Header>
+                        <Table.Body>
+                            {table.getRowModel().rows.map(row => (
+                                <Table.Row key={row.id}>
+                                    {row.getVisibleCells().map(cell => (
+                                        <Table.Cell key={cell.id} align='center'>
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </Table.Cell>))}
+                                </Table.Row>
+                            ))}
+                        </Table.Body>
+                    </Table.Root>
+                </Inset>
+            </Dialog.Content>
+        </Dialog.Root>
     );
 }
 
@@ -71,7 +81,7 @@ const columns: ColumnDef<Participant, any>[] = [
     columnHelper.accessor('placement', {
         id: 'placement',
         header: 'Placement',
-        cell: ({row}) => row.original.placement + 1,
+        cell: ({row}) => row.original.placement === 0 ? <FaTrophy/> : row.original.placement + 1,
     }),
     columnHelper.accessor('commander.name', {
         id: 'commanderName',

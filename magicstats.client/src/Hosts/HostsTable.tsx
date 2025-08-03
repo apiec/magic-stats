@@ -1,6 +1,5 @@
-﻿import HostApi, {HostWithStats} from "./HostApi.ts";
-import SortableHeader from "../Shared/SortableHeader.tsx";
-import {useImmer} from "use-immer";
+﻿import {useImmer} from "use-immer";
+import {Table} from "@radix-ui/themes";
 import {
     createColumnHelper,
     flexRender,
@@ -9,7 +8,9 @@ import {
     TableState,
     useReactTable
 } from "@tanstack/react-table";
-import {FaTrash} from "react-icons/fa";
+import HostApi, {HostWithStats} from "./HostApi.ts";
+import SortableHeader from "../Shared/SortableHeader.tsx";
+import DeleteButton from "../Shared/DeleteButton.tsx";
 
 type HostTableProps = {
     hosts: HostWithStats[],
@@ -42,32 +43,29 @@ export default function HostsTable({hosts}: HostTableProps) {
     });
 
     return (
-        <section className='hosts-section'>
-            <table className='hosts-table'>
-                <thead>
+        <Table.Root variant='surface'>
+            <Table.Header>
                 {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
+                    <Table.Row key={headerGroup.id}>
                         {headerGroup.headers.map(header => (
-                            <th key={header.id}>
+                            <Table.ColumnHeaderCell key={header.id}>
                                 {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                            </th>
+                            </Table.ColumnHeaderCell>
                         ))}
-                    </tr>
-                ))
-                }
-                </thead>
-                <tbody>
-                {table.getRowModel().rows.map(row => (
-                    <tr key={row.id}>
-                        {row.getVisibleCells().map(cell => (
-                            <td key={cell.id}>
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </td>))}
-                    </tr>
+                    </Table.Row>
                 ))}
-                </tbody>
-            </table>
-        </section>
+            </Table.Header>
+            <Table.Body>
+                {table.getRowModel().rows.map(row => (
+                    <Table.Row key={row.id}>
+                        {row.getVisibleCells().map(cell => (
+                            <Table.Cell key={cell.id} align='center'>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </Table.Cell>))}
+                    </Table.Row>
+                ))}
+            </Table.Body>
+        </Table.Root>
     );
 }
 
@@ -90,21 +88,10 @@ const columns = [
     columnHelper.display({
         id: 'delete',
         header: 'Delete',
-        cell: props => <DeleteHostButton hostId={props.row.original.id}/>,
+        cell: props => <DeleteButton onClick={() => {
+            const api = new HostApi();
+            api.delete(props.row.original.id)
+                .then(() => window.location.reload());
+        }}/>,
     })
 ];
-
-type DeleteHostButtonProps = {
-    hostId: string,
-}
-
-function DeleteHostButton({hostId}: DeleteHostButtonProps) {
-    return (
-        <FaTrash className='button-like' onClick={(e) => {
-            e.stopPropagation();
-            const api = new HostApi();
-            api.delete(hostId)
-                .then(() => window.location.reload());
-        }}/>
-    );
-}

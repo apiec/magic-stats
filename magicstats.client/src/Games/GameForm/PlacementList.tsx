@@ -1,30 +1,18 @@
 ﻿import {
     ColumnDef,
     createColumnHelper,
-    flexRender,
     getCoreRowModel,
-    Row,
     RowSelectionState,
     useReactTable,
     VisibilityState
 } from "@tanstack/react-table";
-import {CSSProperties, useMemo, useState} from "react";
-import {
-    closestCenter,
-    DndContext,
-    type DragEndEvent,
-    KeyboardSensor,
-    MouseSensor,
-    TouchSensor,
-    useSensor,
-    useSensors,
-} from '@dnd-kit/core';
-import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy} from "@dnd-kit/sortable";
-import {CSS} from '@dnd-kit/utilities';
-import {restrictToVerticalAxis} from "@dnd-kit/modifiers";
+import {useMemo, useState} from "react";
+import {arrayMove} from "@dnd-kit/sortable";
 import {Participant} from "../GamesApi.ts";
-import {FaGripLines, FaTrash} from "react-icons/fa";
-import "./DragAndDropParticipantsList.css";
+import DndTable from "../../Shared/DndTable.tsx";
+import DeleteButton from "../../Shared/DeleteButton.tsx";
+import {FaTrophy} from "react-icons/fa";
+import {Button, Checkbox, Flex} from "@radix-ui/themes";
 
 type PlacementListProps = {
     participants: Participant[],
@@ -40,7 +28,6 @@ export default function PlacementList(
     }: PlacementListProps) {
 
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
-        'dragHandle': true,
         'select': false,
         'placement': true,
         'playerName': true,
@@ -90,93 +77,52 @@ export default function PlacementList(
         onPlacementsChanged(sortedParticipants);
     }
 
-    function handleDragEnd(event: DragEndEvent) {
-        const {active, over} = event;
-        if (active && over && active.id !== over.id) {
-            const oldIndex = sortedData.findIndex(p => p.player.id === active.id);
-            const newIndex = sortedData.findIndex(p => p.player.id === over.id);
-            const newData = arrayMove(sortedData, oldIndex, newIndex);
-            newData.forEach((p, i) => p.placement = i);
-            onPlacementsChanged(newData);
-        }
-    }
-
-    const sensors = useSensors(
-        useSensor(MouseSensor, {}),
-        useSensor(TouchSensor, {}),
-        useSensor(KeyboardSensor, {}),
-    )
-
     function toggleDrawsView(draws: boolean) {
         table.getColumn('select')!.toggleVisibility(draws);
-        table.getColumn('dragHandle')!.toggleVisibility(!draws);
+        table.getColumn('placement')!.toggleVisibility(!draws);
     }
 
     return (
-        <div>
-            <div className='draw-buttons'>
+        <Flex direction='column' align='center'>
+            <DndTable table={table} onItemsSwap={(rowAId, rowBId) => {
+                const oldIndex = sortedData.findIndex(p => p.player.id === rowAId);
+                const newIndex = sortedData.findIndex(p => p.player.id === rowBId);
+                const newData = arrayMove(sortedData, oldIndex, newIndex);
+                newData.forEach((p, i) => p.placement = i);
+                onPlacementsChanged(newData);
+            }}/>
+            <Flex direction='row' gap='2' my='5'>
                 {
                     table.getColumn('select')!.getIsVisible() ?
                         <>
-                            <button disabled={Object.keys(rowSelection).length <= 1} onClick={(e) => {
-                                e.stopPropagation();
-                                handleDraw();
-                                table.resetRowSelection();
-                                toggleDrawsView(false);
-                            }}>
-                                Confirm
-                            </button>
-                            <button onClick={(e) => {
+                            <Button size='2' variant='surface' onClick={(e) => {
                                 e.stopPropagation();
                                 table.resetRowSelection();
                                 toggleDrawsView(false);
                             }}>
                                 Close
-                            </button>
+                            </Button>
+                            <Button size='2' variant='surface' color='green'
+                                    disabled={Object.keys(rowSelection).length <= 1}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDraw();
+                                        table.resetRowSelection();
+                                        toggleDrawsView(false);
+                                    }}>
+                                Confirm
+                            </Button>
                         </>
                         :
-                        <button onClick={(e) => {
+                        <Button size='2' variant='surface' onClick={(e) => {
                             e.stopPropagation();
                             toggleDrawsView(true);
                         }}>
                             Add a draw
-                        </button>
+                        </Button>
                 }
-            </div>
-            <DndContext
-                collisionDetection={closestCenter}
-                modifiers={[restrictToVerticalAxis]}
-                onDragEnd={handleDragEnd}
-                sensors={sensors}>
-                <table className='dnd-participant-list'>
-                    <thead>
-                    {table.getHeaderGroups().map(headerGroup => (
-                        <tr key={headerGroup.id}>
-                            {headerGroup.headers.map(header => (
-                                <th key={header.id} colSpan={header.colSpan}>
-                                    {header.isPlaceholder
-                                        ? null
-                                        : flexRender(
-                                            header.column.columnDef.header,
-                                            header.getContext()
-                                        )}
-                                </th>
-                            ))}
-                        </tr>
-                    ))}
-                    </thead>
-                    <tbody>
-                    <SortableContext
-                        items={sortedData.map(p => p.player.id)}
-                        strategy={verticalListSortingStrategy}>
-                        {table.getRowModel().rows.map(row => (
-                            <DraggableRow key={row.id} row={row}/>
-                        ))}
-                    </SortableContext>
-                    </tbody>
-                </table>
-            </DndContext>
-        </div>
+            </Flex>
+        </Flex>
     );
 }
 
@@ -184,16 +130,9 @@ function getColumnDefinition(onParticipantDeleted: (playerId: string) => void): 
     const columnHelper = createColumnHelper<Participant>();
     return [
         columnHelper.display({
-            id: 'dragHandle',
-            header: 'Move',
-            cell: ({row}) => <RowDragHandleCell rowId={row.id}/>,
-            size: 60,
-        }),
-        columnHelper.display({
             id: 'select',
             header: 'Select',
-            cell: ({row}) => <input type='checkbox' checked={row.getIsSelected()}
-                                    onChange={row.getToggleSelectedHandler()}></input>,
+            cell: ({row}) => <Checkbox checked={row.getIsSelected()} onClick={row.getToggleSelectedHandler()}/>,
             size: 60,
         }),
         columnHelper.display({
@@ -205,6 +144,11 @@ function getColumnDefinition(onParticipantDeleted: (playerId: string) => void): 
         columnHelper.accessor('player.name', {
             id: 'playerName',
             header: 'Player',
+            cell: ({row}) => row.original.placement === 0 ?
+                (<Flex direction='row' gap='3' align='center'>
+                    {row.original.player.name} <FaTrophy color='gold'/>
+                </Flex>) :
+                row.original.player.name
         }),
         columnHelper.accessor('commander.name', {
             id: 'commanderName',
@@ -213,61 +157,8 @@ function getColumnDefinition(onParticipantDeleted: (playerId: string) => void): 
         columnHelper.display({
             id: 'delete',
             header: 'Delete',
-            cell: ({row}) =>
-                <FaTrash
-                    className='dnd-delete-button'
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onParticipantDeleted(row.original.player.id);
-                    }}/>,
+            cell: ({row}) => <DeleteButton onClick={() => onParticipantDeleted(row.original.player.id)}/>,
             size: 60,
         }),
     ];
-}
-
-type RowDragHandleCellProps = {
-    rowId: string,
-}
-
-function RowDragHandleCell({rowId}: RowDragHandleCellProps) {
-    const {attributes, listeners, setNodeRef} = useSortable({
-        id: rowId,
-    });
-
-    return (
-        <div ref={setNodeRef}>
-            <FaGripLines {...attributes} {...listeners} className='move-row-icon'/>
-        </div>
-    )
-}
-
-type DraggableRowProps = {
-    row: Row<Participant>,
-    stylePlacement?: boolean,
-}
-
-function DraggableRow({row}: DraggableRowProps) {
-    const {transform, transition, setNodeRef, isDragging} = useSortable({
-        id: row.original.player.id,
-    });
-
-    const placementColors = ['gold', 'silver', 'orange'];
-    const style: CSSProperties = {
-        transform: CSS.Transform.toString(transform),
-        transition: transition,
-        opacity: isDragging ? 0.8 : 1,
-        zIndex: isDragging ? 1 : 0,
-        position: 'relative',
-        background: row.original.placement < placementColors.length ? placementColors[row.original.placement] : undefined,
-    }
-
-    return (
-        <tr ref={setNodeRef} style={style}>
-            {row.getVisibleCells().map(cell => (
-                <td key={cell.id} style={{width: cell.column.getSize()}}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-            ))}
-        </tr>
-    );
 }

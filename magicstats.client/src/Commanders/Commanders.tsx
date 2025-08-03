@@ -1,19 +1,18 @@
-﻿import './Commanders.css'
-import CommanderApi, {CommanderWithStats} from "./CommanderApi.ts";
-import {useEffect, useState} from 'react';
+﻿import {useEffect, useState} from 'react';
 import {useImmer} from 'use-immer';
+import {Box, Flex, Select, Spinner, Text} from '@radix-ui/themes';
+import CommanderApi, {CommanderWithStats} from "./CommanderApi.ts";
+import CommanderForm from "./CommanderForm.tsx";
 import CommandersTable from "./CommandersTable.tsx";
 import WinrateGraph, {DataPoint, DataSeries} from "../Shared/WinrateGraph.tsx";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
-import Select from "react-select";
-import CommanderForm from "./CommanderForm.tsx";
 
 export default function Commanders() {
     const [commanders, setCommanders] = useImmer<CommanderWithStats[] | undefined>(undefined);
-    const [slidingWindowSize, setSlidingWindowSize] = useState<number | undefined>(startingWindowValue);
-    const [podSize, setPodSize] = useState<number | undefined>(startingPodSizeValue);
+    const [slidingWindowSize, setSlidingWindowSize] = useState<string>(startingWindowValue);
+    const [podSize, setPodSize] = useState<string>(startingPodSizeValue);
     const [rerender, setRerender] = useState<number>(0);
-    const lastX = slidingWindowSize ?? 10;
+    const lastX = slidingWindowOptions.get(slidingWindowSize) ?? 10;
 
     useEffect(() => {
         populateCommanderData().then();
@@ -21,12 +20,12 @@ export default function Commanders() {
 
     async function populateCommanderData() {
         const api = new CommanderApi();
-        const commanders = await api.getAllWithStats(lastX, podSize);
+        const commanders = await api.getAllWithStats(lastX, podSizeOptions.get(podSize));
         setCommanders(() => commanders);
     }
 
     if (commanders === undefined) {
-        return <p>Loading...</p>;
+        return <Spinner/>;
     }
 
     const mostGames = Math.max(...commanders.map(p => p.stats.games));
@@ -37,68 +36,61 @@ export default function Commanders() {
     const highestWinrateCommanderLast = commanders.find(p => p.stats.winrateLastX === highestWinrateLast)!;
 
     return (
-        <section className='commanders-section'>
-            <section className='commanders-section-values'>
+        <Flex direction='column' maxWidth='700px' align='center' gap='6'>
+            <Flex direction={{initial: 'column', md: 'row'}} gap='5'>
                 <ValueDisplay title='Most games' values={[mostGamesCommander.name, mostGames.toFixed(0)]}/>
                 <ValueDisplay title='Highest WR'
                               values={[highestWinrateCommander.name, toPercentage(highestWinrate)]}/>
                 <ValueDisplay title={'Highest WRL' + lastX}
                               values={[highestWinrateCommanderLast.name, toPercentage(highestWinrateLast)]}/>
-            </section>
-            <section className='commanders-controls'>
-                <div>
-                    <p>Sliding window:</p>
-                    <Select className='black-text'
-                            options={slidingWindowOptions}
-                            value={slidingWindowOptions.find(o => o.value === slidingWindowSize)}
-                            onChange={(x) => {
-                                setSlidingWindowSize(x?.value);
-                            }}/>
-                </div>
-                <div>
-                    <p>Pod size:</p>
-                    <Select className='black-text'
-                            options={podSizeOptions}
-                            value={podSizeOptions.find(o => o.value === podSize)}
-                            onChange={(x) => {
-                                setPodSize(x?.value);
-                            }}/>
-                </div>
-                <div>
-                    <p>Add a new commander:</p>
-                    <CommanderForm onSubmit={c => {
+            </Flex>
+            <Flex direction='row' align='start' gap='5' justify='center'>
+                <Flex direction='column' minWidth='70px' align='center'>
+                    <Text>Sliding window:</Text>
+                    <Select.Root value={slidingWindowSize} onValueChange={setSlidingWindowSize}>
+                        <Select.Trigger/>
+                        <Select.Content>
+                            {Array.from(slidingWindowOptions.keys()).map(v => <Select.Item value={v}>{v}</Select.Item>)}
+                        </Select.Content>
+                    </Select.Root>
+                </Flex>
+                <Flex direction='column' minWidth='70px' align='center'>
+                    <Text>Pod size:</Text>
+                    <Select.Root value={podSize} onValueChange={setPodSize}>
+                        <Select.Trigger/>
+                        <Select.Content>
+                            {Array.from(podSizeOptions.keys()).map(v => <Select.Item value={v}>{v}</Select.Item>)}
+                        </Select.Content>
+                    </Select.Root>
+                </Flex>
+                <Box>
+                    <Text>Add a new commander:</Text>
+                    <CommanderForm onSubmit={p => {
                         const api = new CommanderApi();
-                        api.create(c.name).then(_ => {
+                        api.create(p.name).then(_ => {
                             setRerender(rerender + 1);
                         });
                     }}/>
-                </div>
-            </section>
+                </Box>
+            </Flex>
             <CommandersTable commanders={commanders} lastXWindowSize={lastX}/>
-            <CommandersWinrateGraph slidingWindowSize={slidingWindowSize} podSize={podSize}/>
-        </section>
+            <CommandersWinrateGraph
+                slidingWindowSize={slidingWindowOptions.get(slidingWindowSize)}
+                podSize={podSizeOptions.get(podSize)}/>
+        </Flex>
     );
 }
 
 const windowValues = [undefined, 5, 10, 20, 50,];
 
-const slidingWindowOptions = windowValues.map(v => {
-    return {
-        label: v ? v.toString() : 'None',
-        value: v,
-    }
-});
-const startingWindowValue = undefined;
+const slidingWindowOptions: Map<string, number | undefined> = new Map<string, number | undefined>();
+windowValues.forEach(v => slidingWindowOptions.set(v ? v.toString() : 'None', v));
+const startingWindowValue = 'None';
 
 const podSizeValues = [undefined, 3, 4, 5, 6,];
-
-const podSizeOptions = podSizeValues.map(v => {
-    return {
-        label: v ? v.toString() : 'None',
-        value: v,
-    }
-});
-const startingPodSizeValue = undefined;
+const podSizeOptions: Map<string, number | undefined> = new Map<string, number | undefined>();
+podSizeValues.forEach(v => podSizeOptions.set(v ? v.toString() : 'None', v));
+const startingPodSizeValue = 'None';
 
 
 type CommandersWinrateGraphProps = {
