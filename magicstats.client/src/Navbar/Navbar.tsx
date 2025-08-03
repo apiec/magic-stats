@@ -1,9 +1,11 @@
 ﻿import {FaBars, FaHome, FaHouseUser, FaIdBadge, FaUser, FaUsers} from 'react-icons/fa'
 import {GiStack} from 'react-icons/gi';
 import {Link as RouterLink} from "react-router-dom";
-import {Flex, TabNav, Heading, Text, Box} from '@radix-ui/themes';
+import {Flex, TabNav, Heading, Text, Box, IconButton, Tooltip} from '@radix-ui/themes';
 import {ReactNode, useState} from 'react';
 import './Navbar.css';
+import {useTheme} from 'next-themes';
+import {MoonIcon, SunIcon} from '@radix-ui/react-icons';
 
 export default function Navbar() {
     const [expanded, setExpanded] = useState<boolean | undefined>(undefined);
@@ -26,9 +28,14 @@ export default function Navbar() {
 
     return (
         <>
-            <Flex className={expanding('top-bar')}>
+            <Flex width='100%' direction='row' className={expanding('top-bar')}>
                 <MagicStatsLogo/>
-                <FaBars className={expanding('button-like expand-button')} onClick={toggleExpanded}/>
+                <Box ml='auto' mr='2'>
+                    <LightModeButton/>
+                </Box>
+                <Box mr='2' asChild>
+                    <FaBars className={expanding('button-like expand-button')} onClick={toggleExpanded}/>
+                </Box>
             </Flex>
             <Box className={expanding('navbar')}>
                 <TabNav.Root>
@@ -72,5 +79,18 @@ function MagicStatsLogo() {
                 <Heading as='h3'>Magic stats</Heading>
             </RouterLink>
         </Flex>
+    );
+}
+
+function LightModeButton() {
+    const {resolvedTheme, setTheme} = useTheme();
+    const isDark = resolvedTheme === 'dark';
+    const otherTheme = isDark ? 'light' : 'dark';
+    return (
+        <Tooltip content={`Switch to ${otherTheme} mode`}>
+            <IconButton onClick={() => setTheme(otherTheme)} variant='surface'>
+                {isDark ? <SunIcon/> : <MoonIcon/>}
+            </IconButton>
+        </Tooltip>
     );
 }

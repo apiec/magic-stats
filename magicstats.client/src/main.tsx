@@ -13,6 +13,7 @@ import Games from "./Games/Games.tsx";
 import HomePage from "./Home/HomePage.tsx";
 import Pods from "./Pods/Pods.tsx";
 import Hosts from "./Hosts/Hosts.tsx";
+import {ThemeProvider} from 'next-themes';
 
 const router = createBrowserRouter([
     {
@@ -59,16 +60,17 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <Theme
-            appearance='dark'
-            accentColor='indigo'
-            grayColor='gray'
-            panelBackground='solid'
-            scaling='100%'
-            radius='small'
-            style={{height: '100%'}}
-        >
-            <RouterProvider router={router}/>
-        </Theme>
+        <ThemeProvider attribute='class'>
+            <Theme
+                accentColor='indigo'
+                grayColor='slate'
+                panelBackground='solid'
+                scaling='100%'
+                radius='medium'
+                style={{height: '100%'}}
+            >
+                <RouterProvider router={router}/>
+            </Theme>
+        </ThemeProvider>
     </StrictMode>,
 )
