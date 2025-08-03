@@ -12,7 +12,7 @@ import {Participant} from "../GamesApi.ts";
 import DndTable from "../../Shared/DndTable.tsx";
 import DeleteButton from "../../Shared/DeleteButton.tsx";
 import {FaTrophy} from "react-icons/fa";
-import {Button, Flex} from "@radix-ui/themes";
+import {Button, Checkbox, Flex} from "@radix-ui/themes";
 
 type PlacementListProps = {
     participants: Participant[],
@@ -83,36 +83,7 @@ export default function PlacementList(
     }
 
     return (
-        <Flex direction='column'>
-            <Flex direction='row' gap='2'>
-                {
-                    table.getColumn('select')!.getIsVisible() ?
-                        <>
-                            <Button size='1' disabled={Object.keys(rowSelection).length <= 1} onClick={(e) => {
-                                e.stopPropagation();
-                                handleDraw();
-                                table.resetRowSelection();
-                                toggleDrawsView(false);
-                            }}>
-                                Confirm
-                            </Button>
-                            <Button size='1' onClick={(e) => {
-                                e.stopPropagation();
-                                table.resetRowSelection();
-                                toggleDrawsView(false);
-                            }}>
-                                Close
-                            </Button>
-                        </>
-                        :
-                        <Button size='2' onClick={(e) => {
-                            e.stopPropagation();
-                            toggleDrawsView(true);
-                        }}>
-                            Add a draw
-                        </Button>
-                }
-            </Flex>
+        <Flex direction='column' align='center'>
             <DndTable table={table} onItemsSwap={(rowAId, rowBId) => {
                 const oldIndex = sortedData.findIndex(p => p.player.id === rowAId);
                 const newIndex = sortedData.findIndex(p => p.player.id === rowBId);
@@ -120,6 +91,37 @@ export default function PlacementList(
                 newData.forEach((p, i) => p.placement = i);
                 onPlacementsChanged(newData);
             }}/>
+            <Flex direction='row' gap='2' my='5'>
+                {
+                    table.getColumn('select')!.getIsVisible() ?
+                        <>
+                            <Button size='2' variant='surface' onClick={(e) => {
+                                e.stopPropagation();
+                                table.resetRowSelection();
+                                toggleDrawsView(false);
+                            }}>
+                                Close
+                            </Button>
+                            <Button size='2' variant='surface' color='green'
+                                    disabled={Object.keys(rowSelection).length <= 1}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDraw();
+                                        table.resetRowSelection();
+                                        toggleDrawsView(false);
+                                    }}>
+                                Confirm
+                            </Button>
+                        </>
+                        :
+                        <Button size='2' variant='surface' onClick={(e) => {
+                            e.stopPropagation();
+                            toggleDrawsView(true);
+                        }}>
+                            Add a draw
+                        </Button>
+                }
+            </Flex>
         </Flex>
     );
 }
@@ -130,8 +132,7 @@ function getColumnDefinition(onParticipantDeleted: (playerId: string) => void): 
         columnHelper.display({
             id: 'select',
             header: 'Select',
-            cell: ({row}) => <input type='checkbox' checked={row.getIsSelected()}
-                                    onChange={row.getToggleSelectedHandler()}></input>,
+            cell: ({row}) => <Checkbox checked={row.getIsSelected()} onClick={row.getToggleSelectedHandler()}/>,
             size: 60,
         }),
         columnHelper.display({
@@ -145,7 +146,7 @@ function getColumnDefinition(onParticipantDeleted: (playerId: string) => void): 
             header: 'Player',
             cell: ({row}) => row.original.placement === 0 ?
                 (<Flex direction='row' gap='3' align='center'>
-                    {row.original.player.name} <FaTrophy/>
+                    {row.original.player.name} <FaTrophy color='gold'/>
                 </Flex>) :
                 row.original.player.name
         }),

@@ -54,7 +54,7 @@ function getColumnDefinition(onParticipantDeleted: (playerId: string) => void): 
             header: 'Player',
             cell: ({row}) => row.original.placement === 0 ?
                 (<Flex direction='row' gap='3' align='center'>
-                    {row.original.player.name} <FaTrophy/>
+                    {row.original.player.name} <FaTrophy color='gold'/>
                 </Flex>) :
                 row.original.player.name
         }),

@@ -1,3 +1,6 @@
+import './index.css';
+import "@radix-ui/themes/styles.css";
+import {Theme} from "@radix-ui/themes";
 import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
 import App from './App.tsx'
@@ -10,9 +13,6 @@ import Games from "./Games/Games.tsx";
 import HomePage from "./Home/HomePage.tsx";
 import Pods from "./Pods/Pods.tsx";
 import Hosts from "./Hosts/Hosts.tsx";
-import "@radix-ui/themes/styles.css";
-import {Theme} from "@radix-ui/themes";
-import './index.css';
 
 const router = createBrowserRouter([
     {
