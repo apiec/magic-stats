@@ -7,7 +7,7 @@ import App from './App.tsx'
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import Commanders from "./Commanders/Commanders.tsx";
 import Players from "./Players/Players.tsx";
-import GamesTable from "./Games/GamesTable.tsx";
+import GamesTableComponent from "./Games/GamesTable.tsx";
 import GameForm from "./Games/GameForm/GameForm.tsx";
 import Games from "./Games/Games.tsx";
 import HomePage from "./Home/HomePage.tsx";
@@ -42,7 +42,7 @@ const router = createBrowserRouter([
                 children: [
                     {
                         index: true,
-                        element: <GamesTable/>,
+                        element: <GamesTableComponent/>,
                     },
                     {
                         path: ":gameId",

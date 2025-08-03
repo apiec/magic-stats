@@ -1,4 +1,4 @@
-﻿import {Card, Flex, Text} from '@radix-ui/themes';
+﻿import {Card, Flex, Spinner, Text} from '@radix-ui/themes';
 import {useEffect, useState} from 'react';
 import {useImmer} from 'use-immer';
 import HostApi, {HostWithStats} from "./HostApi.ts";
@@ -20,7 +20,7 @@ export default function Hosts() {
     }
 
     if (hosts === undefined) {
-        return <p>Loading...</p>;
+        return <Spinner/>;
     }
 
     return (

@@ -12,12 +12,53 @@ import {GameDetails} from "./GameDetails/GameDetails.tsx";
 import {format} from "date-fns";
 import {Game, GamesApi} from './GamesApi.ts';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
-import {Button, Flex, IconButton, Table,} from '@radix-ui/themes';
+import {Button, Flex, IconButton, Spinner, Table, Text} from '@radix-ui/themes';
 import {Pencil1Icon} from '@radix-ui/react-icons';
 import DeleteButton from "../Shared/DeleteButton.tsx";
 
-export default function GamesTable() {
-    const [games, setGames] = useState<Game[]>([]);
+export default function GamesTableComponent() {
+    const [games, setGames] = useState<Game[] | undefined>(undefined);
+
+    async function populateGameData() {
+        const api = new GamesApi();
+        const games = await api.getAll();
+        setGames(games);
+    }
+
+    useEffect(() => {
+        populateGameData();
+    }, []);
+
+    const navigate = useNavigate();
+
+    async function handleNewGame() {
+        const api = new GamesApi();
+        const game = await api.createNewGame();
+        await navigate(game.id);
+    }
+
+    if (games === undefined) {
+        return <Flex direction='column' align='center' gap='7'>
+            <Text>Loading games...</Text>
+            <Spinner/>
+        </Flex>;
+    }
+
+    return (
+        <Flex align='center' direction='column' gap='3'>
+            <Button size='4' onClick={handleNewGame}>
+                New game
+            </Button>
+            <GamesTable games={games}/>
+        </Flex>
+    );
+}
+
+type GamesTableProps = {
+    games: Game[],
+}
+
+function GamesTable({games}: GamesTableProps) {
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
         'playedAt': true,
         'winning_commander': true,
@@ -67,55 +108,32 @@ export default function GamesTable() {
         },
     });
 
-    async function populateGameData() {
-        const api = new GamesApi();
-        const games = await api.getAll();
-        setGames(games);
-    }
-
-    useEffect(() => {
-        populateGameData();
-    }, []);
-
-    const navigate = useNavigate();
-
-    async function handleNewGame() {
-        const api = new GamesApi();
-        const game = await api.createNewGame();
-        await navigate(game.id);
-    }
-
     return (
-        <Flex align='center' direction='column' gap='3'>
-            <Button size='4' onClick={handleNewGame}>
-                New game
-            </Button>
-            <Table.Root variant='surface'>
-                <Table.Header>
-                    {table.getHeaderGroups().map(headerGroup => (
-                        <Table.Row key={headerGroup.id}>
-                            {headerGroup.headers.map(header => (
-                                <Table.Cell key={header.id} colSpan={header.colSpan} align='center'>
-                                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                </Table.Cell>
-                            ))}
+        <Table.Root variant='surface'>
+            <Table.Header>
+                {table.getHeaderGroups().map(headerGroup => (
+                    <Table.Row key={headerGroup.id}>
+                        {headerGroup.headers.map(header => (
+                            <Table.Cell key={header.id} colSpan={header.colSpan} align='center'>
+                                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                            </Table.Cell>
+                        ))}
+                    </Table.Row>
+                ))}
+            </Table.Header>
+            <Table.Body>
+                {table.getRowModel().rows.map(row => (
+                    <GameDetails key={row.id} game={games.find(g => g.id === row.original.id)!} trigger={
+                        <Table.Row key={row.id}>
+                            {row.getVisibleCells().map(cell => (
+                                <Table.Cell key={cell.id} align='center'>
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </Table.Cell>))}
                         </Table.Row>
-                    ))}
-                </Table.Header>
-                <Table.Body>
-                    {table.getRowModel().rows.map(row => (
-                        <GameDetails key={row.id} game={games.find(g => g.id === row.original.id)!} trigger={
-                            <Table.Row key={row.id}>
-                                {row.getVisibleCells().map(cell => (
-                                    <Table.Cell key={cell.id} align='center'>
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </Table.Cell>))}
-                            </Table.Row>
-                        }/>
-                    ))}
-                </Table.Body>
-            </Table.Root>
-        </Flex>
+                    }/>
+                ))}
+            </Table.Body>
+        </Table.Root>
     );
 }
 
