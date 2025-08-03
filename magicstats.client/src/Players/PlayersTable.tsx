@@ -27,7 +27,7 @@ export default function PlayersTable({players}: PlayersTableProps) {
         initialState: {
             sorting: [
                 {
-                    id: 'stats.winrate',
+                    id: 'winrate',
                     desc: true,
                 }
             ],

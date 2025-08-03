@@ -41,9 +41,9 @@ export function GameDetails({game, trigger}: GameDetailsProps) {
             <Dialog.Content>
                 <Dialog.Title align='center'>{game.participants.length} player game</Dialog.Title>
                 <Dialog.Description align='center'>
-                    <Text as='div' size='3'>{format(game.playedAt, "dd/MM/yyyy HH:mm")}</Text>
-                    <Text as='div' size='2'>Played at: {game.host}</Text>
-                    {game.turns && <Text as={'div'}>{game.turns} turns</Text>}
+                    <Text as='p' size='3'>{format(game.playedAt, "dd/MM/yyyy HH:mm")}</Text>
+                    <Text as='p' size='2'>Played at: {game.host}</Text>
+                    {game.turns && <Text as={'p'}>{game.turns} turns</Text>}
                 </Dialog.Description>
                 <Inset side='x' mt='3'>
                     <Table.Root>

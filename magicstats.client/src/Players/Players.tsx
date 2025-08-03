@@ -55,7 +55,7 @@ export default function Players() {
                     <Select.Root value={slidingWindowSize} onValueChange={setSlidingWindowSize}>
                         <Select.Trigger/>
                         <Select.Content>
-                            {Array.from(slidingWindowOptions.keys()).map(v => <Select.Item value={v}>{v}</Select.Item>)}
+                            {Array.from(slidingWindowOptions.keys()).map((v, i) => <Select.Item key={i} value={v}>{v}</Select.Item>)}
                         </Select.Content>
                     </Select.Root>
                 </Flex>
@@ -64,7 +64,7 @@ export default function Players() {
                     <Select.Root value={podSize} onValueChange={setPodSize}>
                         <Select.Trigger/>
                         <Select.Content>
-                            {Array.from(podSizeOptions.keys()).map(v => <Select.Item value={v}>{v}</Select.Item>)}
+                            {Array.from(podSizeOptions.keys()).map(((v, i) => <Select.Item key={i} value={v}>{v}</Select.Item>))}
                         </Select.Content>
                     </Select.Root>
                 </Flex>

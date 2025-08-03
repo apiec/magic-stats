@@ -1,4 +1,5 @@
 ﻿import {Box, Card, Flex, Separator, Text} from '@radix-ui/themes';
+import React from 'react';
 
 type ValueDisplayProps = {
     title: string,
@@ -16,13 +17,13 @@ export default function ValueDisplay({title, values}: ValueDisplayProps) {
                 </Box>
                 <Separator size='4' orientation='horizontal'/>
                 <Flex gap='3' align='center' justify='center' pt='1'>
-                    {values.map((v, i) => <>
+                    {values.map((v, i) => <React.Fragment key={i}>
                             <Text as='div' size='4' key={i}>
                                 {v}
                             </Text>
                             {i < values.length - 1 &&
-                                <Separator size='2' orientation='vertical'/>}
-                        </>
+                                <Separator key={i.toString() + '-separator'} size='2' orientation='vertical'/>}
+                        </React.Fragment>
                     )}
                 </Flex>
             </Card>

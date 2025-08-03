@@ -25,6 +25,7 @@ export default function HomePage() {
 
     return (
         <Flex
+            width='100%'
             maxWidth='700px'
             direction={{initial: 'column', md: 'row'}}
             wrap='wrap'

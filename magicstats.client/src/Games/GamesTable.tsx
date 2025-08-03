@@ -13,7 +13,8 @@ import {format} from "date-fns";
 import {Game, GamesApi} from './GamesApi.ts';
 import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import {Button, Flex, IconButton, Table,} from '@radix-ui/themes';
-import {Cross1Icon, Pencil1Icon} from '@radix-ui/react-icons';
+import {Pencil1Icon} from '@radix-ui/react-icons';
+import DeleteButton from "../Shared/DeleteButton.tsx";
 
 export default function GamesTable() {
     const [games, setGames] = useState<Game[]>([]);
@@ -103,7 +104,7 @@ export default function GamesTable() {
                 </Table.Header>
                 <Table.Body>
                     {table.getRowModel().rows.map(row => (
-                        <GameDetails game={games.find(g => g.id === row.original.id)!} trigger={
+                        <GameDetails key={row.id} game={games.find(g => g.id === row.original.id)!} trigger={
                             <Table.Row key={row.id}>
                                 {row.getVisibleCells().map(cell => (
                                     <Table.Cell key={cell.id} align='center'>
@@ -151,7 +152,11 @@ const columns: ColumnDef<Game, any>[] = [
     columnHelper.display({
         id: 'delete',
         header: 'Delete',
-        cell: props => <DeleteGameButton gameId={props.row.original.id}/>,
+        cell: props => <DeleteButton onClick={() => {
+            const api = new GamesApi();
+            api.delete(props.row.original.id)
+                .then(() => window.location.reload());
+        }}/>,
     })
 ];
 
@@ -165,23 +170,6 @@ function EditGameButton({gameId}: EditGameButtonProps) {
             <RouterLink to={gameId} onClick={(e) => e.stopPropagation()}>
                 <Pencil1Icon/>
             </RouterLink>
-        </IconButton>
-    );
-}
-
-type DeleteGameButtonProps = {
-    gameId: string,
-}
-
-function DeleteGameButton({gameId}: DeleteGameButtonProps) {
-    return (
-        <IconButton size='1' variant='ghost' color='red' onClick={(e) => {
-            e.stopPropagation();
-            const api = new GamesApi();
-            api.delete(gameId)
-                .then(() => window.location.reload());
-        }}>
-            <Cross1Icon/>
         </IconButton>
     );
 }
