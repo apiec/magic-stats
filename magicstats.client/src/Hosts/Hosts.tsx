@@ -1,7 +1,7 @@
-﻿import './Hosts.css'
-import HostApi, {HostWithStats} from "./HostApi.ts";
+﻿import {Card, Flex, Text} from '@radix-ui/themes';
 import {useEffect, useState} from 'react';
 import {useImmer} from 'use-immer';
+import HostApi, {HostWithStats} from "./HostApi.ts";
 import HostsTable from "./HostsTable.tsx";
 import HostForm from "./HostForm.tsx";
 
@@ -24,19 +24,19 @@ export default function Hosts() {
     }
 
     return (
-        <section className='hosts-section'>
-            <section className='hosts-controls'>
-                <div>
-                    <p className='add-host-label'>Add a new host:</p>
+        <Flex direction='column' gap='4'>
+            <Card>
+                <Flex direction='column'>
+                    <Text>Add a new host:</Text>
                     <HostForm onSubmit={h => {
                         const api = new HostApi();
                         api.create(h.name, h.irl).then(_ => {
                             setRerender(rerender + 1);
                         });
                     }}/>
-                </div>
-            </section>
+                </Flex>
+            </Card>
             <HostsTable hosts={hosts}/>
-        </section>
+        </Flex>
     );
 }

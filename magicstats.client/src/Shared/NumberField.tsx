@@ -14,7 +14,6 @@ export default function NumberField({value, id, min, max, onChange}: NumberField
             id={id}
             type='number'
             value={value} min={min} max={max}
-            defaultValue={0}
             onChange={(e) => onChange(e.currentTarget.valueAsNumber)}
         >
             <TextField.Slot>
