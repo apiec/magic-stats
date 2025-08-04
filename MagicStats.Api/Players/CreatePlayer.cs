@@ -15,7 +15,7 @@ public class CreatePlayer : IEndpoint
         .MapPost("/", Handle)
         .WithSummary("Create a player");
 
-    public record Request(string Name);
+    public record Request(string Name, bool IsGuest);
 
     private static async Task<Ok<PlayerDto>> Handle(
         Request request,
@@ -25,11 +25,12 @@ public class CreatePlayer : IEndpoint
         var player = new Player
         {
             Name = request.Name,
+            IsGuest = request.IsGuest,
         };
         dbContext.Players.Add(player);
         await dbContext.SaveChangesAsync(ct);
 
-        var response = new PlayerDto(player.Id.ToString(), player.Name);
+        var response = player.ToDto();
         return TypedResults.Ok(response);
     }
 }

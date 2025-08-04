@@ -9,7 +9,9 @@ public class Player
     public int Id { get; init; }
 
     [MaxLength(32)]
-    public required string Name { get; init; }
+    public required string Name { get; set; }
+
+    public bool IsGuest { get; set; }
 
     public List<Participant> Participated { get; init; } = null!;
 }

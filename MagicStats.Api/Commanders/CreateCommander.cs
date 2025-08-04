@@ -1,4 +1,5 @@
-﻿using MagicStats.Api.Shared;
+﻿using MagicStats.Api.Games;
+using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
 using MagicStats.Persistence.EfCore.Entities;
 using Microsoft.AspNetCore.Builder;
@@ -16,9 +17,8 @@ public class CreateCommander : IEndpoint
         .WithSummary("Create a commander");
 
     public record Request(string Name);
-    public record Response(string Id);
 
-    private static async Task<Ok<Response>> Handle(
+    private static async Task<Ok<CommanderDto>> Handle(
         [FromBody] Request request,
         StatsDbContext dbContext,
         CancellationToken ct)
@@ -30,7 +30,7 @@ public class CreateCommander : IEndpoint
         dbContext.Commanders.Add(commander);
         await dbContext.SaveChangesAsync(ct);
 
-        var response = new Response(commander.Id.ToString());
+        var response = commander.ToDto();
         return TypedResults.Ok(response);
     }
 }
