@@ -7,9 +7,10 @@ type PlayerFormProps = {
     onSubmit: (player: Player) => void;
 }
 export default function PlayerForm({player, onSubmit}: PlayerFormProps) {
-    const [playerCopy, setPlayerCopy] = useImmer<Player>(player !== undefined
-        ? {...player} as Player
-        : {name: '', isGuest: false} as Player
+    const [playerCopy, setPlayerCopy] = useImmer<Player>(
+        player !== undefined
+            ? {...player} as Player
+            : {name: '', isGuest: false} as Player
     );
     return (
         <Flex asChild direction='column' gap='2'>
@@ -21,7 +22,7 @@ export default function PlayerForm({player, onSubmit}: PlayerFormProps) {
                 <TextField.Root
                     id='name-input'
                     placeholder='Player name'
-                    value={player?.name}
+                    value={playerCopy?.name}
                     onChange={e => {
                         setPlayerCopy(p => {
                             p.name = e.currentTarget.value;
