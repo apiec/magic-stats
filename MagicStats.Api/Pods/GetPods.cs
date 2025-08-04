@@ -26,7 +26,7 @@ public class GetPods : IEndpoint
         var players = await dbContext.Players
             .ToDictionaryAsync(
                 pl => pl.Id.ToString(),
-                pl => new PlayerDto(pl.Id.ToString(), pl.Name),
+                pl => pl.ToDto(),
                 ct);
 
         var pods = await dbContext.Database

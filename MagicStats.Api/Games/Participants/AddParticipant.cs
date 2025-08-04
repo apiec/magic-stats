@@ -60,6 +60,6 @@ public class AddParticipant : IEndpoint
             .Include(p => p.Player)
             .SingleAsync(p => p.GameId == gameId && p.PlayerId == request.PlayerId, ct);
 
-        return TypedResults.Ok(GameMapper.MapParticipant(queried));
+        return TypedResults.Ok(GameMapper.ToDto(queried));
     }
 }

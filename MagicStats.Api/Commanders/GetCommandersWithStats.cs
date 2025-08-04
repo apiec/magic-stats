@@ -20,7 +20,6 @@ public class GetCommandersWithStats : IEndpoint
 
     public record CommanderStats(int Wins, int Games, float? Winrate, float? WinrateLastX);
 
-    private record RawStats(int Id, string Name, int Games, int Wins, int WinsLastX);
 
     private static async Task<Ok<Response>> Handle(
         [FromQuery] int? windowSize,
@@ -94,4 +93,6 @@ public class GetCommandersWithStats : IEndpoint
                 .ToArray();
         }
     }
+
+    private record RawStats(int Id, string Name, int Games, int Wins, int WinsLastX);
 }

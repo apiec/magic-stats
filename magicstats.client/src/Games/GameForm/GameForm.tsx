@@ -23,11 +23,13 @@ import NumberField from "../../Shared/NumberField.tsx";
 export default function GameForm() {
     const [game, setGame] = useImmer<Game | undefined>(undefined);
     const [rerender, setRerender] = useState<number>(0);
-    const {gameId} = useParams<string>();
 
     function forceUpdate() {
         setRerender(value => value + 1);
     }
+
+    const {gameId} = useParams<string>();
+
 
     useEffect(() => {
         populateGameData();

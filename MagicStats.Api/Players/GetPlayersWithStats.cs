@@ -17,11 +17,11 @@ public class GetPlayersWithStats : IEndpoint
 
     public record Response(IReadOnlyCollection<PlayerWithStatsDto> Players);
 
-    public record PlayerWithStatsDto(string Id, string Name, PlayerStats Stats);
+    public record PlayerWithStatsDto(string Id, string Name, bool IsGuest, PlayerStats Stats);
 
     public record PlayerStats(int Wins, int Games, float? Winrate, float? WinrateLastX);
 
-    private record RawStats(int Id, string Name, int Games, int Wins, int WinsLastX);
+    private record RawStats(int Id, string Name, bool IsGuest, int Games, int Wins, int WinsLastX);
 
     private static async Task<Results<Ok<Response>, BadRequest>> Handle(
         [FromQuery] int? windowSize,
@@ -48,6 +48,7 @@ public class GetPlayersWithStats : IEndpoint
                 new PlayerWithStatsDto(
                     p.Id.ToString(),
                     p.Name,
+                    p.IsGuest,
                     new PlayerStats(
                         Wins: p.Wins,
                         Games: p.Games,
@@ -68,6 +69,7 @@ public class GetPlayersWithStats : IEndpoint
                 .Select(player => new RawStats(
                     player.Id,
                     player.Name,
+                    player.IsGuest,
                     player.Participated.Count,
                     player.Participated.Count(p => p.Placement == 0),
                     player.Participated
@@ -94,6 +96,7 @@ public class GetPlayersWithStats : IEndpoint
                 .Select(player => new RawStats(
                     player.Id,
                     player.Name,
+                    player.IsGuest,
                     player.Participated.Count,
                     player.Participated.Count(p => p.Placement == 0),
                     player.Participated
@@ -124,6 +127,7 @@ public class GetPlayersWithStats : IEndpoint
                 .Select(player => new RawStats(
                     player.Id,
                     player.Name,
+                    player.IsGuest,
                     player.Participated.Count,
                     player.Participated.Count(p => p.Placement == 0),
                     player.Participated

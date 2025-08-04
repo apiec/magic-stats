@@ -7,6 +7,7 @@ namespace MagicStats.Persistence.EfCore.Entities;
 public class Commander
 {
     public int Id { get; init; }
+
     [MaxLength(128)]
     public required string Name { get; init; }
 

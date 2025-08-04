@@ -1,7 +1,7 @@
 ﻿import {useEffect, useMemo, useState} from 'react';
 import {useImmer} from 'use-immer';
 import {useLocation} from 'react-router-dom';
-import {Box, Flex, Select, Spinner, Text} from '@radix-ui/themes';
+import {Button, Dialog, Flex, Select, Spinner, Switch, Text} from '@radix-ui/themes';
 import PlayersTable from "./PlayersTable.tsx";
 import PlayerApi, {PlayerWithStats} from "./PlayerApi.ts";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
@@ -9,23 +9,24 @@ import WinrateGraph, {DataSeries, DataPoint} from "../Shared/WinrateGraph.tsx";
 import PlayerForm from "./PlayerForm.tsx";
 
 export default function Players() {
+    const [showGuests, setShowGuests] = useState<boolean>(false);
     const [players, setPlayers] = useImmer<PlayerWithStats[] | undefined>(undefined);
     const [slidingWindowSize, setSlidingWindowSize] = useState<string>(startingWindowValue);
     const [podSize, setPodSize] = useState<string>(startingPodSizeValue);
-    const [rerender, setRerender] = useState<number>(0);
     const query = useQuery();
     const playersFromQuery = query.getAll('playerIds');
     const lastX = slidingWindowOptions.get(slidingWindowSize) ?? 10;
 
     useEffect(() => {
         populatePlayerData().then();
-    }, [slidingWindowSize, podSize, query, rerender]);
+    }, [slidingWindowSize, podSize, query]);
 
     async function populatePlayerData() {
         const api = new PlayerApi();
         const players = playersFromQuery.length > 0
             ? await api.getStatsForPod(playersFromQuery, lastX)
             : await api.getAllWithStats(lastX, podSizeOptions.get(podSize));
+
         setPlayers(() => players);
     }
 
@@ -33,12 +34,13 @@ export default function Players() {
         return <Spinner/>;
     }
 
-    const mostGames = Math.max(...players.map(p => p.stats.games));
-    const mostGamesPlayer = players.find(p => p.stats.games === mostGames)!;
-    const highestWinrate = Math.max(...players.map(p => p.stats.winrate));
-    const highestWinratePlayer = players.find(p => p.stats.winrate === highestWinrate)!;
-    const highestWinrateLast = Math.max(...players.map(p => p.stats.winrateLastX));
-    const highestWinratePlayerLast = players.find(p => p.stats.winrateLastX === highestWinrateLast)!;
+    const filteredPlayers = players.filter(p => showGuests || !p.isGuest);
+    const mostGames = Math.max(...filteredPlayers.map(p => p.stats.games));
+    const mostGamesPlayer = filteredPlayers.find(p => p.stats.games === mostGames)!;
+    const highestWinrate = Math.max(...filteredPlayers.map(p => p.stats.winrate));
+    const highestWinratePlayer = filteredPlayers.find(p => p.stats.winrate === highestWinrate)!;
+    const highestWinrateLast = Math.max(...filteredPlayers.map(p => p.stats.winrateLastX));
+    const highestWinratePlayerLast = filteredPlayers.find(p => p.stats.winrateLastX === highestWinrateLast)!;
 
     return (
         <Flex direction='column' maxWidth='700px' align='center' gap='6'>
@@ -49,40 +51,39 @@ export default function Players() {
                 <ValueDisplay title={'Highest WRL' + lastX}
                               values={[highestWinratePlayerLast.name, toPercentage(highestWinrateLast)]}/>
             </Flex>
-            <Flex direction='row' align='start' gap='5' justify='center'>
+            <Flex direction='row' gap='5' align='end'>
+                <Flex direction='row' align='center' gap='2'>
+                    <Text>Show guests</Text>
+                    <Switch checked={showGuests} onClick={() => setShowGuests(!showGuests)} size='3'/>
+                </Flex>
                 <Flex direction='column' minWidth='70px' align='center'>
-                    <Text>Sliding window:</Text>
+                    <Text>Sliding window</Text>
                     <Select.Root value={slidingWindowSize} onValueChange={setSlidingWindowSize}>
                         <Select.Trigger/>
                         <Select.Content>
-                            {Array.from(slidingWindowOptions.keys()).map((v, i) => <Select.Item key={i} value={v}>{v}</Select.Item>)}
+                            {Array.from(slidingWindowOptions.keys()).map(
+                                (v, i) => <Select.Item key={i} value={v}>{v}</Select.Item>)}
                         </Select.Content>
                     </Select.Root>
                 </Flex>
                 <Flex direction='column' minWidth='70px' align='center'>
-                    <Text>Pod size:</Text>
+                    <Text>Pod size</Text>
                     <Select.Root value={podSize} onValueChange={setPodSize}>
                         <Select.Trigger/>
                         <Select.Content>
-                            {Array.from(podSizeOptions.keys()).map(((v, i) => <Select.Item key={i} value={v}>{v}</Select.Item>))}
+                            {Array.from(podSizeOptions.keys()).map(
+                                (v, i) => <Select.Item key={i} value={v}>{v}</Select.Item>)}
                         </Select.Content>
                     </Select.Root>
                 </Flex>
-                <Box>
-                    <Text>Add a new player:</Text>
-                    <PlayerForm onSubmit={p => {
-                        const api = new PlayerApi();
-                        api.create(p.name).then(_ => {
-                            setRerender(rerender + 1);
-                        });
-                    }}/>
-                </Box>
+                <AddPlayerDialog/>
             </Flex>
-            <PlayersTable players={players} lastXWindowSize={lastX}/>
+            <PlayersTable players={filteredPlayers} lastXWindowSize={lastX}/>
             <PlayersWinrateGraph
                 slidingWindowSize={slidingWindowOptions.get(slidingWindowSize)}
                 podSize={podSizeOptions.get(podSize)}
-                playerIds={playersFromQuery}/>
+                playerIds={playersFromQuery}
+                showGuests={showGuests}/>
         </Flex>
     );
 }
@@ -107,27 +108,33 @@ type PlayersWinrateGraphProps = {
     slidingWindowSize: number | undefined;
     podSize: number | undefined;
     playerIds: string[];
+    showGuests: boolean;
+}
+type PlayerDataSeries = DataSeries & {
+    isGuest: boolean;
 }
 
-function PlayersWinrateGraph({slidingWindowSize, podSize, playerIds}: PlayersWinrateGraphProps) {
-    const [data, setData] = useState<DataSeries[]>([]);
+function PlayersWinrateGraph({slidingWindowSize, podSize, playerIds, showGuests}: PlayersWinrateGraphProps) {
+    const [data, setData] = useState<PlayerDataSeries[]>([]);
 
     async function populateData() {
         const api = new PlayerApi();
         const playerWinrates = playerIds.length > 0
             ? await api.getWinratesForPod(playerIds, slidingWindowSize)
             : await api.getWinrates(slidingWindowSize, podSize);
-        const data = playerWinrates.map(p => {
-            return {
-                name: p.name,
-                data: p.dataPoints.map(d => {
-                    return {
-                        date: new Date(d.date).valueOf(),
-                        value: d.winrate,
-                    } as DataPoint;
-                })
-            } as DataSeries;
-        });
+        const data = playerWinrates
+            .map(p => {
+                return {
+                    name: p.name,
+                    isGuest: p.isGuest,
+                    data: p.dataPoints.map(d => {
+                        return {
+                            date: new Date(d.date).valueOf(),
+                            value: d.winrate,
+                        } as DataPoint;
+                    })
+                } as PlayerDataSeries;
+            });
         setData(data);
     }
 
@@ -135,11 +142,34 @@ function PlayersWinrateGraph({slidingWindowSize, podSize, playerIds}: PlayersWin
         populateData().then();
     }, [slidingWindowSize, podSize, playerIds]);
 
+    const filteredData = data.filter(d => showGuests || !d.isGuest);
     return (
-        <WinrateGraph data={data} slidingWindowSize={slidingWindowSize}/>
+        <WinrateGraph data={filteredData} slidingWindowSize={slidingWindowSize}/>
     );
 }
 
 function toPercentage(num: number): string {
     return (100 * num).toFixed(0) + '%'
+}
+
+function AddPlayerDialog() {
+    const [open, setOpen] = useState<boolean>(false);
+    return <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Trigger>
+            <Button>
+                Add a new player
+            </Button>
+        </Dialog.Trigger>
+        <Dialog.Content maxWidth='300px'>
+            <Dialog.Title>
+                Add a new player
+            </Dialog.Title>
+            <PlayerForm onSubmit={p => {
+                const api = new PlayerApi();
+                api.create(p.name, p.isGuest).then(() => {
+                    setOpen(false);
+                });
+            }}/>
+        </Dialog.Content>
+    </Dialog.Root>
 }

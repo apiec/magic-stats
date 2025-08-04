@@ -20,7 +20,7 @@ public class GetPlayers : IEndpoint
     {
         var players = await dbContext.Players
             .OrderBy(p => p.Name)
-            .Select(c => new PlayerDto(c.Id.ToString(), c.Name))
+            .Select(p => new PlayerDto(p.Id.ToString(), p.Name, p.IsGuest))
             .AsNoTracking()
             .ToListAsync(ct);
 

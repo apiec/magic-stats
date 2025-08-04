@@ -3,8 +3,9 @@
 namespace MagicStats.Stats.Domain;
 
 public record PlayerWinratesOverTime(
-    int Id,
+    string Id,
     string Name,
+    bool IsGuest,
     List<DataPoint> DataPoints);
 
 public class PlayerWinratesCalculator(IReadOnlyCollection<Game> games, IReadOnlyCollection<Player> players)
@@ -15,7 +16,7 @@ public class PlayerWinratesCalculator(IReadOnlyCollection<Game> games, IReadOnly
 
         var playerResults = players.ToDictionary(
             p => p.Id,
-            p => new PlayerWinratesOverTime(p.Id, p.Name, new List<DataPoint>(meetings.Length)));
+            p => new PlayerWinratesOverTime(p.Id.ToString(), p.Name, p.IsGuest, new List<DataPoint>(meetings.Length)));
 
         var playerRecords = players.ToDictionary(p => p.Id, _ => new Queue<bool>());
         foreach (var meeting in meetings)
