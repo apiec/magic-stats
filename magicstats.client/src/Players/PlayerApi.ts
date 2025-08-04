@@ -3,6 +3,7 @@
 export type Player = {
     id: string,
     name: string,
+    isGuest: boolean,
 }
 
 type GetPlayersResponse = {
@@ -15,11 +16,15 @@ type GetPlayersWithStatsResponse = {
 
 type CreatePlayerRequest = {
     name: string;
+    isGuest: boolean;
 }
 
-export type PlayerWithStats = {
-    id: string,
-    name: string,
+type UpdatePlayerRequest = {
+    name?: string;
+    isGuest?: boolean;
+}
+
+export type PlayerWithStats = Player & {
     stats: PlayerStats,
 }
 
@@ -34,9 +39,7 @@ type GetPlayerWinratesResponse = {
     playerWinrates: PlayerWithWinrates[],
 }
 
-export type PlayerWithWinrates = {
-    id: string,
-    name: string,
+export type PlayerWithWinrates = Player & {
     dataPoints: DataPoint[],
 }
 
@@ -108,9 +111,14 @@ export default class PlayerApi {
         return response.playerWinrates;
     }
 
-    async create(name: string): Promise<Player> {
-        const request = {name: name} as CreatePlayerRequest;
+    async create(name: string, isGuest: boolean): Promise<Player> {
+        const request = {name, isGuest} as CreatePlayerRequest;
         return await this.api.post<CreatePlayerRequest, Player>(this.path, request);
+    }
+
+    async update(player: Player): Promise<Player> {
+        const request = {name: player.name, isGuest: player.isGuest} as UpdatePlayerRequest;
+        return await this.api.put<UpdatePlayerRequest, Player>(this.path + player.id, request);
     }
 
     async delete(id: string): Promise<void> {

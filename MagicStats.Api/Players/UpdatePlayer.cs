@@ -1,7 +1,6 @@
 ﻿using MagicStats.Api.Games;
 using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
-using MagicStats.Persistence.EfCore.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -44,7 +43,7 @@ public class UpdatePlayer : IEndpoint
 
         await dbContext.SaveChangesAsync(ct);
 
-        var response = new PlayerDto(player.Id.ToString(), player.Name, player.IsGuest);
+        var response = player.ToDto();
         return TypedResults.Ok(response);
     }
 }

@@ -74,17 +74,17 @@ export class GamesApi {
 
     async updatePlayedAt(gameId: string, playedAt: Date): Promise<void> {
         const request = {playedAt: playedAt} as UpdateGameRequest;
-        await this.api.put(this.path + gameId, request);
+        await this.api.putNoResponse(this.path + gameId, request);
     }
 
     async updateHost(gameId: string, hostId: string): Promise<void> {
         const request = {hostId: hostId} as UpdateGameRequest;
-        await this.api.put(this.path + gameId, request);
+        await this.api.putNoResponse(this.path + gameId, request);
     }
 
     async updateTurnCount(gameId: string, turnCount: number | undefined): Promise<void> {
         const request = {turnCount: turnCount} as UpdateGameRequest;
-        await this.api.put(this.path + gameId, request);
+        await this.api.putNoResponse(this.path + gameId, request);
     }
 
     async addParticipant(gameId: string, participant: AddParticipantRequest): Promise<Participant> {
