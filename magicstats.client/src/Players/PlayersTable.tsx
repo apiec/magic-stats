@@ -10,13 +10,14 @@ import {Player, PlayerWithStats} from './PlayerApi';
 import {useImmer} from 'use-immer';
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import PlayerApi from "../Players/PlayerApi.ts";
-import {Dialog, Flex, IconButton, Link, Table, Text, Tooltip} from '@radix-ui/themes';
+import {Dialog, Flex, HoverCard, IconButton, Link, Table, Text} from '@radix-ui/themes';
 import DeleteButton from '../Shared/DeleteButton.tsx';
 import {useState} from 'react';
 import {Pencil1Icon} from '@radix-ui/react-icons';
 import {FaPersonWalkingLuggage} from "react-icons/fa6";
 import PlayerForm from "./PlayerForm.tsx";
 import {Link as RouterLink} from 'react-router-dom';
+import {PlayerAvatar} from "./PlayerAvatar.tsx";
 
 type PlayersTableProps = {
     players: PlayerWithStats[],
@@ -153,25 +154,45 @@ type PlayerNameProps = {
 
 function PlayerName({player}: PlayerNameProps) {
     const name = (
-        <Link asChild style={{color: 'var(--color)'}}>
-            <RouterLink to={player.id}>
-                <Text>{player.name}</Text>
-            </RouterLink>
-        </Link>
+        <Flex direction='row' gap='1' align='center' justify='center'>
+            <Link asChild style={{color: 'var(--color)'}}>
+                <RouterLink to={player.id}>
+                    <Text>{player.name}</Text>
+                </RouterLink>
+            </Link>
+            {player.isGuest && <FaPersonWalkingLuggage/>}
+        </Flex>
     );
-
-    if (!player.isGuest) {
-        return name;
-    }
 
     return (
-        <Tooltip content='Guest player'>
-            <Flex direction='row' gap='1' align='center' justify='center'>
+        <HoverCard.Root>
+            <HoverCard.Trigger>
                 {name}
-                <FaPersonWalkingLuggage/>
-            </Flex>
-        </Tooltip>
+            </HoverCard.Trigger>
+            <HoverCard.Content>
+                <PlayerSummaryCard player={player}/>
+            </HoverCard.Content>
+        </HoverCard.Root>
     );
+}
+
+type PlayerSummaryCardProps = {
+    player: Player
+}
+
+function PlayerSummaryCard({player}: PlayerSummaryCardProps) {
+    return <Flex direction='row' align='center' gap='3'>
+        <PlayerAvatar player={player} size='4'/>
+        <Flex gap='2' direction='column' align='start'>
+            <Text size='4'>{player.name}</Text>
+            {player.isGuest &&
+                <Flex direction='row' gap='1' align='center'>
+                    <Text size='2'>Guest</Text>
+                    <Text size='2' asChild><FaPersonWalkingLuggage/></Text>
+                </Flex>
+            }
+        </Flex>
+    </Flex>
 }
 
 function toPercentage(num: number): string {

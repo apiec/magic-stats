@@ -1,8 +1,9 @@
-import {Flex, Spinner, Text} from "@radix-ui/themes";
+import {Card, Flex, Spinner, Text} from "@radix-ui/themes";
 import {useParams} from "react-router-dom";
 import PlayerApi, {Player} from "./PlayerApi.ts";
 import {useEffect, useState} from "react";
-import PlayerForm from "./PlayerForm.tsx";
+import {PlayerAvatar} from "./PlayerAvatar.tsx";
+import {FaPersonWalkingLuggage} from "react-icons/fa6";
 
 export default function PlayerPage() {
     const {playerId} = useParams<string>();
@@ -23,10 +24,28 @@ export default function PlayerPage() {
     // todo: add a proper player page
     return (
         <Flex direction='column' align='center' gap='2'>
-            <PlayerForm player={player} onSubmit={p => {
-                const api = new PlayerApi();
-                api.update(p).then();
-            }}/>
+            <Card>
+                <PlayerSummary player={player}/>
+            </Card>
         </Flex>
     );
+}
+
+type PlayerSummaryCardProps = {
+    player: Player
+}
+
+function PlayerSummary({player}: PlayerSummaryCardProps) {
+    return <Flex direction='row' align='center' gap='3' p='1'>
+        <PlayerAvatar player={player} size='6'/>
+        <Flex gap='2' direction='column' align='start'>
+            <Text size='6'>{player.name}</Text>
+            {player.isGuest &&
+                <Flex direction='row' gap='1' align='center'>
+                    <Text size='3'>Guest</Text>
+                    <Text size='3' asChild><FaPersonWalkingLuggage/></Text>
+                </Flex>
+            }
+        </Flex>
+    </Flex>
 }
