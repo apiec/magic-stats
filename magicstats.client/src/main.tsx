@@ -13,7 +13,6 @@ import HomePage from "./Home/HomePage.tsx";
 import Pods from "./Pods/Pods.tsx";
 import Hosts from "./Hosts/Hosts.tsx";
 import {ThemeProvider} from 'next-themes';
-import OutletContainer from "./Shared/OutletContainer.tsx";
 import PlayerPage from "./Players/PlayerPage.tsx";
 
 const router = createBrowserRouter([
@@ -31,7 +30,6 @@ const router = createBrowserRouter([
             },
             {
                 path: "players",
-                element: <OutletContainer/>,
                 children: [
                     {
                         index: true,
@@ -49,7 +47,6 @@ const router = createBrowserRouter([
             },
             {
                 path: "games",
-                element: <OutletContainer/>,
                 children: [
                     {
                         index: true,
