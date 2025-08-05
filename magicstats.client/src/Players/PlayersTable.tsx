@@ -165,34 +165,26 @@ function PlayerName({player}: PlayerNameProps) {
     );
 
     return (
-        <HoverCard.Root>
+        <HoverCard.Root openDelay={700}>
             <HoverCard.Trigger>
                 {name}
             </HoverCard.Trigger>
             <HoverCard.Content>
-                <PlayerSummaryCard player={player}/>
+                <Flex direction='row' align='center' gap='3'>
+                    <PlayerAvatar player={player} size='3'/>
+                    <Flex direction='column' align='start'>
+                        <Text size='3'>{player.name}</Text>
+                        {player.isGuest &&
+                            <Flex direction='row' gap='1' align='center'>
+                                <Text size='2'>Guest</Text>
+                                <Text size='2' asChild><FaPersonWalkingLuggage/></Text>
+                            </Flex>
+                        }
+                    </Flex>
+                </Flex>
             </HoverCard.Content>
         </HoverCard.Root>
     );
-}
-
-type PlayerSummaryCardProps = {
-    player: Player
-}
-
-function PlayerSummaryCard({player}: PlayerSummaryCardProps) {
-    return <Flex direction='row' align='center' gap='3'>
-        <PlayerAvatar player={player} size='4'/>
-        <Flex gap='2' direction='column' align='start'>
-            <Text size='4'>{player.name}</Text>
-            {player.isGuest &&
-                <Flex direction='row' gap='1' align='center'>
-                    <Text size='2'>Guest</Text>
-                    <Text size='2' asChild><FaPersonWalkingLuggage/></Text>
-                </Flex>
-            }
-        </Flex>
-    </Flex>
 }
 
 function toPercentage(num: number): string {
