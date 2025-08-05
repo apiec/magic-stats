@@ -43,7 +43,7 @@ export default function Players() {
     const highestWinratePlayerLast = filteredPlayers.find(p => p.stats.winrateLastX === highestWinrateLast)!;
 
     return (
-        <Flex direction='column' maxWidth='700px' align='center' gap='6'>
+        <Flex direction='column' align='center' gap='6'>
             <Flex direction={{initial: 'column', md: 'row'}} gap='5'>
                 <ValueDisplay title='Most games' values={[mostGamesPlayer.name, mostGames.toFixed(0)]}/>
                 <ValueDisplay title='Highest WR'

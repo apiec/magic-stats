@@ -10,12 +10,13 @@ import {Player, PlayerWithStats} from './PlayerApi';
 import {useImmer} from 'use-immer';
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import PlayerApi from "../Players/PlayerApi.ts";
-import {Dialog, Flex, IconButton, Table, Text, Tooltip} from '@radix-ui/themes';
+import {Dialog, Flex, IconButton, Link, Table, Text, Tooltip} from '@radix-ui/themes';
 import DeleteButton from '../Shared/DeleteButton.tsx';
 import {useState} from 'react';
 import {Pencil1Icon} from '@radix-ui/react-icons';
 import {FaPersonWalkingLuggage} from "react-icons/fa6";
 import PlayerForm from "./PlayerForm.tsx";
+import {Link as RouterLink} from 'react-router-dom';
 
 type PlayersTableProps = {
     players: PlayerWithStats[],
@@ -81,22 +82,7 @@ const columns = [
     columnHelper.accessor('name', {
         id: 'name',
         header: ctx => <SortableHeader text='Name' context={ctx}/>,
-        cell: props => {
-            const player = props.row.original;
-            const name = <Text>{player.name}</Text>
-            if (!player.isGuest) {
-                return name;
-            }
-
-            return (
-                <Tooltip content='Guest player'>
-                    <Flex direction='row' gap='1' align='center' justify='center'>
-                        {name}
-                        <FaPersonWalkingLuggage/>
-                    </Flex>
-                </Tooltip>
-            );
-        }
+        cell: props => <PlayerName player={props.row.original}/>
     }),
     columnHelper.accessor('stats.games', {
         id: 'games',
@@ -122,7 +108,6 @@ const columns = [
         cell: props => {
             return <EditPlayerDialog player={props.row.original}/>
         }
-
     }),
     columnHelper.display({
         id: 'delete',
@@ -160,6 +145,33 @@ function EditPlayerDialog({player}: EditPlayerDialogProps) {
             }}/>
         </Dialog.Content>
     </Dialog.Root>;
+}
+
+type PlayerNameProps = {
+    player: Player,
+}
+
+function PlayerName({player}: PlayerNameProps) {
+    const name = (
+        <Link asChild style={{color: 'var(--color)'}}>
+            <RouterLink to={player.id}>
+                <Text>{player.name}</Text>
+            </RouterLink>
+        </Link>
+    );
+
+    if (!player.isGuest) {
+        return name;
+    }
+
+    return (
+        <Tooltip content='Guest player'>
+            <Flex direction='row' gap='1' align='center' justify='center'>
+                {name}
+                <FaPersonWalkingLuggage/>
+            </Flex>
+        </Tooltip>
+    );
 }
 
 function toPercentage(num: number): string {

@@ -73,9 +73,14 @@ function NavLink({icon, text, link, onClick}: NavLinkProps) {
 
 function MagicStatsLogo() {
     return (
-        <Flex className='magicstats-logo' asChild>
+        <Flex align='end' width='fit-content' height='100%' gap='2' asChild style={{
+            textDecoration: 'none',
+            color: 'var(--color)',
+        }}>
             <RouterLink to='/'>
-                <img alt='logo' src='/stats-white.svg'/>
+                <Box height='100%' asChild>
+                    <img alt='logo' src='/stats-white.svg'/>
+                </Box>
                 <Heading as='h3'>Magic stats</Heading>
             </RouterLink>
         </Flex>
