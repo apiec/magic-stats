@@ -93,7 +93,7 @@ function useQuery() {
     return useMemo(() => new URLSearchParams(search), [search]);
 }
 
-const windowValues = [undefined, 5, 10, 20, 50,];
+const windowValues = [undefined, 10, 20, 30, 50, 100];
 
 const slidingWindowOptions: Map<string, number | undefined> = new Map<string, number | undefined>();
 windowValues.forEach(v => slidingWindowOptions.set(v ? v.toString() : 'None', v));

@@ -34,6 +34,26 @@ export type PlayerStats = {
     winrate: number,
     winrateLastX: number,
 }
+export type SinglePlayerWithStats = Player & {
+    stats: SinglePlayerStats
+}
+export type SinglePlayerStats = {
+    wins: number,
+    games: number,
+    winrate: number,
+    winrateLast30: number,
+}
+
+export type CommanderStatsResponse = {
+    commanders: CommanderStats[],
+}
+
+export type CommanderStats = {
+    name: string,
+    games: number,
+    wins: number,
+    winrate: number,
+}
 
 type GetPlayerWinratesResponse = {
     playerWinrates: PlayerWithWinrates[],
@@ -55,6 +75,14 @@ export default class PlayerApi {
     async getAll(): Promise<Player[]> {
         const response = await this.api.get<GetPlayersResponse>(this.path);
         return response.players;
+    }
+
+    async get(playerId: string): Promise<SinglePlayerWithStats> {
+        return await this.api.get<SinglePlayerWithStats>(this.path + playerId);
+    }
+
+    async getCommanders(playerId: string): Promise<CommanderStatsResponse> {
+        return await this.api.get<CommanderStatsResponse>(this.path + playerId + '/commanders');
     }
 
     async getAllWithStats(windowSize: number, podSize?: number): Promise<PlayerWithStats[]> {

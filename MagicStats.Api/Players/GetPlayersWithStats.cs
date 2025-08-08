@@ -62,6 +62,23 @@ public class GetPlayersWithStats : IEndpoint
 
     private class PlayerStatsProvider(StatsDbContext dbContext)
     {
+        public async Task<RawStats?> Get(int playerId, int windowSize, CancellationToken ct)
+        {
+            return await dbContext.Players
+                .AsNoTracking()
+                .Select(player => new RawStats(
+                    player.Id,
+                    player.Name,
+                    player.IsGuest,
+                    player.Participated.Count,
+                    player.Participated.Count(p => p.Placement == 0),
+                    player.Participated
+                        .OrderByDescending(p => p.Game.PlayedAt)
+                        .Take(windowSize)
+                        .Count(p => p.Placement == 0)))
+                .SingleOrDefaultAsync(p => p.Id == playerId, ct);
+        }
+
         public async Task<RawStats[]> GetAll(int windowSize, CancellationToken ct)
         {
             return await dbContext.Players
