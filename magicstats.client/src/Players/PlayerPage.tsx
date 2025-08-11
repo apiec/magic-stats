@@ -1,10 +1,6 @@
-import {Box, Card, Flex, Grid, Heading, ScrollArea, Spinner, Table, Text} from "@radix-ui/themes";
+import {Box, Card, Flex, Heading, ScrollArea, Spinner, Table, Text} from "@radix-ui/themes";
 import {useParams} from "react-router-dom";
-import PlayerApi, {
-    CommanderStats,
-    Player,
-    SinglePlayerWithStats
-} from "./PlayerApi.ts";
+import PlayerApi, {CommanderStats, Player, SinglePlayerWithStats} from "./PlayerApi.ts";
 import {useEffect, useState} from "react";
 import {PlayerAvatar} from "./PlayerAvatar.tsx";
 import {FaPersonWalkingLuggage} from "react-icons/fa6";
@@ -23,14 +19,16 @@ import {useImmer} from "use-immer";
 export default function PlayerPage() {
     const {playerId} = useParams<string>();
     const [player, setPlayer] = useState<SinglePlayerWithStats | undefined>();
-    useEffect(() => {
-        if (playerId === undefined) {
-            return;
-        }
+    const [commanderStats, setCommanderStats] = useState<CommanderStats[]>([]);
 
+    useEffect(() => {
         const api = new PlayerApi();
-        api.get(playerId).then(p => setPlayer(p));
+        api.get(playerId!).then(p => setPlayer(p));
     }, []);
+    useEffect(() => {
+        const api = new PlayerApi();
+        api.getPlayerCommanderStats(playerId!).then(r => setCommanderStats(r.commanders));
+    }, [playerId]);
 
     if (player === undefined) {
         return <Flex direction='column' align='center' gap='2'>
@@ -39,31 +37,64 @@ export default function PlayerPage() {
         </Flex>;
     }
 
+    function getMostPlayedCommanderDisplay() {
+        if (commanderStats === undefined || commanderStats.length === 0) {
+            return ['No games on record'];
+        }
+        const mostGames = Math.max(...commanderStats.map(x => x.games));
+        const mostPlayedCommander = commanderStats.find(x => x.games === mostGames);
+        return [mostPlayedCommander!.name, mostGames.toFixed(0)];
+    }
+
+    function getBestCommanderDisplay() {
+        if (commanderStats === undefined || commanderStats.length === 0) {
+            return ['No games on record'];
+        }
+        const filtered = commanderStats.filter(x => x.games >= 3);
+        const bestWinrate = Math.max(...filtered.map(x => x.winrate));
+        const bestCommander = filtered.find(x => x.winrate === bestWinrate);
+        return [bestCommander!.name, toPercentage(bestWinrate)];
+    }
+
     return (
-        <Grid columns='250px 1fr' width='90%' gap='7'>
-            <Box>
+        <Flex direction='column' gap='7' align='center'>
+            <Box maxWidth='fit-content' height='fit-content' asChild>
                 <Card>
                     <PlayerSummary player={player}/>
                 </Card>
             </Box>
+            <Flex gap='2' align='center' wrap='wrap' maxWidth='500px' justify='center'>
+                <ValueDisplay title='Total games' values={[player.stats.games.toFixed(0)]}/>
+                <ValueDisplay title='Winrate' values={[toPercentage(player.stats.winrate)]}/>
+                <ValueDisplay title='WR last 30 games' values={[toPercentage(player.stats.winrateLast30)]}/>
+                {commanderStats
+                    ?
+                    <ValueDisplay title='Best' values={getBestCommanderDisplay()}
+                                  tooltip='Highest winrate commander with 5+ games'/>
+                    : <Spinner/>
+                }
+                {commanderStats
+                    ? <ValueDisplay title='Most played' values={getMostPlayedCommanderDisplay()}/>
+                    : <Spinner/>
+                }
+            </Flex>
+            <Flex gap='2'>
+            </Flex>
             <Box width='100%' asChild>
-                <Flex direction='row' align='center' gap='9'>
-                    <Flex direction='column' gap='4' justify='center' align='end'>
-                        <ValueDisplay title='Total games' values={[player.stats.games.toFixed(0)]}/>
-                        <ValueDisplay title='Winrate' values={[toPercentage(player.stats.winrate)]}/>
-                        <ValueDisplay title='WR last 30 games' values={[toPercentage(player.stats.winrateLast30)]}/>
+                <Box maxWidth='600px' maxHeight='300px' asChild>
+                    <Flex direction='column'>
+                        <Heading>Commanders</Heading>
+                        {
+                            commanderStats
+                                ? <ScrollArea>
+                                    <CommanderStatsTable stats={commanderStats}/>
+                                </ScrollArea>
+                                : <Spinner/>
+                        }
                     </Flex>
-                    <Box maxWidth='600px' maxHeight='300px' asChild>
-                        <Flex direction='column'>
-                            <Heading> Commanders </Heading>
-                            <ScrollArea>
-                                <CommanderStatsTable playerId={player.id}/>
-                            </ScrollArea>
-                        </Flex>
-                    </Box>
-                </Flex>
+                </Box>
             </Box>
-        </Grid>
+        </Flex>
     );
 }
 
@@ -74,7 +105,7 @@ type PlayerSummaryCardProps = {
 function PlayerSummary({player}: PlayerSummaryCardProps) {
     return (
         <Flex direction='row' align='center' gap='3' p='1'>
-            <PlayerAvatar player={player} size='6'/>
+            <PlayerAvatar player={player} size='6' radius='full'/>
             <Flex gap='2' direction='column' align='start'>
                 <Text size='6'>{player.name}</Text>
                 {player.isGuest &&
@@ -89,17 +120,10 @@ function PlayerSummary({player}: PlayerSummaryCardProps) {
 }
 
 type CommanderStatsTableProps = {
-    playerId: string,
+    stats: CommanderStats[],
 }
 
-function CommanderStatsTable({playerId}: CommanderStatsTableProps) {
-    const [stats, setStats] = useState<CommanderStats[]>([]);
-
-    useEffect(() => {
-        const api = new PlayerApi();
-        api.getCommanders(playerId).then(r => setStats(r.commanders));
-    }, [playerId]);
-
+function CommanderStatsTable({stats}: CommanderStatsTableProps) {
     const table = useReactTable({
         data: stats,
         columns,
@@ -130,7 +154,7 @@ function CommanderStatsTable({playerId}: CommanderStatsTableProps) {
     }
 
     return (
-        <Table.Root variant='surface'>
+        <Table.Root variant='ghost'>
             <Table.Header>
                 {table.getHeaderGroups().map(headerGroup => (
                     <Table.Row key={headerGroup.id}>

@@ -81,7 +81,7 @@ export default class PlayerApi {
         return await this.api.get<SinglePlayerWithStats>(this.path + playerId);
     }
 
-    async getCommanders(playerId: string): Promise<CommanderStatsResponse> {
+    async getPlayerCommanderStats(playerId: string): Promise<CommanderStatsResponse> {
         return await this.api.get<CommanderStatsResponse>(this.path + playerId + '/commanders');
     }
 
