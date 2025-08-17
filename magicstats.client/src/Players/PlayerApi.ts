@@ -1,4 +1,5 @@
 ﻿import Api from "../api/Api.ts";
+import {Commander} from "../Commanders/CommanderApi.ts";
 
 export type Player = {
     id: string,
@@ -68,6 +69,17 @@ export type DataPoint = {
     winrate: number,
 }
 
+export type GetRecentGamesResponse = {
+    recentGames: RecentGame[],
+}
+
+export type RecentGame = {
+    gameId: string,
+    playedAt: Date,
+    placement: number,
+    commander: Commander,
+}
+
 export default class PlayerApi {
     private path: string = 'players/';
     private api: Api = new Api();
@@ -83,6 +95,17 @@ export default class PlayerApi {
 
     async getPlayerCommanderStats(playerId: string): Promise<CommanderStatsResponse> {
         return await this.api.get<CommanderStatsResponse>(this.path + playerId + '/commanders');
+    }
+
+    async getRecentGames(playerId: string, count?: number): Promise<GetRecentGamesResponse> {
+        let requestPath = this.path + playerId + '/recentGames';
+        if (count !== undefined) {
+            requestPath += '?count=' + count;
+        }
+        const response = await this.api.get<GetRecentGamesResponse>(requestPath);
+        response.recentGames.forEach(g => g.playedAt = new Date(g.playedAt));
+
+        return response;
     }
 
     async getAllWithStats(windowSize: number, podSize?: number): Promise<PlayerWithStats[]> {

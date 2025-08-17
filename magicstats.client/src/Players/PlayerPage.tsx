@@ -10,12 +10,11 @@ import {
     Text,
 } from "@radix-ui/themes";
 import {useParams} from "react-router-dom";
-import PlayerApi, {CommanderStats, Player, SinglePlayerWithStats} from "./PlayerApi.ts";
+import PlayerApi, {CommanderStats, Player, RecentGame, SinglePlayerWithStats} from "./PlayerApi.ts";
 import {useEffect, useState} from "react";
 import {PlayerAvatar} from "./PlayerAvatar.tsx";
 import {FaPersonWalkingLuggage,} from "react-icons/fa6";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
-import {Game, GamesApi} from "../Games/GamesApi.ts";
 import {CommanderStatsTable} from "./CommanderStatsTable.tsx";
 import {Pencil1Icon} from "@radix-ui/react-icons";
 import PlayerForm from "./PlayerForm.tsx";
@@ -127,7 +126,10 @@ function PlayerSummary({player, onPlayerUpdate}: PlayerSummaryCardProps) {
         <Flex direction='row' align='center' gap='3' p='1'>
             <PlayerAvatar player={player} size='6' radius='full'/>
             <Flex gap='2' direction='column' align='start'>
-                <Text size='6'>{player.name}</Text>
+                <Flex direction='row' align='center' gap='2'>
+                    <Text size='6'>{player.name}</Text>
+                    <EditPlayerDialog player={player} onUpdate={onPlayerUpdate}/>
+                </Flex>
                 {player.isGuest &&
                     <Flex direction='row' gap='1' align='center'>
                         <Text size='3'>Guest</Text>
@@ -135,7 +137,6 @@ function PlayerSummary({player, onPlayerUpdate}: PlayerSummaryCardProps) {
                     </Flex>
                 }
             </Flex>
-            <EditPlayerDialog player={player} onUpdate={onPlayerUpdate}/>
         </Flex>
     );
 }
@@ -146,14 +147,14 @@ type PlayerRecentGamesProps = {
 }
 
 function PlayerRecentGames({playerId, gameCount}: PlayerRecentGamesProps) {
-    const [games, setGames] = useState<Game[] | undefined>();
+    const [games, setGames] = useState<RecentGame[] | undefined>();
     useEffect(() => {
-        const api = new GamesApi();
-        api.getForPlayer(playerId, gameCount).then(p => setGames(p));
+        const api = new PlayerApi();
+        api.getRecentGames(playerId, gameCount).then((res) => setGames(res.recentGames));
     }, []);
     return games
         ? <ScrollArea>
-            <PlayerRecentGamesTable playerId={playerId} games={games}/>
+            <PlayerRecentGamesTable games={games}/>
         </ScrollArea>
         : <Spinner/>;
 }
@@ -171,8 +172,8 @@ function EditPlayerDialog({player, onUpdate}: EditPlayerDialogProps) {
     const [open, setOpen] = useState<boolean>(false);
     return <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Trigger>
-            <IconButton size='1' variant='soft' asChild radius='small'>
-                <Box p='1' asChild>
+            <IconButton size='1' variant='ghost' radius='small' asChild>
+                <Box asChild>
                     <Pencil1Icon/>
                 </Box>
             </IconButton>

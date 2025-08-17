@@ -1,7 +1,4 @@
-import {
-    Table,
-
-} from "@radix-ui/themes";
+import {Table} from "@radix-ui/themes";
 import {format} from "date-fns";
 import {
     createColumnHelper,
@@ -11,29 +8,28 @@ import {
     useReactTable
 } from "@tanstack/react-table";
 import {useImmer} from "use-immer";
-import {Game} from "../Games/GamesApi.ts";
 import {Commander} from "../Commanders/CommanderApi.ts";
+import {RecentGame} from "./PlayerApi.ts";
 
 type PlayerRecentGamesTableProps = {
-    playerId: string,
-    games: Game[],
+    games: RecentGame[],
 }
 
 type RecentGameRow = {
+    gameId: string,
     playedAt: string,
     placement: number,
     commander: Commander,
 }
 
-export function PlayerRecentGamesTable({playerId, games}: PlayerRecentGamesTableProps) {
+export function PlayerRecentGamesTable({games}: PlayerRecentGamesTableProps) {
     const table = useReactTable({
-        data: games.sort((a, b) => b.playedAt.getTime() - a.playedAt.getTime())
+        data: games
+            .sort((a, b) => b.playedAt.getTime() - a.playedAt.getTime())
             .map(g => {
-                const p = g.participants.find(p => p.player.id === playerId)!;
                 return {
+                    ...g,
                     playedAt: format(g.playedAt, "dd/MM/yyyy"),
-                    placement: p.placement,
-                    commander: p.commander,
                 } as RecentGameRow;
             }),
         columns,
@@ -81,6 +77,7 @@ export function PlayerRecentGamesTable({playerId, games}: PlayerRecentGamesTable
 const columnHelper = createColumnHelper<RecentGameRow>();
 
 const columns = [
+    // todo: link to game screen
     columnHelper.accessor('playedAt', {
         id: 'playedAt',
         header: 'Date',
