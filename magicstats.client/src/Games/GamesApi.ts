@@ -52,6 +52,17 @@ export class GamesApi {
 
     async getAll(): Promise<Game[]> {
         const response = await this.api.get<GetGamesResponse>(this.path);
+        response.games.forEach(g => g.playedAt = new Date(g.playedAt));
+        return response.games;
+    }
+
+    async getForPlayer(playerId: string, count?: number): Promise<Game[]> {
+        let requestPath = this.path + '?playerId=' + playerId;
+        if (count !== undefined) {
+            requestPath += '&count=' + count;
+        }
+        const response = await this.api.get<GetGamesResponse>(requestPath);
+        response.games.forEach(g => g.playedAt = new Date(g.playedAt));
         return response.games;
     }
 

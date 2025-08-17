@@ -10,12 +10,9 @@ import {Player, PlayerWithStats} from './PlayerApi';
 import {useImmer} from 'use-immer';
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import PlayerApi from "../Players/PlayerApi.ts";
-import {Dialog, Flex, HoverCard, IconButton, Link, Table, Text} from '@radix-ui/themes';
+import {Flex, HoverCard, Link, Table, Text} from '@radix-ui/themes';
 import DeleteButton from '../Shared/DeleteButton.tsx';
-import {useState} from 'react';
-import {Pencil1Icon} from '@radix-ui/react-icons';
 import {FaPersonWalkingLuggage} from "react-icons/fa6";
-import PlayerForm from "./PlayerForm.tsx";
 import {Link as RouterLink} from 'react-router-dom';
 import {PlayerAvatar} from "./PlayerAvatar.tsx";
 
@@ -104,13 +101,6 @@ const columns = [
         cell: props => toPercentage(props.row.original.stats.winrateLastX)
     }),
     columnHelper.display({
-        id: 'edit',
-        header: 'Edit',
-        cell: props => {
-            return <EditPlayerDialog player={props.row.original}/>
-        }
-    }),
-    columnHelper.display({
         id: 'delete',
         header: 'Delete',
         cell: props => <DeleteButton onClick={() => {
@@ -121,32 +111,6 @@ const columns = [
     }),
 ];
 
-type EditPlayerDialogProps = {
-    player: Player,
-};
-
-function EditPlayerDialog({player}: EditPlayerDialogProps) {
-    const [open, setOpen] = useState<boolean>(false);
-    return <Dialog.Root open={open} onOpenChange={setOpen}>
-        <Dialog.Trigger>
-            <IconButton size='1' variant='ghost' asChild>
-                <Pencil1Icon/>
-            </IconButton>
-        </Dialog.Trigger>
-        <Dialog.Content maxWidth='300px'>
-            <Dialog.Title>
-                Edit player
-            </Dialog.Title>
-            <PlayerForm player={player} onSubmit={p => {
-                const api = new PlayerApi();
-                api.update(p).then(() => {
-                    setOpen(false);
-                    window.location.reload();
-                });
-            }}/>
-        </Dialog.Content>
-    </Dialog.Root>;
-}
 
 type PlayerNameProps = {
     player: Player,
