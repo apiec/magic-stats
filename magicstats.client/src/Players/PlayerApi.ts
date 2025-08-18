@@ -80,6 +80,16 @@ export type RecentGame = {
     commander: Commander,
 }
 
+type GetPodsResponse = {
+    pods: Pod[],
+}
+
+export type Pod = {
+    players: Player[],
+    games: number,
+    size: number,
+}
+
 export default class PlayerApi {
     private path: string = 'players/';
     private api: Api = new Api();
@@ -106,6 +116,12 @@ export default class PlayerApi {
         response.recentGames.forEach(g => g.playedAt = new Date(g.playedAt));
 
         return response;
+    }
+
+    async getPods(playerId: string): Promise<Pod[]> {
+        const requestPath = this.path + playerId + '/pods';
+        const response = await this.api.get<GetPodsResponse>(requestPath);
+        return response.pods;
     }
 
     async getAllWithStats(windowSize: number, podSize?: number): Promise<PlayerWithStats[]> {

@@ -3,6 +3,7 @@ import {
     Card,
     Dialog,
     Flex,
+    Grid,
     Heading,
     IconButton,
     ScrollArea,
@@ -10,7 +11,7 @@ import {
     Text,
 } from "@radix-ui/themes";
 import {useParams} from "react-router-dom";
-import PlayerApi, {CommanderStats, Player, RecentGame, SinglePlayerWithStats} from "./PlayerApi.ts";
+import PlayerApi, {CommanderStats, Player, Pod, RecentGame, SinglePlayerWithStats} from "./PlayerApi.ts";
 import {useEffect, useState} from "react";
 import {PlayerAvatar} from "./PlayerAvatar.tsx";
 import {FaPersonWalkingLuggage,} from "react-icons/fa6";
@@ -19,6 +20,7 @@ import {CommanderStatsTable} from "./CommanderStatsTable.tsx";
 import {Pencil1Icon} from "@radix-ui/react-icons";
 import PlayerForm from "./PlayerForm.tsx";
 import {PlayerRecentGamesTable} from "./PlayerRecentGamesTable.tsx";
+import {PlayerPodsTable} from "./PlayerPodsTable.tsx";
 
 export default function PlayerPage() {
     const {playerId} = useParams<string>();
@@ -79,11 +81,12 @@ export default function PlayerPage() {
             <Flex>
                 <Flex gap='2' align='center' wrap='wrap' maxWidth='500px' justify='center'>
                     <ValueDisplay title='Total games' values={[player.stats.games.toFixed(0)]}/>
-                    <ValueDisplay title='Winrate' values={[toPercentage(player.stats.winrate)]}/>
-                    <ValueDisplay title='WR last 30 games' values={[toPercentage(player.stats.winrateLast30)]}/>
+                    <ValueDisplay title='Recent winrate' values={[toPercentage(player.stats.winrateLast30)]}
+                                  tooltip='Winrate from the last 30&nbsp;games'/>
+                    <ValueDisplay title='All time winrate' values={[toPercentage(player.stats.winrate)]}/>
                     {commanderStats
                         ? <ValueDisplay title='Best' values={getBestCommanderDisplay()}
-                                        tooltip='Highest winrate commander with 5+ games'/>
+                                        tooltip='Highest winrate commander with&nbsp;at&nbsp;least 5&nbsp;recorded games'/>
                         : <Spinner/>
                     }
                     {commanderStats
@@ -92,14 +95,14 @@ export default function PlayerPage() {
                     }
                 </Flex>
             </Flex>
-            <Flex gap='7' direction='row'>
-                <Box maxWidth='600px' maxHeight='300px' minWidth='360px' asChild>
+            <Grid gap='7' columns={{initial: '1', md: '2',}}>
+                <Box width='360px' maxWidth='90vw' maxHeight='300px' asChild>
                     <Flex direction='column'>
                         <Heading>Recent games</Heading>
                         <PlayerRecentGames playerId={playerId!} gameCount={30}/>
                     </Flex>
                 </Box>
-                <Box maxWidth='600px' maxHeight='300px' minWidth='360px' asChild>
+                <Box width='360px' maxWidth='90vw' maxHeight='300px' asChild>
                     <Flex direction='column'>
                         <Heading>Played commanders</Heading>
                         {
@@ -111,7 +114,13 @@ export default function PlayerPage() {
                         }
                     </Flex>
                 </Box>
-            </Flex>
+                <Box width='360px' maxWidth='90vw' maxHeight='300px' asChild>
+                    <Flex direction='column'>
+                        <Heading>Most played pods</Heading>
+                        <PlayerPods playerId={playerId!}/>
+                    </Flex>
+                </Box>
+            </Grid>
         </Flex>
     );
 }
@@ -155,6 +164,23 @@ function PlayerRecentGames({playerId, gameCount}: PlayerRecentGamesProps) {
     return games
         ? <ScrollArea>
             <PlayerRecentGamesTable games={games}/>
+        </ScrollArea>
+        : <Spinner/>;
+}
+
+type PlayerPodsProps = {
+    playerId: string,
+}
+
+function PlayerPods({playerId}: PlayerPodsProps) {
+    const [pods, setPods] = useState<Pod[] | undefined>();
+    useEffect(() => {
+        const api = new PlayerApi();
+        api.getPods(playerId).then((res) => setPods(res));
+    }, []);
+    return pods
+        ? <ScrollArea>
+            <PlayerPodsTable pods={pods}/>
         </ScrollArea>
         : <Spinner/>;
 }

@@ -1,5 +1,5 @@
 ﻿import {InfoCircledIcon} from '@radix-ui/react-icons';
-import {Box, Card, Flex, Separator, Text, Tooltip} from '@radix-ui/themes';
+import {Box, Card, Dialog, Flex, Separator, Text, Tooltip} from '@radix-ui/themes';
 import React from 'react';
 
 type ValueDisplayProps = {
@@ -17,9 +17,16 @@ export default function ValueDisplay({title, values, tooltip}: ValueDisplayProps
                         {title}
                     </Text>
                     {tooltip &&
-                        <Tooltip content={tooltip}>
-                            <InfoCircledIcon/>
-                        </Tooltip>
+                        <Dialog.Root>
+                            <Tooltip content={tooltip}>
+                                <Dialog.Trigger>
+                                    <InfoCircledIcon/>
+                                </Dialog.Trigger>
+                            </Tooltip>
+                            <Dialog.Content maxWidth='fit-content'>
+                                <Text as='div' align='center'>{tooltip}</Text>
+                            </Dialog.Content>
+                        </Dialog.Root>
                     }
                 </Flex>
                 <Separator size='4' orientation='horizontal'/>
@@ -35,5 +42,6 @@ export default function ValueDisplay({title, values, tooltip}: ValueDisplayProps
                 </Flex>
             </Card>
         </Box>
-    );
+    )
+        ;
 }

@@ -88,7 +88,7 @@ const columns = [
     }),
     columnHelper.accessor('placement', {
         id: 'placement',
-        header: 'Placed',
+        header: 'Placement',
         cell: props => props.row.original.placement + 1,
     }),
 ];

@@ -129,7 +129,7 @@ function PlayerName({player}: PlayerNameProps) {
     );
 
     return (
-        <HoverCard.Root openDelay={700}>
+        <HoverCard.Root>
             <HoverCard.Trigger>
                 {name}
             </HoverCard.Trigger>
