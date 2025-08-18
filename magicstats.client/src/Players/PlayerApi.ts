@@ -1,4 +1,5 @@
 ﻿import Api from "../api/Api.ts";
+import {Commander} from "../Commanders/CommanderApi.ts";
 
 export type Player = {
     id: string,
@@ -34,6 +35,26 @@ export type PlayerStats = {
     winrate: number,
     winrateLastX: number,
 }
+export type SinglePlayerWithStats = Player & {
+    stats: SinglePlayerStats
+}
+export type SinglePlayerStats = {
+    wins: number,
+    games: number,
+    winrate: number,
+    winrateLast30: number,
+}
+
+export type CommanderStatsResponse = {
+    commanders: CommanderStats[],
+}
+
+export type CommanderStats = {
+    name: string,
+    games: number,
+    wins: number,
+    winrate: number,
+}
 
 type GetPlayerWinratesResponse = {
     playerWinrates: PlayerWithWinrates[],
@@ -48,6 +69,41 @@ export type DataPoint = {
     winrate: number,
 }
 
+export type GetRecentGamesResponse = {
+    recentGames: RecentGame[],
+}
+
+export type RecentGame = {
+    gameId: string,
+    playedAt: Date,
+    placement: number,
+    commander: Commander,
+}
+
+type GetPodsResponse = {
+    pods: Pod[],
+}
+
+export type Pod = {
+    players: Player[],
+    games: number,
+    size: number,
+}
+
+type GetRecordAgainstPlayersResponse = {
+    records: RecordAgainstPlayer[],
+}
+
+export type RecordAgainstPlayer = Player & {
+    gamesAgainst: number,
+    winsAgainst: number,
+    lossesAgainst: number,
+    absoluteDifference: number,
+    winrateAgainst: number,
+    lossrateAgainst: number,
+    relativeDifference: number,
+}
+
 export default class PlayerApi {
     private path: string = 'players/';
     private api: Api = new Api();
@@ -55,6 +111,37 @@ export default class PlayerApi {
     async getAll(): Promise<Player[]> {
         const response = await this.api.get<GetPlayersResponse>(this.path);
         return response.players;
+    }
+
+    async get(playerId: string): Promise<SinglePlayerWithStats> {
+        return await this.api.get<SinglePlayerWithStats>(this.path + playerId);
+    }
+
+    async getPlayerCommanderStats(playerId: string): Promise<CommanderStatsResponse> {
+        return await this.api.get<CommanderStatsResponse>(this.path + playerId + '/commanders');
+    }
+
+    async getRecentGames(playerId: string, count?: number): Promise<GetRecentGamesResponse> {
+        let requestPath = this.path + playerId + '/recentGames';
+        if (count !== undefined) {
+            requestPath += '?count=' + count;
+        }
+        const response = await this.api.get<GetRecentGamesResponse>(requestPath);
+        response.recentGames.forEach(g => g.playedAt = new Date(g.playedAt));
+
+        return response;
+    }
+
+    async getPods(playerId: string): Promise<Pod[]> {
+        const requestPath = this.path + playerId + '/pods';
+        const response = await this.api.get<GetPodsResponse>(requestPath);
+        return response.pods;
+    }
+
+    async getRecordAgainstPlayers(playerId: string): Promise<RecordAgainstPlayer[]> {
+        let requestPath = this.path + playerId + '/playerRecord';
+        const response = await this.api.get<GetRecordAgainstPlayersResponse>(requestPath);
+        return response.records;
     }
 
     async getAllWithStats(windowSize: number, podSize?: number): Promise<PlayerWithStats[]> {

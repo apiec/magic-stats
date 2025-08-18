@@ -1,8 +1,10 @@
 ﻿using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
+using MagicStats.Persistence.EfCore.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,5 +36,4 @@ public class GetGames : IEndpoint
 
         return TypedResults.Ok(response);
     }
-
 }

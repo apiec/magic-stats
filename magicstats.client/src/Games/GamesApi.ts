@@ -52,6 +52,7 @@ export class GamesApi {
 
     async getAll(): Promise<Game[]> {
         const response = await this.api.get<GetGamesResponse>(this.path);
+        response.games.forEach(g => g.playedAt = new Date(g.playedAt));
         return response.games;
     }
 

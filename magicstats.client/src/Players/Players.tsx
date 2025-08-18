@@ -43,7 +43,7 @@ export default function Players() {
     const highestWinratePlayerLast = filteredPlayers.find(p => p.stats.winrateLastX === highestWinrateLast)!;
 
     return (
-        <Flex direction='column' maxWidth='700px' align='center' gap='6'>
+        <Flex direction='column' align='center' gap='6'>
             <Flex direction={{initial: 'column', md: 'row'}} gap='5'>
                 <ValueDisplay title='Most games' values={[mostGamesPlayer.name, mostGames.toFixed(0)]}/>
                 <ValueDisplay title='Highest WR'
@@ -93,7 +93,7 @@ function useQuery() {
     return useMemo(() => new URLSearchParams(search), [search]);
 }
 
-const windowValues = [undefined, 5, 10, 20, 50,];
+const windowValues = [undefined, 10, 20, 30, 50, 100];
 
 const slidingWindowOptions: Map<string, number | undefined> = new Map<string, number | undefined>();
 windowValues.forEach(v => slidingWindowOptions.set(v ? v.toString() : 'None', v));

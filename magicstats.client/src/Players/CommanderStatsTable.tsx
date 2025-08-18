@@ -1,34 +1,30 @@
-﻿import {
+import {Table} from "@radix-ui/themes";
+import {CommanderStats} from "./PlayerApi.ts";
+import SortableHeader from "../Shared/SortableHeader.tsx";
+import {
     createColumnHelper,
     flexRender,
     getCoreRowModel,
     getSortedRowModel,
     TableState,
     useReactTable
-} from '@tanstack/react-table';
-import {PlayerWithStats} from './PlayerApi';
-import {useImmer} from 'use-immer';
-import SortableHeader from "../Shared/SortableHeader.tsx";
-import PlayerApi from "../Players/PlayerApi.ts";
-import {Table} from '@radix-ui/themes';
-import DeleteButton from '../Shared/DeleteButton.tsx';
-import {PlayerName} from "./PlayerName.tsx";
+} from "@tanstack/react-table";
+import {useImmer} from "use-immer";
 
-type PlayersTableProps = {
-    players: PlayerWithStats[],
-    lastXWindowSize: number,
+type CommanderStatsTableProps = {
+    stats: CommanderStats[],
 }
 
-export default function PlayersTable({players}: PlayersTableProps) {
+export function CommanderStatsTable({stats}: CommanderStatsTableProps) {
     const table = useReactTable({
-        data: players,
+        data: stats,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         initialState: {
             sorting: [
                 {
-                    id: 'winrate',
+                    id: 'games',
                     desc: true,
                 }
             ],
@@ -47,7 +43,7 @@ export default function PlayersTable({players}: PlayersTableProps) {
     });
 
     return (
-        <Table.Root variant='surface'>
+        <Table.Root variant='ghost'>
             <Table.Header>
                 {table.getHeaderGroups().map(headerGroup => (
                     <Table.Row key={headerGroup.id}>
@@ -72,44 +68,24 @@ export default function PlayersTable({players}: PlayersTableProps) {
     );
 }
 
-const columnHelper = createColumnHelper<PlayerWithStats>();
+const columnHelper = createColumnHelper<CommanderStats>();
 
 const columns = [
     columnHelper.accessor('name', {
         id: 'name',
         header: ctx => <SortableHeader text='Name' context={ctx}/>,
-        cell: props => <PlayerName player={props.row.original}/>
     }),
-    columnHelper.accessor('stats.games', {
+    columnHelper.accessor('games', {
         id: 'games',
         header: ctx => <SortableHeader text='Games' context={ctx}/>,
     }),
-    columnHelper.accessor('stats.wins', {
-        id: 'wins',
-        header: ctx => <SortableHeader text='Wins' context={ctx}/>,
-    }),
-    columnHelper.accessor('stats.winrate', {
+    columnHelper.accessor('winrate', {
         id: 'winrate',
-        header: ctx => <SortableHeader text={'WR%'} context={ctx}/>,
-        cell: props => toPercentage(props.row.original.stats.winrate)
-    }),
-    columnHelper.accessor('stats.winrateLastX', {
-        id: 'winrateLastX',
-        header: ctx => <SortableHeader text={'WRLX'} context={ctx}/>,
-        cell: props => toPercentage(props.row.original.stats.winrateLastX)
-    }),
-    columnHelper.display({
-        id: 'delete',
-        header: 'Delete',
-        cell: props => <DeleteButton onClick={() => {
-            const api = new PlayerApi();
-            api.delete(props.row.original.id)
-                .then(() => window.location.reload());
-        }}/>,
+        header: ctx => <SortableHeader text={'Winrate'} context={ctx}/>,
+        cell: props => toPercentage(props.row.original.winrate),
     }),
 ];
 
-
 function toPercentage(num: number): string {
-    return (100 * num).toFixed(0);
+    return (100 * num).toFixed(0) + '%'
 }

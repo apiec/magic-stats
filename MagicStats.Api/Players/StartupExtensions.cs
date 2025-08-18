@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using MagicStats.Api.Players.PlayerStats;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore;
 
 namespace MagicStats.Api.Players;
 
@@ -20,6 +20,12 @@ public static class StartupExtensions
         endpoints.MapEndpoint<CreatePlayer>();
         endpoints.MapEndpoint<DeletePlayer>();
         endpoints.MapEndpoint<UpdatePlayer>();
+
+        endpoints.MapEndpoint<GetPlayer>();
+        endpoints.MapEndpoint<GetCommanderStats>();
+        endpoints.MapEndpoint<GetRecentGames>();
+        endpoints.MapEndpoint<GetPlayerPods>();
+        endpoints.MapEndpoint<GetRecordAgainstPlayers>();
 
         return app;
     }

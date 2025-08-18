@@ -52,6 +52,7 @@ internal class PlayerWinratesDataProvider(StatsDbContext dbContext, Cancellation
     public async Task<(Game[], Player[])> GetAllData()
     {
         var games = await dbContext.Games
+            .AsNoTrackingWithIdentityResolution()
             .Include(g => g.Participants)
             .ThenInclude(p => p.Player)
             .ToArrayAsync(ct);
@@ -67,6 +68,7 @@ internal class PlayerWinratesDataProvider(StatsDbContext dbContext, Cancellation
     public async Task<(Game[], Player[])> GetByPodSize(int podSize)
     {
         var games = await dbContext.Games
+            .AsNoTrackingWithIdentityResolution()
             .Include(g => g.Participants)
             .ThenInclude(p => p.Player)
             .Where(g => g.Participants.Count == podSize)
@@ -84,6 +86,7 @@ internal class PlayerWinratesDataProvider(StatsDbContext dbContext, Cancellation
     public async Task<(Game[], Player[])> GetByPlayers(IReadOnlyCollection<int> playerIds)
     {
         var games = await dbContext.Games
+            .AsNoTrackingWithIdentityResolution()
             .Include(g => g.Participants)
             .ThenInclude(p => p.Player)
             .Where(g => g.Participants.Count == playerIds.Count &&

@@ -7,13 +7,13 @@ import App from './App.tsx'
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import Commanders from "./Commanders/Commanders.tsx";
 import Players from "./Players/Players.tsx";
-import GamesTableComponent from "./Games/GamesTable.tsx";
-import GameForm from "./Games/GameForm/GameForm.tsx";
 import Games from "./Games/Games.tsx";
+import GameForm from "./Games/GameForm/GameForm.tsx";
 import HomePage from "./Home/HomePage.tsx";
 import Pods from "./Pods/Pods.tsx";
 import Hosts from "./Hosts/Hosts.tsx";
 import {ThemeProvider} from 'next-themes';
+import PlayerPage from "./Players/PlayerPage.tsx";
 
 const router = createBrowserRouter([
     {
@@ -30,7 +30,16 @@ const router = createBrowserRouter([
             },
             {
                 path: "players",
-                element: <Players/>,
+                children: [
+                    {
+                        index: true,
+                        element: <Players/>,
+                    },
+                    {
+                    path: ":playerId",
+                        element: <PlayerPage/>,
+                    }
+                ],
             },
             {
                 path: "pods",
@@ -38,11 +47,10 @@ const router = createBrowserRouter([
             },
             {
                 path: "games",
-                element: <Games/>,
                 children: [
                     {
                         index: true,
-                        element: <GamesTableComponent/>,
+                        element: <Games/>,
                     },
                     {
                         path: ":gameId",
