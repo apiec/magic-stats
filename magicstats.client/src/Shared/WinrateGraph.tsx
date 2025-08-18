@@ -57,10 +57,10 @@ function Graph({data}: { data: DataSeries[] }) {
                         return new Date(tickItem).toLocaleDateString();
                     }}/>
                 <YAxis ticks={horizontalTicks} dataKey='value' domain={[0, topValue]}
-                       tickFormatter={(tickItem: number) => tickItem.toFixed(1)}/>
-                <Tooltip formatter={(value: number, _) => (value * 100).toFixed(0) + '%'}
+                       tickFormatter={(tickItem: number) => toPercentage(tickItem)}/>
+                <Tooltip formatter={(value: number, _) => toPercentage(value)}
                          filterNull={true}
-                         contentStyle={{background: 'var(--gray-2)'}} // todo: figure out how to style all of the shit
+                         contentStyle={{background: 'var(--gray-2)'}}
                          labelFormatter={(label: number, _) => new Date(label).toLocaleDateString()}/>
                 <Legend/>
                 {data.map((s, i) => (
@@ -78,13 +78,10 @@ const colors = [
     '#f030a8',
     '#8000ff',
     '#ff8000',
-    '#ff0000',
     '#00e000',
     '#1e90ff',
-    '#00afaf',
     '#80f4c4',
     '#2f4f4f',
-    '#808000',
     '#ffff00',
 ]
 
@@ -93,3 +90,7 @@ const strokes = [
     '10',
     '10 5 5 5',
 ]
+
+function toPercentage(num: number): string {
+    return (100 * num).toFixed(0) + '%'
+}

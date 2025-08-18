@@ -7,25 +7,37 @@ import {
     Heading,
     IconButton,
     ScrollArea,
+    SegmentedControl,
     Spinner,
     Text,
+    Tooltip,
 } from "@radix-ui/themes";
+import {format} from "date-fns";
 import {useParams} from "react-router-dom";
-import PlayerApi, {CommanderStats, Player, Pod, RecentGame, SinglePlayerWithStats} from "./PlayerApi.ts";
+import PlayerApi, {
+    CommanderStats,
+    Player,
+    PlayerWithWinrates,
+    Pod,
+    RecentGame,
+    SinglePlayerWithStats
+} from "./PlayerApi.ts";
 import {useEffect, useState} from "react";
 import {PlayerAvatar} from "./PlayerAvatar.tsx";
 import {FaPersonWalkingLuggage,} from "react-icons/fa6";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
 import {CommanderStatsTable} from "./CommanderStatsTable.tsx";
-import {Pencil1Icon} from "@radix-ui/react-icons";
+import {InfoCircledIcon, Pencil1Icon} from "@radix-ui/react-icons";
 import PlayerForm from "./PlayerForm.tsx";
 import {PlayerRecentGamesTable} from "./PlayerRecentGamesTable.tsx";
 import {PlayerPodsTable} from "./PlayerPodsTable.tsx";
+import {DataPoint, DataSeries} from "../Shared/WinrateGraph.tsx";
+import {CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip as GraphTooltip, XAxis, YAxis} from "recharts";
 
 export default function PlayerPage() {
     const {playerId} = useParams<string>();
     const [player, setPlayer] = useState<SinglePlayerWithStats | undefined>();
-    const [commanderStats, setCommanderStats] = useState<CommanderStats[]>([]);
+    const [commanderStats, setCommanderStats] = useState<CommanderStats[] | undefined>();
 
     useEffect(() => {
         const api = new PlayerApi();
@@ -96,6 +108,12 @@ export default function PlayerPage() {
                 </Flex>
             </Flex>
             <Grid gap='7' columns={{initial: '1', md: '2',}}>
+                <Box width='360px' maxWidth='90vw' maxHeight='300px' asChild>
+                    <Flex direction='column'>
+                        <Heading>Winrate</Heading>
+                        <PlayerWinrateGraph playerId={playerId!}/>
+                    </Flex>
+                </Box>
                 <Box width='360px' maxWidth='90vw' maxHeight='300px' asChild>
                     <Flex direction='column'>
                         <Heading>Recent games</Heading>
@@ -217,4 +235,105 @@ function EditPlayerDialog({player, onUpdate}: EditPlayerDialogProps) {
             }}/>
         </Dialog.Content>
     </Dialog.Root>;
+}
+
+type PlayerWinrateGraphProps = {
+    playerId: string;
+}
+
+type SeriesType = 'recent' | 'allTime';
+
+function PlayerWinrateGraph({playerId}: PlayerWinrateGraphProps) {
+    const [recentData, setRecentData] = useState<DataSeries | undefined>(undefined);
+    const [allTimeData, setAllTimeData] = useState<DataSeries | undefined>(undefined);
+    const [seriesUsed, setSeriesUsed] = useState<SeriesType>('recent');
+
+    function mapData(data: PlayerWithWinrates[]): DataSeries {
+        const playerData = data.find(d => d.id === playerId)!;
+        return {
+            name: playerData.name,
+            data: playerData.dataPoints.map(d => {
+                return {
+                    date: new Date(d.date).valueOf(),
+                    value: d.winrate,
+                } as DataPoint;
+            })
+        } as DataSeries;
+    }
+
+    function populateData() {
+        const api = new PlayerApi();
+        api.getWinrates(30).then(mapData).then(setRecentData);
+        api.getWinrates().then(mapData).then(setAllTimeData);
+    }
+
+    useEffect(() => {
+        populateData();
+    }, []);
+
+    const usedData = seriesUsed === 'recent' ? recentData : allTimeData;
+    if (usedData === undefined) {
+        return <Spinner/>;
+    }
+
+    const minDate = Math.min(...usedData.data.map(p => p.date));
+    const maxDate = Math.max(...usedData.data.map(p => p.date));
+    const stepCount = 5;
+    const step = Math.floor((maxDate - minDate) / stepCount);
+    const lastStepFix = maxDate - minDate - step * stepCount;
+    const ticks = Array.from({length: stepCount + 1}, (_, k) => minDate + k * step);
+    ticks[stepCount] += lastStepFix;
+
+    const maxValue = Math.max(...usedData.data.map(p => p.value));
+    const topValue = Math.ceil(10 * maxValue) / 10;
+    const horizontalTicks = Array.from({length: topValue / 0.2 + 1}, (_, k) => 0.2 * k);
+    const tooltip = 'Recent - shows the winrate from the most recent 30 games';
+    return (
+        <>
+            <Box my='2' width='fit-content'>
+                <Flex gap='1' align='center'>
+                    <SegmentedControl.Root value={seriesUsed} size='1' onValueChange={(value) => {
+                        setSeriesUsed(value as SeriesType);
+                    }}>
+                        <SegmentedControl.Item value='allTime'>All time</SegmentedControl.Item>
+                        <SegmentedControl.Item value='recent'>Recent</SegmentedControl.Item>
+                    </SegmentedControl.Root>
+                    <Dialog.Root>
+                        <Tooltip content={tooltip}>
+                            <Dialog.Trigger>
+                                <InfoCircledIcon/>
+                            </Dialog.Trigger>
+                        </Tooltip>
+                        <Dialog.Content maxWidth='fit-content'>
+                            <Text as='div' align='center'>{tooltip}</Text>
+                        </Dialog.Content>
+                    </Dialog.Root>
+                </Flex>
+            </Box>
+            <ResponsiveContainer width='100%' height='100%' minHeight='200px'>
+                <LineChart>
+                    <CartesianGrid vertical={false} horizontalValues={horizontalTicks} strokeWidth={1}
+                                   strokeDasharray='5 5'/>
+                    <XAxis
+                        dataKey='date'
+                        type='number'
+                        allowDuplicatedCategory={false} // without this active data point detection breaks ¯\_(ツ)_/¯
+                        ticks={ticks}
+                        domain={[minDate, maxDate]}
+                        padding={{left: 20, right: 20}}
+                        tickFormatter={(tickItem: number) => {
+                            return new Date(tickItem).toLocaleDateString();
+                        }}/>
+                    <YAxis ticks={horizontalTicks} dataKey='value' domain={[0, topValue]}
+                           tickFormatter={(tickItem: number) => toPercentage(tickItem)}/>
+                    <GraphTooltip formatter={(value: number, _) => toPercentage(value)}
+                                  filterNull={true}
+                                  contentStyle={{background: 'var(--gray-2)'}}
+                                  labelFormatter={(label: number, _) => format(new Date(label), "dd/MM/yyyy")}/>
+                    <Line type='monotone' dataKey='value' data={usedData.data} name={usedData.name}
+                          key={usedData.name}
+                          dot={false} strokeWidth={2}/>
+                </LineChart>
+            </ResponsiveContainer>
+        </>);
 }
