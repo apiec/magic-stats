@@ -20,6 +20,7 @@ import PlayerApi, {
     PlayerWithWinrates,
     Pod,
     RecentGame,
+    RecordAgainstPlayer,
     SinglePlayerWithStats
 } from "./PlayerApi.ts";
 import {useEffect, useState} from "react";
@@ -33,6 +34,7 @@ import {PlayerRecentGamesTable} from "./PlayerRecentGamesTable.tsx";
 import {PlayerPodsTable} from "./PlayerPodsTable.tsx";
 import {DataPoint, DataSeries} from "../Shared/WinrateGraph.tsx";
 import {CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip as GraphTooltip, XAxis, YAxis} from "recharts";
+import {RecordAgainstPlayerTable} from "./RecordAgainstPlayerTable.tsx";
 
 export default function PlayerPage() {
     const {playerId} = useParams<string>();
@@ -42,7 +44,7 @@ export default function PlayerPage() {
     useEffect(() => {
         const api = new PlayerApi();
         api.get(playerId!).then(p => setPlayer(p));
-    }, []);
+    }, [playerId]);
     useEffect(() => {
         const api = new PlayerApi();
         api.getPlayerCommanderStats(playerId!).then(r => setCommanderStats(r.commanders));
@@ -139,6 +141,12 @@ export default function PlayerPage() {
                     </Flex>
                 </Box>
             </Grid>
+            <Box maxWidth='90vw' maxHeight='300px' asChild>
+                <Flex direction='column'>
+                    <Heading>Opponents</Heading>
+                    <RecordAgainstPlayers playerId={playerId!}/>
+                </Flex>
+            </Box>
         </Flex>
     );
 }
@@ -199,6 +207,23 @@ function PlayerPods({playerId}: PlayerPodsProps) {
     return pods
         ? <ScrollArea>
             <PlayerPodsTable pods={pods}/>
+        </ScrollArea>
+        : <Spinner/>;
+}
+
+type RecordAgainstPlayersProps = {
+    playerId: string,
+}
+
+function RecordAgainstPlayers({playerId}: RecordAgainstPlayersProps) {
+    const [records, setRecords] = useState<RecordAgainstPlayer[] | undefined>();
+    useEffect(() => {
+        const api = new PlayerApi();
+        api.getRecordAgainstPlayers(playerId).then((res) => setRecords(res));
+    }, []);
+    return records
+        ? <ScrollArea>
+            <RecordAgainstPlayerTable records={records}/>
         </ScrollArea>
         : <Spinner/>;
 }

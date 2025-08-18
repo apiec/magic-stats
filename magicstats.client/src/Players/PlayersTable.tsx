@@ -6,15 +6,13 @@
     TableState,
     useReactTable
 } from '@tanstack/react-table';
-import {Player, PlayerWithStats} from './PlayerApi';
+import {PlayerWithStats} from './PlayerApi';
 import {useImmer} from 'use-immer';
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import PlayerApi from "../Players/PlayerApi.ts";
-import {Flex, HoverCard, Link, Table, Text} from '@radix-ui/themes';
+import {Table} from '@radix-ui/themes';
 import DeleteButton from '../Shared/DeleteButton.tsx';
-import {FaPersonWalkingLuggage} from "react-icons/fa6";
-import {Link as RouterLink} from 'react-router-dom';
-import {PlayerAvatar} from "./PlayerAvatar.tsx";
+import {PlayerName} from "./PlayerName.tsx";
 
 type PlayersTableProps = {
     players: PlayerWithStats[],
@@ -111,45 +109,6 @@ const columns = [
     }),
 ];
 
-
-type PlayerNameProps = {
-    player: Player,
-}
-
-function PlayerName({player}: PlayerNameProps) {
-    const name = (
-        <Flex direction='row' gap='1' align='center' justify='center'>
-            <Link asChild style={{color: 'var(--color)'}}>
-                <RouterLink to={player.id}>
-                    <Text>{player.name}</Text>
-                </RouterLink>
-            </Link>
-            {player.isGuest && <FaPersonWalkingLuggage/>}
-        </Flex>
-    );
-
-    return (
-        <HoverCard.Root>
-            <HoverCard.Trigger>
-                {name}
-            </HoverCard.Trigger>
-            <HoverCard.Content>
-                <Flex direction='row' align='center' gap='3'>
-                    <PlayerAvatar player={player} size='3'/>
-                    <Flex direction='column' align='start'>
-                        <Text size='3'>{player.name}</Text>
-                        {player.isGuest &&
-                            <Flex direction='row' gap='1' align='center'>
-                                <Text size='2'>Guest</Text>
-                                <Text size='2' asChild><FaPersonWalkingLuggage/></Text>
-                            </Flex>
-                        }
-                    </Flex>
-                </Flex>
-            </HoverCard.Content>
-        </HoverCard.Root>
-    );
-}
 
 function toPercentage(num: number): string {
     return (100 * num).toFixed(0);

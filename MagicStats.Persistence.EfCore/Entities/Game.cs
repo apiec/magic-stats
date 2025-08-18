@@ -37,6 +37,8 @@ public class Game
 
         return participant;
     }
+
+    public Player GetWinner() => Participants.Single(p => p.IsWinner()).Player;
 }
 
 internal class GameConfiguration : IEntityTypeConfiguration<Game>

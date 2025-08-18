@@ -90,6 +90,20 @@ export type Pod = {
     size: number,
 }
 
+type GetRecordAgainstPlayersResponse = {
+    records: RecordAgainstPlayer[],
+}
+
+export type RecordAgainstPlayer = Player & {
+    gamesAgainst: number,
+    winsAgainst: number,
+    lossesAgainst: number,
+    absoluteDifference: number,
+    winrateAgainst: number,
+    lossrateAgainst: number,
+    relativeDifference: number,
+}
+
 export default class PlayerApi {
     private path: string = 'players/';
     private api: Api = new Api();
@@ -122,6 +136,12 @@ export default class PlayerApi {
         const requestPath = this.path + playerId + '/pods';
         const response = await this.api.get<GetPodsResponse>(requestPath);
         return response.pods;
+    }
+
+    async getRecordAgainstPlayers(playerId: string): Promise<RecordAgainstPlayer[]> {
+        let requestPath = this.path + playerId + '/playerRecord';
+        const response = await this.api.get<GetRecordAgainstPlayersResponse>(requestPath);
+        return response.records;
     }
 
     async getAllWithStats(windowSize: number, podSize?: number): Promise<PlayerWithStats[]> {
