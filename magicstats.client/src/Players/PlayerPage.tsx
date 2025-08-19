@@ -249,13 +249,16 @@ function EditPlayerDialog({player, onUpdate}: EditPlayerDialogProps) {
             <Dialog.Title>
                 Edit player
             </Dialog.Title>
-            <PlayerForm player={player} onSubmit={p => {
-                const api = new PlayerApi();
-                api.update(p).then((res) => {
-                    onUpdate(res);
-                    setOpen(false);
-                });
-            }}/>
+            <PlayerForm
+                player={player}
+                onClose={() => setOpen(false)}
+                onSubmit={p => {
+                    const api = new PlayerApi();
+                    api.update(p).then((res) => {
+                        onUpdate(res);
+                        setOpen(false);
+                    });
+                }}/>
         </Dialog.Content>
     </Dialog.Root>;
 }

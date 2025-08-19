@@ -1,12 +1,13 @@
 ﻿import {Player} from "./PlayerApi";
-import {Button, Flex, Switch, Text, TextField} from '@radix-ui/themes';
+import {Button, Flex, Grid, Switch, Text, TextField} from '@radix-ui/themes';
 import {useImmer} from "use-immer";
 
 type PlayerFormProps = {
     player?: Player;
     onSubmit: (player: Player) => void;
+    onClose?: () => void;
 }
-export default function PlayerForm({player, onSubmit}: PlayerFormProps) {
+export default function PlayerForm({player, onSubmit, onClose}: PlayerFormProps) {
     const [playerCopy, setPlayerCopy] = useImmer<Player>(
         player !== undefined
             ? {...player} as Player
@@ -38,9 +39,20 @@ export default function PlayerForm({player, onSubmit}: PlayerFormProps) {
                                 p.isGuest = !p.isGuest;
                             })}/>
                 </Flex>
-                <Button type='submit' disabled={playerCopy.name.length < 3}>
-                    Confirm
-                </Button>
+                <Grid columns='2' gap='3'>
+                    {
+                        onClose &&
+                        <Button variant='outline' onClick={(e) => {
+                            e.stopPropagation();
+                            onClose();
+                        }}>
+                            Cancel
+                        </Button>
+                    }
+                    <Button type='submit' disabled={playerCopy.name.length < 3}>
+                        Confirm
+                    </Button>
+                </Grid>
             </form>
         </Flex>
     );
