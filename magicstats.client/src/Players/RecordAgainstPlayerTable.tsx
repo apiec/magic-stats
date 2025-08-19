@@ -20,7 +20,7 @@ type RecordAgainstPlayerTableProps = {
 type StatsType = 'absolute' | 'relative';
 
 export function RecordAgainstPlayerTable({records}: RecordAgainstPlayerTableProps) {
-    const [statsType, setStatsType] = useState<StatsType>('absolute');
+    const [statsType, setStatsType] = useState<StatsType>('relative');
     const [showGuests, setShowGuests] = useState<boolean>(false);
     const filtered = records.filter(r => showGuests || !r.isGuest);
     return (
