@@ -15,6 +15,7 @@ import {Link as RouterLink, useNavigate} from 'react-router-dom';
 import {Button, Flex, IconButton, Spinner, Table, Text} from '@radix-ui/themes';
 import {Pencil1Icon} from '@radix-ui/react-icons';
 import DeleteButton from "../Shared/DeleteButton.tsx";
+import {PlayerName} from "../Players/PlayerName.tsx";
 
 export default function Games() {
     const [games, setGames] = useState<Game[] | undefined>(undefined);
@@ -153,9 +154,10 @@ const columns: ColumnDef<Game, any>[] = [
         id: 'winning_commander',
         header: 'Commander'
     }),
-    columnHelper.accessor((g) => g.winner?.player.name ?? 'no data', {
+    columnHelper.display({
         id: 'winning_player',
-        header: 'Player'
+        header: 'Player',
+        cell: props => props.row.original.winner ? <PlayerName player={props.row.original.winner.player}/> : 'no data',
     }),
     columnHelper.accessor('host', {
         id: 'host',

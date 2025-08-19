@@ -1,4 +1,5 @@
-import {Table} from "@radix-ui/themes";
+import {Link, Table, Text} from "@radix-ui/themes";
+import {Link as RouterLink} from "react-router-dom";
 import {format} from "date-fns";
 import {
     createColumnHelper,
@@ -77,10 +78,15 @@ export function PlayerRecentGamesTable({games}: PlayerRecentGamesTableProps) {
 const columnHelper = createColumnHelper<RecentGameRow>();
 
 const columns = [
-    // todo: link to game screen
     columnHelper.accessor('playedAt', {
         id: 'playedAt',
         header: 'Date',
+        cell: props =>
+            <Link asChild>
+                <RouterLink reloadDocument to={'/games/' + props.row.original.gameId}>
+                    <Text>{props.getValue()}</Text>
+                </RouterLink>
+            </Link>
     }),
     columnHelper.accessor('commander.name', {
         id: 'commanderName',

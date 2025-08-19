@@ -141,7 +141,7 @@ export default function PlayerPage() {
                     </Flex>
                 </Box>
             </Grid>
-            <Box maxWidth='90vw' maxHeight='300px' asChild>
+            <Box maxWidth='90vw' maxHeight='400px' asChild>
                 <Flex direction='column'>
                     <Heading>Opponents</Heading>
                     <RecordAgainstPlayers playerId={playerId!}/>
@@ -222,9 +222,7 @@ function RecordAgainstPlayers({playerId}: RecordAgainstPlayersProps) {
         api.getRecordAgainstPlayers(playerId).then((res) => setRecords(res));
     }, []);
     return records
-        ? <ScrollArea>
-            <RecordAgainstPlayerTable records={records}/>
-        </ScrollArea>
+        ? <RecordAgainstPlayerTable records={records}/>
         : <Spinner/>;
 }
 
@@ -251,13 +249,16 @@ function EditPlayerDialog({player, onUpdate}: EditPlayerDialogProps) {
             <Dialog.Title>
                 Edit player
             </Dialog.Title>
-            <PlayerForm player={player} onSubmit={p => {
-                const api = new PlayerApi();
-                api.update(p).then((res) => {
-                    onUpdate(res);
-                    setOpen(false);
-                });
-            }}/>
+            <PlayerForm
+                player={player}
+                onClose={() => setOpen(false)}
+                onSubmit={p => {
+                    const api = new PlayerApi();
+                    api.update(p).then((res) => {
+                        onUpdate(res);
+                        setOpen(false);
+                    });
+                }}/>
         </Dialog.Content>
     </Dialog.Root>;
 }
