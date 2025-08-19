@@ -28,7 +28,7 @@ export function RecordAgainstPlayerTable({records}: RecordAgainstPlayerTableProp
             <Box my='2' asChild>
                 <Flex direction='row' gap='2' align='center'>
                     <Box width='fit-content'>
-                        <SegmentedControl.Root size='1' defaultValue='absolute' onValueChange={(value) => {
+                        <SegmentedControl.Root size='1' value={statsType} onValueChange={(value) => {
                             setStatsType(value as StatsType);
                         }}>
                             <SegmentedControl.Item value='absolute'>Absolute</SegmentedControl.Item>
