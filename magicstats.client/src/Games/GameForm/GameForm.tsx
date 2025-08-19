@@ -30,7 +30,6 @@ export default function GameForm() {
 
     const {gameId} = useParams<string>();
 
-
     useEffect(() => {
         populateGameData();
     }, [rerender]);
