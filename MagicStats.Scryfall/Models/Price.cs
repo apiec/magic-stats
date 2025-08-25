@@ -40,7 +40,7 @@ public class Price : BaseItem
 /// </summary>
 internal class UsDecimalAsStringConverter : JsonConverter<decimal?>
 {
-    private static readonly NumberFormatInfo NumberFormat = CultureInfo.GetCultureInfo("en-US").NumberFormat;
+    private static readonly NumberFormatInfo NumberFormat = CultureInfo.InvariantCulture.NumberFormat;
 
     public override decimal? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

@@ -11,6 +11,7 @@ public class StatsDbContext : DbContext
     }
 
     public DbSet<Commander> Commanders { get; set; }
+    public DbSet<CommanderCard> CommanderCards { get; set; }
     public DbSet<Player> Players { get; set; }
     public DbSet<Game> Games { get; set; }
     public DbSet<Participant> Participants { get; set; }

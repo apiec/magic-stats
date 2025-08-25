@@ -38,7 +38,7 @@ public class Card : BaseItem
     /// The lit Unfinity attractions lights on this card, if any https://scryfall.com/search?q=t%3Aattraction+unique%3Aprints
     /// </summary>
     [JsonPropertyName("attraction_lights")]
-    public string? AttractionLights { get; set; }
+    public int[]? AttractionLights { get; set; }
 
     /// <summary>
     /// Whether this card is found in boosters. 
@@ -180,7 +180,7 @@ public class Card : BaseItem
     public string? HandModifier { get; set; }
 
     [JsonPropertyName("highres_image")]
-    public bool HighresImage { get; set; }
+    public bool HighresolutionImage { get; set; }
 
     /// <summary>
     /// A unique ID for this card in Scryfall’s database.
@@ -207,7 +207,7 @@ public class Card : BaseItem
     /// See the Card Imagery article for more information https://scryfall.com/docs/api/images
     /// </summary>
     [JsonPropertyName("image_uris")]
-    public Dictionary<string, Uri>? ImageUris { get; set; }
+    public ImageUris? ImageUris { get; set; }
 
     [JsonPropertyName("keywords")]
     public string[] Keywords { get; set; }
@@ -295,7 +295,7 @@ public class Card : BaseItem
     ///  This card’s rank/popularity on Penny Dreadful. Not all cards are ranked. 
     /// </summary>
     [JsonPropertyName("penny_rank")]
-    public string? PennyRank { get; set; }
+    public int? PennyRank { get; set; }
 
     /// <summary>
     /// This card’s power, if any. Note that some cards have powers that are not numeric, such as *.
@@ -507,4 +507,25 @@ public class Card : BaseItem
     public override string ToString() => Name +
                                          (!string.IsNullOrWhiteSpace(ManaCost) ? $" ({ManaCost})" : "") +
                                          (!string.IsNullOrWhiteSpace(TypeLine) ? $" {TypeLine}" : "");
+}
+
+public class ImageUris
+{
+    [JsonPropertyName("png")]
+    public Uri Png { get; set; }
+
+    [JsonPropertyName("border_crop")]
+    public Uri BorderCrop { get; set; }
+
+    [JsonPropertyName("art_crop")]
+    public Uri ArtCrop { get; set; }
+
+    [JsonPropertyName("large")]
+    public Uri Large { get; set; }
+
+    [JsonPropertyName("normal")]
+    public Uri Normal { get; set; }
+
+    [JsonPropertyName("small")]
+    public Uri Small { get; set; }
 }

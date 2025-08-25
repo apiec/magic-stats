@@ -13,7 +13,8 @@ public static class StartupExtensions
             .WithTags("migration")
             .DisableAntiforgery();
 
-        endpoints.MapEndpoint<ImportFromCsv>();
+        endpoints.MapEndpoint<ImportGamesFromCsv>();
+        endpoints.MapEndpoint<ImportCardsFromScryfallJson>();
 
         return app;
     }

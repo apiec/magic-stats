@@ -1,5 +1,6 @@
 using MagicStats.Api;
 using MagicStats.Persistence.EfCore;
+using Microsoft.AspNetCore.Http.Features;
 
 var config = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -18,6 +19,10 @@ builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddPersistenceEfCore(config);
 builder.Services.AddMagicStatsApi();
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 200 * 1024 * 1024; // 200MBi for the scryfall input data
+});
 
 var app = builder.Build();
 

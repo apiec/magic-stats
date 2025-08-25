@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\MagicStats.Persistence.EfCore\MagicStats.Persistence.EfCore.csproj"/>
+        <ProjectReference Include="..\MagicStats.Scryfall\MagicStats.Scryfall.csproj" />
         <ProjectReference Include="..\MagicStats.Stats.Domain\MagicStats.Stats.Domain.csproj" />
     </ItemGroup>
 
