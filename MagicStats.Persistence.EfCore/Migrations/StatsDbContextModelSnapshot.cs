@@ -59,6 +59,10 @@ namespace MagicStats.Persistence.EfCore.Migrations
                     b.Property<Guid>("ScryfallId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ScryfallUri")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasAlternateKey("ScryfallId");

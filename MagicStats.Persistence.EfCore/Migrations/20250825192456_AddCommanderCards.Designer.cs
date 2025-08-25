@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MagicStats.Persistence.EfCore.Migrations
 {
     [DbContext(typeof(StatsDbContext))]
-    [Migration("20250825190153_AddCommanderCards")]
+    [Migration("20250825192456_AddCommanderCards")]
     partial class AddCommanderCards
     {
         /// <inheritdoc />
@@ -60,6 +60,10 @@ namespace MagicStats.Persistence.EfCore.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("ScryfallId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ScryfallUri")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

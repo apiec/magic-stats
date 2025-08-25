@@ -3,12 +3,32 @@
 export type Commander = {
     id: string,
     name: string,
+    card: Card | undefined,
+    partner: Card | undefined,
 }
-export type CommanderWithStats = {
+
+export type Card = {
     id: string,
     name: string,
+    scryfallId: string,
+    scryfallUri: string,
+    images: CommanderImageUris,
+    otherFaceImages: CommanderImageUris | undefined,
+}
+
+export type CommanderImageUris = {
+    png: string,
+    borderCrop: string,
+    artCrop: string,
+    large: string,
+    normal: string,
+    small: string,
+}
+
+export type CommanderWithStats = Commander & {
     stats: CommanderStats,
 }
+
 export type CommanderStats = {
     wins: number,
     games: number,

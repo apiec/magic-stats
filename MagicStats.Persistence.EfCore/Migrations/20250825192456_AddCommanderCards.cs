@@ -31,6 +31,7 @@ namespace MagicStats.Persistence.EfCore.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     ScryfallId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
+                    ScryfallUri = table.Column<string>(type: "TEXT", nullable: false),
                     PngUri = table.Column<string>(type: "TEXT", nullable: false),
                     BorderCropUri = table.Column<string>(type: "TEXT", nullable: false),
                     ArtCropUri = table.Column<string>(type: "TEXT", nullable: false),

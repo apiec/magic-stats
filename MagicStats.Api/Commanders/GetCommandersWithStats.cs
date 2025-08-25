@@ -1,5 +1,7 @@
-﻿using MagicStats.Api.Shared;
+﻿using MagicStats.Api.Games;
+using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
+using MagicStats.Persistence.EfCore.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -16,10 +18,9 @@ public class GetCommandersWithStats : IEndpoint
 
     public record Response(IReadOnlyCollection<CommanderWithStatsDto> Commanders);
 
-    public record CommanderWithStatsDto(string Id, string Name, CommanderStats Stats);
+    public record CommanderWithStatsDto(string Id, string Name, CardDto? Card, CardDto? Partner, CommanderStats Stats);
 
     public record CommanderStats(int Wins, int Games, float? Winrate, float? WinrateLastX);
-
 
     private static async Task<Ok<Response>> Handle(
         [FromQuery] int? windowSize,
@@ -38,6 +39,8 @@ public class GetCommandersWithStats : IEndpoint
                 new CommanderWithStatsDto(
                     p.Id.ToString(),
                     p.Name,
+                    p.Card?.ToDto(),
+                    p.Partner?.ToDto(),
                     new CommanderStats(
                         Wins: p.Wins,
                         Games: p.Games,
@@ -55,9 +58,13 @@ public class GetCommandersWithStats : IEndpoint
         {
             return await dbContext.Commanders
                 .AsNoTracking()
+                .Include(c => c.CommanderCard)
+                .Include(c => c.PartnerCard)
                 .Select(commander => new RawStats(
                     commander.Id,
                     commander.Name,
+                    commander.CommanderCard,
+                    commander.PartnerCard,
                     commander.Participated.Count,
                     commander.Participated.Count(p => p.Placement == 0),
                     commander.Participated
@@ -73,6 +80,10 @@ public class GetCommandersWithStats : IEndpoint
                 .Where(g => g.Participants.Count == podSize)
                 .Include(g => g.Participants)
                 .ThenInclude(p => p.Commander)
+                .ThenInclude(p => p.CommanderCard)
+                .Include(g => g.Participants)
+                .ThenInclude(p => p.Commander)
+                .ThenInclude(p => p.PartnerCard)
                 .ToArrayAsync(ct);
 
             var commanders = games
@@ -84,6 +95,8 @@ public class GetCommandersWithStats : IEndpoint
                 .Select(commander => new RawStats(
                     commander.Id,
                     commander.Name,
+                    commander.CommanderCard,
+                    commander.PartnerCard,
                     commander.Participated.Count,
                     commander.Participated.Count(p => p.Placement == 0),
                     commander.Participated
@@ -94,5 +107,12 @@ public class GetCommandersWithStats : IEndpoint
         }
     }
 
-    private record RawStats(int Id, string Name, int Games, int Wins, int WinsLastX);
+    private record RawStats(
+        int Id,
+        string Name,
+        CommanderCard? Card,
+        CommanderCard? Partner,
+        int Games,
+        int Wins,
+        int WinsLastX);
 }

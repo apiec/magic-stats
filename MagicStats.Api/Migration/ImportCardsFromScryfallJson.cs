@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore;
 using ScryfallCard = MagicStats.Scryfall.Models.Card;
 
 namespace MagicStats.Api.Migration;
@@ -100,6 +99,7 @@ public class ImportCardsFromScryfallJson : IEndpoint
         {
             ScryfallId = card.Id,
             Name = card.Name,
+            ScryfallUri = card.ScryfallUri,
             ImageUris = MapImageUris(firstFace),
             OtherFaceUris = MapImageUris(otherFace),
         };

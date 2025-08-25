@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -7,7 +8,11 @@ public class CommanderCard
 {
     public int Id { get; init; }
     public Guid ScryfallId { get; init; }
+
+    [MaxLength(128)]
     public required string Name { get; init; }
+
+    public required Uri ScryfallUri { get; init; }
     public required ImageUris ImageUris { get; init; }
     public ImageUris? OtherFaceUris { get; init; }
 }

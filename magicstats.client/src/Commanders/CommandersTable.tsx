@@ -6,11 +6,12 @@
     TableState,
     useReactTable
 } from '@tanstack/react-table';
-import {CommanderWithStats} from './CommanderApi';
+import {Commander, CommanderWithStats} from './CommanderApi';
 import {useImmer} from 'use-immer';
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import CommanderApi from "../Commanders/CommanderApi.ts";
-import {Table} from '@radix-ui/themes';
+import {Box, Flex, HoverCard, Inset, Link, Table, Text} from '@radix-ui/themes';
+import {Link as RouterLink} from 'react-router-dom';
 import DeleteButton from '../Shared/DeleteButton.tsx';
 
 type CommanderTableProps = {
@@ -76,6 +77,7 @@ const columns = [
     columnHelper.accessor('name', {
         id: 'name',
         header: ctx => <SortableHeader text='Name' context={ctx}/>,
+        cell: props => <CommanderName commander={props.row.original}/>
     }),
     columnHelper.accessor('stats.games', {
         id: 'games',
@@ -108,4 +110,52 @@ const columns = [
 
 function toPercentage(num: number): string {
     return (100 * num).toFixed(0);
+}
+
+type CommanderNameProps = {
+    commander: Commander,
+}
+
+export function CommanderName({commander}: CommanderNameProps) {
+    const displayName = commander.card?.name
+        ? commander.card.name + (commander.partner ? ' // ' + commander.partner.name : '')
+        : commander.name;
+
+    const nameLinkComponent = (
+        <Flex direction='row' gap='1' align='center' justify='center'>
+            <Link asChild style={{color: 'var(--color)'}}>
+                <RouterLink reloadDocument to={'/commanders/' + commander.id}>
+                    <Text>{displayName}</Text>
+                </RouterLink>
+            </Link>
+        </Flex>
+    );
+
+    if (!commander?.card?.images) {
+        return nameLinkComponent;
+    }
+
+    return (
+        <HoverCard.Root openDelay={700}>
+            <HoverCard.Trigger>
+                {nameLinkComponent}
+            </HoverCard.Trigger>
+            <HoverCard.Content maxWidth='600px'>
+                <Inset>
+                    <Box width='100%' asChild>
+                        <Flex>
+                            <Box maxWidth='300px' asChild>
+                                <img src={commander.card.images.png} alt='commander image'/>
+                            </Box>
+                            {commander.partner &&
+                                <Box maxWidth='300px' asChild>
+                                    <img src={commander.partner.images.png} alt='commander image'/>
+                                </Box>
+                            }
+                        </Flex>
+                    </Box>
+                </Inset>
+            </HoverCard.Content>
+        </HoverCard.Root>
+    );
 }
