@@ -35,9 +35,11 @@ export type PlayerStats = {
     winrate: number,
     winrateLastX: number,
 }
+
 export type SinglePlayerWithStats = Player & {
     stats: SinglePlayerStats
 }
+
 export type SinglePlayerStats = {
     wins: number,
     games: number,

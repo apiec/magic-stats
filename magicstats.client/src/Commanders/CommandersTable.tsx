@@ -13,11 +13,13 @@ import CommanderApi from "../Commanders/CommanderApi.ts";
 import {Box, Flex, HoverCard, Inset, Link, Table, Text} from '@radix-ui/themes';
 import {Link as RouterLink} from 'react-router-dom';
 import DeleteButton from '../Shared/DeleteButton.tsx';
+import {getCommanderDisplayName} from "./CommanderUtils.ts";
 
 type CommanderTableProps = {
     commanders: CommanderWithStats[],
     lastXWindowSize: number,
 }
+
 export default function CommandersTable({commanders}: CommanderTableProps) {
     const table = useReactTable({
         data: commanders,
@@ -117,9 +119,7 @@ type CommanderNameProps = {
 }
 
 export function CommanderName({commander}: CommanderNameProps) {
-    const displayName = commander.card?.name
-        ? commander.card.name + (commander.partner ? ' // ' + commander.partner.name : '')
-        : commander.name;
+    const displayName = getCommanderDisplayName(commander);
 
     const nameLinkComponent = (
         <Flex direction='row' gap='1' align='center' justify='center'>
@@ -143,19 +143,31 @@ export function CommanderName({commander}: CommanderNameProps) {
             <HoverCard.Content maxWidth='600px'>
                 <Inset>
                     <Box width='100%' asChild>
-                        <Flex>
-                            <Box maxWidth='300px' asChild>
-                                <img src={commander.card.images.png} alt='commander image'/>
-                            </Box>
-                            {commander.partner &&
-                                <Box maxWidth='300px' asChild>
-                                    <img src={commander.partner.images.png} alt='commander image'/>
-                                </Box>
-                            }
-                        </Flex>
+                        <CommanderCardDisplay commander={commander}/>
                     </Box>
                 </Inset>
             </HoverCard.Content>
         </HoverCard.Root>
     );
+}
+
+type CommanderCardDisplayProps = {
+    commander: Commander,
+}
+
+function CommanderCardDisplay({commander}: CommanderCardDisplayProps) {
+    const maxWidth = '300px'
+    return <Flex>
+        {!commander.card && <Box maxWidth={maxWidth} asChild>
+            <img src='https://cards.scryfall.io/png/front/9/d/9d68befe-78bc-4d9c-968b-f7e6b3042f27.png?1562769676'
+                 alt='placeholder image'/>
+        </Box>}
+        {commander.card && <Box maxWidth={maxWidth} asChild>
+            <img src={commander.card.images.png} alt='commander image'/>
+        </Box>}
+        {commander.partner &&
+            <Box maxWidth={maxWidth} asChild>
+                <img src={commander.partner.images.png} alt='partner image'/>
+            </Box>}
+    </Flex>;
 }

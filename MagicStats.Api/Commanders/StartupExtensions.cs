@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using MagicStats.Api.Commanders.CommanderStats;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
@@ -18,6 +19,8 @@ internal static class StartupExtensions
 
         endpoints.MapEndpoint<CreateCommander>();
         endpoints.MapEndpoint<DeleteCommander>();
+
+        endpoints.MapEndpoint<GetCommander>();
 
         return app;
     }

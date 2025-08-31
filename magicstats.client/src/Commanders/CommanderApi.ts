@@ -36,6 +36,16 @@ export type CommanderStats = {
     winrateLastX: number,
 }
 
+export type SingleCommanderWithStats = Commander & {
+    stats: SingleCommanderStats
+}
+
+export type SingleCommanderStats = {
+    wins: number,
+    games: number,
+    winrate: number,
+}
+
 type GetCommandersResponse = {
     commanders: Commander[];
 }
@@ -66,6 +76,10 @@ type CreateCommanderRequest = {
 export default class CommanderApi {
     private path: string = 'commanders/';
     private api = new Api();
+
+    async get(commanderId: string): Promise<SingleCommanderWithStats> {
+        return await this.api.get<SingleCommanderWithStats>(this.path + commanderId);
+    }
 
     async getAll(): Promise<Commander[]> {
         const response = await this.api.get<GetCommandersResponse>(this.path);
