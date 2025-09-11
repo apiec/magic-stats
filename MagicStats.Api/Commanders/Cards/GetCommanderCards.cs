@@ -1,3 +1,4 @@
+using MagicStats.Api.Games;
 using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
 using Microsoft.AspNetCore.Builder;
@@ -14,9 +15,7 @@ public class GetCommanderCards : IEndpoint
     public static void Map(IEndpointRouteBuilder app) => app
         .MapGet("/cards", Handle);
 
-    public record Response(IReadOnlyCollection<SimpleCardDto> Cards);
-
-    public record SimpleCardDto(string Id, string Name);
+    public record Response(IReadOnlyCollection<CardDto> Cards);
 
     private static async Task<Results<Ok<Response>, NotFound>> Handle(
         [FromQuery] string? name,
@@ -36,11 +35,14 @@ public class GetCommanderCards : IEndpoint
         }
 
         var result = await query
+            .OrderBy(c => c.Name)
             .Skip(skip.Value)
             .Take(take.Value)
-            .Select(c => new SimpleCardDto(c.Id.ToString(), c.Name))
             .ToArrayAsync(ct);
 
-        return TypedResults.Ok(new Response(result));
+        return TypedResults.Ok(
+            new Response(result
+                .Select(c => c.ToDto())
+                .ToArray()));
     }
 }

@@ -28,7 +28,15 @@ export function CommanderPage() {
                 }}/>
             </RadixCard>
             {/* todo: value displays for wins/games */}
-            <CommanderCardSearch/>
+            <CommanderCardSearch card={commander.card} onCardChange={(newCard) => {
+                const api = new CommanderApi();
+                const updatedCommander = {...commander, card: newCard} as Commander;
+                api.update(updatedCommander)
+                    .then((res) => setCommander({
+                        ...commander,
+                        ...res,
+                    }));
+            }}/>
         </Flex>
     );
 }
@@ -84,7 +92,7 @@ function SingleCardDisplay({card}: SingleCardDisplayProps) {
     const content = () => (
         <Inset>
             <Box width='100%' asChild>
-                <img src={card.images.png} alt={card.name + ' png'}/>
+                <img src={card.images.normal} alt={card.name}/>
             </Box>
         </Inset>);
 

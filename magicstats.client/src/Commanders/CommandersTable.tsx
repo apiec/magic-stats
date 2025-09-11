@@ -163,11 +163,11 @@ function CommanderCardDisplay({commander}: CommanderCardDisplayProps) {
                  alt='placeholder image'/>
         </Box>}
         {commander.card && <Box maxWidth={maxWidth} asChild>
-            <img src={commander.card.images.png} alt='commander image'/>
+            <img src={commander.card.images.normal} alt='commander image'/>
         </Box>}
         {commander.partner &&
             <Box maxWidth={maxWidth} asChild>
-                <img src={commander.partner.images.png} alt='partner image'/>
+                <img src={commander.partner.images.normal} alt='partner image'/>
             </Box>}
     </Flex>;
 }

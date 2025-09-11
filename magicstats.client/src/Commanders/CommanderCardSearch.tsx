@@ -1,23 +1,31 @@
 import Api from "../api/Api.ts";
-import {Box, Button, Flex, Inset, Popover, Text} from "@radix-ui/themes";
+import {Box, Button, Flex, HoverCard, Inset, Popover, Text} from "@radix-ui/themes";
 import {MagnifyingGlassIcon, ChevronDownIcon} from "@radix-ui/react-icons";
 import Select from 'react-select';
 import {DropdownIndicatorProps, MultiValue, SingleValue, components,} from "react-select";
 import {useEffect, useState} from "react";
 import {useDebounce} from "../Shared/useDebounce.ts";
+import {useTheme} from "next-themes";
+import {Card} from "./CommanderApi.ts";
 
-type CommanderCardSearchProps = {}
+type CommanderCardSearchProps = {
+    card: Card | undefined,
+    onCardChange: (card: Card | undefined) => void,
+}
 
-export function CommanderCardSearch({}: CommanderCardSearchProps) {
-    const [commander, setCommander] = useState<CommanderOption | null>();
+
+export function CommanderCardSearch({card, onCardChange}: CommanderCardSearchProps) {
+    const cardOption = card ? toOption(card) : undefined;
     const [open, setOpen] = useState<boolean>(false);
-    const [input, setInput] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
-    const [options, setOptions] = useState<CommanderOption[]>();
+    const [input, setInput] = useState<string>('');
     const debouncedInput = useDebounce<string>(input, 500);
+    const [options, setOptions] = useState<CardOption[]>();
+    const {resolvedTheme} = useTheme();
 
-    function onChange(value: SingleValue<CommanderOption> | MultiValue<CommanderOption>) {
-        setCommander(value as SingleValue<CommanderOption>);
+    function onChange(value: SingleValue<CardOption> | MultiValue<CardOption>) {
+        const opt = value as SingleValue<CardOption>;
+        onCardChange(opt?.card);
         setOpen(false);
     }
 
@@ -45,40 +53,49 @@ export function CommanderCardSearch({}: CommanderCardSearchProps) {
                 <Button color='gray' variant='surface'>
                     <Flex align='center' gap='2'>
                         <Box asChild maxWidth='200px'>
-                            <Text truncate wrap='nowrap'>{commander ? commander.label : 'Find your commander'}</Text>
+                            <Text truncate wrap='nowrap'>{cardOption ? cardOption.label : 'Find your commander'}</Text>
                         </Box>
                         <ChevronDownIcon/>
                     </Flex>
                 </Button>
             </Popover.Trigger>
-            <Popover.Content height='300px' minWidth='120px' >
+            <Popover.Content minWidth='120px' maxWidth='240px'>
                 <Inset>
-                    <Box height='300px' p='1'>
+                    <Box height='340px' p='1'>
                         <Select
                             autoFocus
                             menuPlacement='bottom'
-                            minMenuHeight={300}
-                            maxMenuHeight={300}
+                            minMenuHeight={290}
+                            maxMenuHeight={290}
                             controlShouldRenderValue={false}
                             menuIsOpen={open}
                             tabSelectsValue={false}
                             components={{DropdownIndicator, IndicatorSeparator: null}}
-                            placeholder={<Text>Search for a commander</Text>}
+                            placeholder={'Search for a commander'}
                             noOptionsMessage={(v) => {
                                 return v.inputValue && v.inputValue.length >= 2
                                     ? 'No results found'
                                     : 'Input at least 2 letters to start searching'
                             }}
-                            value={commander}
+                            value={cardOption}
                             onChange={onChange}
                             options={options}
                             inputValue={input}
                             onInputChange={(v) => setInput(v)}
                             isLoading={loading}
+                            formatOptionLabel={(option) => <CardOptionLabel card={option.card}/>}
                             styles={{
+                                input: (baseStyles, _) => ({
+                                    ...baseStyles,
+                                    minWidth: 180,
+                                }),
                                 option: (baseStyles, state) => ({
                                     ...baseStyles,
-                                    color: state.isSelected ? state.theme.colors.neutral0 : baseStyles.color,
+                                    color: state.isSelected
+                                        ? state.theme.colors.neutral0
+                                        : state.isFocused
+                                            ? (resolvedTheme === 'light' ? state.theme.colors.neutral0 : state.theme.colors.neutral90)
+                                            : baseStyles.color,
                                 }),
                                 menu: (baseStyles, _) => ({
                                     ...baseStyles,
@@ -114,22 +131,27 @@ export function CommanderCardSearch({}: CommanderCardSearchProps) {
     );
 }
 
-async function loadOptions(inputValue: string): Promise<CommanderOption[]> {
-    const api = new CommanderCardsApi();
-    const response = await api.search(inputValue);
-    return response.map(c => {
-        return {value: c.id, label: c.name, card: c}
-    })
+function toOption(card: Card): CardOption {
+    return {
+        value: card.id,
+        label: card.name,
+        card: card
+    } as CardOption;
 }
 
-type CommanderOption = {
-    card: SimpleCard,
+async function loadOptions(inputValue: string): Promise<CardOption[]> {
+    const api = new CommanderCardsApi();
+    const response = await api.search(inputValue);
+    return response.map(toOption);
+}
+
+type CardOption = {
+    card: Card,
     value: string,
     label: string,
 }
 
-
-function DropdownIndicator(props: DropdownIndicatorProps<CommanderOption>) {
+function DropdownIndicator(props: DropdownIndicatorProps<CardOption>) {
     return (
         <components.DropdownIndicator {...props}>
             <MagnifyingGlassIcon/>
@@ -137,20 +159,40 @@ function DropdownIndicator(props: DropdownIndicatorProps<CommanderOption>) {
     );
 }
 
-type SimpleCard = {
-    id: string,
-    name: string,
+type CardOptionProps = {
+    card: Card,
+}
+
+export function CardOptionLabel({card}: CardOptionProps) {
+    return (
+        <HoverCard.Root openDelay={700}>
+            <HoverCard.Trigger>
+                <Box width='100%' height='100%' asChild>
+                    <Text as='div' align='left'>
+                        {card.name}
+                    </Text>
+                </Box>
+            </HoverCard.Trigger>
+            <HoverCard.Content maxWidth='300px' side='right'>
+                <Inset>
+                    <Box width='100%' asChild>
+                        <img src={card.images.normal} alt={card.name}/>
+                    </Box>
+                </Inset>
+            </HoverCard.Content>
+        </HoverCard.Root>
+    );
 }
 
 type GetCardsResponse = {
-    cards: SimpleCard[],
+    cards: Card[],
 }
 
 class CommanderCardsApi {
     private path: string = 'commanders/cards';
     private api = new Api();
 
-    public async search(name?: string, skip?: number, take?: number): Promise<SimpleCard[]> {
+    public async search(name?: string, skip?: number, take?: number): Promise<Card[]> {
         const queryParams = new URLSearchParams()
         if (name) {
             queryParams.append('name', name);

@@ -73,6 +73,11 @@ type CreateCommanderRequest = {
     name: string;
 }
 
+type UpdateCommanderRequest = {
+    name?: string,
+    cardId?: string,
+    partnerId?: string,
+}
 export default class CommanderApi {
     private path: string = 'commanders/';
     private api = new Api();
@@ -122,5 +127,14 @@ export default class CommanderApi {
 
     async delete(id: string): Promise<void> {
         await this.api.delete(this.path + id);
+    }
+
+    async update(commander: Commander): Promise<Commander> {
+        const request = {
+            name: commander.name,
+            cardId: commander.card?.id,
+            partnerId: commander.partner?.id,
+        } as UpdateCommanderRequest;
+        return await this.api.put<UpdateCommanderRequest, Commander>(this.path + commander.id, request)
     }
 }

@@ -9,12 +9,12 @@ public class Commander
     public int Id { get; init; }
 
     [MaxLength(128)]
-    public required string Name { get; init; }
+    public required string Name { get; set; }
 
-    public int? CommanderCardId { get; init; }
-    public CommanderCard? CommanderCard { get; init; }
-    public int? PartnerCardId { get; init; }
-    public CommanderCard? PartnerCard { get; init; }
+    public int? CommanderCardId { get; set; }
+    public CommanderCard? CommanderCard { get; set; }
+    public int? PartnerCardId { get; set; }
+    public CommanderCard? PartnerCard { get; set; }
     public List<Participant> Participated { get; init; }
 }
 
