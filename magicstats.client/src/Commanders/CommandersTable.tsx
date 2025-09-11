@@ -94,11 +94,6 @@ const columns = [
         header: ctx => <SortableHeader text='WR%' context={ctx}/>,
         cell: props => toPercentage(props.row.original.stats.winrate)
     }),
-    columnHelper.accessor('stats.winrateLastX', {
-        id: 'winrateLastX',
-        header: ctx => <SortableHeader text='WRLX' context={ctx}/>,
-        cell: props => toPercentage(props.row.original.stats.winrateLastX)
-    }),
     columnHelper.display({
         id: 'delete',
         header: 'Delete',
@@ -163,11 +158,11 @@ function CommanderCardDisplay({commander}: CommanderCardDisplayProps) {
                  alt='placeholder image'/>
         </Box>}
         {commander.card && <Box maxWidth={maxWidth} asChild>
-            <img src={commander.card.images.normal} alt='commander image'/>
+            <img src={commander.card.images.borderCrop} alt='commander image'/>
         </Box>}
         {commander.partner &&
             <Box maxWidth={maxWidth} asChild>
-                <img src={commander.partner.images.normal} alt='partner image'/>
+                <img src={commander.partner.images.borderCrop} alt='partner image'/>
             </Box>}
     </Flex>;
 }

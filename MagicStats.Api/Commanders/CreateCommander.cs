@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 
 namespace MagicStats.Api.Commanders;
 
@@ -16,17 +17,48 @@ public class CreateCommander : IEndpoint
         .MapPost("/", Handle)
         .WithSummary("Create a commander");
 
-    public record Request(string Name);
+    public record Request(string? Name, string? CardId, string? PartnerId);
 
-    private static async Task<Ok<CommanderDto>> Handle(
-        [FromBody] Request request,
-        StatsDbContext dbContext,
-        CancellationToken ct)
+    private static async Task<Results<
+            Ok<CommanderDto>,
+            BadRequest<string>,
+            NotFound<string>>>
+        Handle(
+            [FromBody] Request request,
+            StatsDbContext dbContext,
+            CancellationToken ct)
     {
-        var commander = new Commander
+        if (string.IsNullOrWhiteSpace(request.Name) && string.IsNullOrWhiteSpace(request.CardId))
         {
-            Name = request.Name,
-        };
+            return TypedResults.BadRequest("Need to provide at least either Name or CardId");
+        }
+
+        var commander = new Commander();
+        if (!string.IsNullOrWhiteSpace(request.CardId))
+        {
+            var cardId = int.Parse(request.CardId);
+            var card = await dbContext.CommanderCards.SingleOrDefaultAsync(c => c.Id == cardId, ct);
+            if (card is null)
+            {
+                return TypedResults.NotFound("Commander card not found");
+            }
+
+            commander.CommanderCard = card;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.PartnerId))
+        {
+            var partnerId = int.Parse(request.PartnerId);
+            var partner = await dbContext.CommanderCards.SingleOrDefaultAsync(c => c.Id == partnerId, ct);
+            if (partner is null)
+            {
+                return TypedResults.NotFound("Partner card not found");
+            }
+
+            commander.PartnerCard = partner;
+        }
+
+        commander.Name = request.Name ?? commander.CommanderCard!.Name;
         dbContext.Commanders.Add(commander);
         await dbContext.SaveChangesAsync(ct);
 

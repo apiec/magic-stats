@@ -70,7 +70,9 @@ export type DataPoint = {
 }
 
 type CreateCommanderRequest = {
-    name: string;
+    name?: string;
+    cardId?: Card;
+    partnerId?: Card;
 }
 
 type UpdateCommanderRequest = {
@@ -120,8 +122,12 @@ export default class CommanderApi {
         return response.commanderWinrates;
     }
 
-    async create(name: string): Promise<Commander> {
-        const request = {name: name} as CreateCommanderRequest;
+    async create(commander: Commander): Promise<Commander> {
+        const request = {
+            name: commander.name,
+            cardId: commander.card?.id,
+            partnerId: commander.partner?.id,
+        } as CreateCommanderRequest;
         return await this.api.post<CreateCommanderRequest, Commander>(this.path, request);
     }
 

@@ -11,10 +11,11 @@ import {Card} from "./CommanderApi.ts";
 type CommanderCardSearchProps = {
     card: Card | undefined,
     onCardChange: (card: Card | undefined) => void,
+    placeholder?: string,
 }
 
 
-export function CommanderCardSearch({card, onCardChange}: CommanderCardSearchProps) {
+export function CommanderCardSelect({card, onCardChange, placeholder}: CommanderCardSearchProps) {
     const cardOption = card ? toOption(card) : undefined;
     const [open, setOpen] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
@@ -53,7 +54,7 @@ export function CommanderCardSearch({card, onCardChange}: CommanderCardSearchPro
                 <Button color='gray' variant='surface'>
                     <Flex align='center' gap='2'>
                         <Box asChild maxWidth='200px'>
-                            <Text truncate wrap='nowrap'>{cardOption ? cardOption.label : 'Find your commander'}</Text>
+                            <Text truncate wrap='nowrap'>{cardOption ? cardOption.label : placeholder}</Text>
                         </Box>
                         <ChevronDownIcon/>
                     </Flex>
@@ -176,7 +177,7 @@ export function CardOptionLabel({card}: CardOptionProps) {
             <HoverCard.Content maxWidth='300px' side='right'>
                 <Inset>
                     <Box width='100%' asChild>
-                        <img src={card.images.normal} alt={card.name}/>
+                        <img src={card.images.borderCrop} alt={card.name}/>
                     </Box>
                 </Inset>
             </HoverCard.Content>

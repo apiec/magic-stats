@@ -79,6 +79,7 @@ public class ImportCardsFromScryfallJson : IEndpoint
                 NonCommanders: processed - failedToDeserialize - commanders));
     }
 
+    // todo: check for other cards that can be commanders (like planeswalkers) D:
     private static bool IsACommanderCard(ScryfallCard card)
     {
         return card.Games.Contains("paper")

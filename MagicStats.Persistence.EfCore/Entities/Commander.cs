@@ -9,7 +9,7 @@ public class Commander
     public int Id { get; init; }
 
     [MaxLength(128)]
-    public required string Name { get; set; }
+    public string Name { get; set; }
 
     public int? CommanderCardId { get; set; }
     public CommanderCard? CommanderCard { get; set; }

@@ -16,6 +16,7 @@ import {Button, Flex, IconButton, Spinner, Table, Text} from '@radix-ui/themes';
 import {Pencil1Icon} from '@radix-ui/react-icons';
 import DeleteButton from "../Shared/DeleteButton.tsx";
 import {PlayerName} from "../Players/PlayerName.tsx";
+import {CommanderName} from "../Commanders/CommandersTable.tsx";
 
 export default function Games() {
     const [games, setGames] = useState<Game[] | undefined>(undefined);
@@ -150,14 +151,19 @@ const columns: ColumnDef<Game, any>[] = [
         id: 'pod_size',
         header: 'Pod size',
     }),
-    columnHelper.accessor((g) => g.winner?.commander.name ?? 'no data', {
+    columnHelper.display({
         id: 'winning_commander',
-        header: 'Commander'
+        header: 'Commander',
+        cell: props => props.row.original.winner
+            ? <CommanderName commander={props.row.original.winner.commander}/>
+            : 'no data',
     }),
     columnHelper.display({
         id: 'winning_player',
         header: 'Player',
-        cell: props => props.row.original.winner ? <PlayerName player={props.row.original.winner.player}/> : 'no data',
+        cell: props => props.row.original.winner
+            ? <PlayerName player={props.row.original.winner.player}/>
+            : 'no data',
     }),
     columnHelper.accessor('host', {
         id: 'host',

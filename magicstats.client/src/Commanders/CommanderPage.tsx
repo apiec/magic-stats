@@ -4,7 +4,7 @@ import {useParams} from "react-router-dom";
 import {Box, Card as RadixCard, Dialog, Flex, HoverCard, IconButton, Inset, Spinner, Text} from "@radix-ui/themes";
 import {getCommanderDisplayName} from "./CommanderUtils.ts";
 import {Pencil1Icon} from "@radix-ui/react-icons";
-import {CommanderCardSearch} from "./CommanderCardSearch.tsx";
+import CommanderForm from "./CommanderForm.tsx";
 
 export function CommanderPage() {
     const {commanderId} = useParams<string>();
@@ -24,19 +24,15 @@ export function CommanderPage() {
     return (
         <Flex direction='column' gap='7' align='center'>
             <RadixCard>
-                <CommanderSummary commander={commander} onCommanderUpdate={() => {
+                <CommanderSummary commander={commander} onCommanderUpdate={(c) => {
+                    handleCommanderChange(c)
+                        .then(res => setCommander({
+                            ...commander,
+                            ...res,
+                        }));
                 }}/>
             </RadixCard>
             {/* todo: value displays for wins/games */}
-            <CommanderCardSearch card={commander.card} onCardChange={(newCard) => {
-                const api = new CommanderApi();
-                const updatedCommander = {...commander, card: newCard} as Commander;
-                api.update(updatedCommander)
-                    .then((res) => setCommander({
-                        ...commander,
-                        ...res,
-                    }));
-            }}/>
         </Flex>
     );
 }
@@ -52,8 +48,8 @@ function CommanderSummary({commander, onCommanderUpdate}: CommanderSummaryCardPr
             <Box asChild>
                 <CommanderCardsDisplay commander={commander}/>
             </Box>
-            <Box maxWidth='140px' asChild>
-                <Text as='div' align='left' size='6'>{getCommanderDisplayName(commander)}</Text>
+            <Box maxWidth='150px' asChild>
+                <Text as='div' align='left' wrap='pretty' size='6'>{getCommanderDisplayName(commander)}</Text>
             </Box>
             <EditCommanderDialog commander={commander} onUpdate={onCommanderUpdate}/>
         </Flex>
@@ -92,7 +88,7 @@ function SingleCardDisplay({card}: SingleCardDisplayProps) {
     const content = () => (
         <Inset>
             <Box width='100%' asChild>
-                <img src={card.images.normal} alt={card.name}/>
+                <img src={card.images.borderCrop} alt={card.name}/>
             </Box>
         </Inset>);
 
@@ -137,11 +133,19 @@ function EditCommanderDialog({commander, onUpdate}: EditCommanderDialogProps) {
             <Dialog.Title>
                 Edit commander
             </Dialog.Title>
-            {/*<CommanderForm*/}
-            {/*    // commander={commander}*/}
-            {/*    // onClose={() => setOpen(false)}*/}
-            {/*    onSubmit={p => {*/}
-            {/*    }}/>*/}
+            <CommanderForm
+                commander={commander}
+                onSubmit={(c) => {
+                    onUpdate(c);
+                    setOpen(false);
+                }}
+                onClose={() => setOpen(false)}
+            />
         </Dialog.Content>
     </Dialog.Root>;
+}
+
+async function handleCommanderChange(commander: Commander): Promise<Commander> {
+    const api = new CommanderApi();
+    return await api.update(commander);
 }
