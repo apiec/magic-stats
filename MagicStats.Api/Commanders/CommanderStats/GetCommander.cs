@@ -41,7 +41,7 @@ public class GetCommander : IEndpoint
                 c.CommanderCard,
                 c.PartnerCard,
                 Games = c.Participated.Count,
-                Wins = c.Participated.Count(p => p.Placement == 0)
+                Wins = c.Participated.Count(p => p.Placement == 0),
             })
             .SingleOrDefaultAsync(ct);
 

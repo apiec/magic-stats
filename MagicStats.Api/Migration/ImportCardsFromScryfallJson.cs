@@ -81,7 +81,8 @@ public class ImportCardsFromScryfallJson : IEndpoint
 
     private static bool IsACommanderCard(ScryfallCard card)
     {
-        return card.TypeLine.Contains("legendary", StringComparison.OrdinalIgnoreCase)
+        return card.Games.Contains("paper")
+               && card.TypeLine.Contains("legendary", StringComparison.OrdinalIgnoreCase)
                && (card.TypeLine.Contains("creature", StringComparison.OrdinalIgnoreCase)
                    || card.TypeLine.Contains("vehicle", StringComparison.OrdinalIgnoreCase)
                    || card.TypeLine.Contains("spacecraft", StringComparison.OrdinalIgnoreCase));

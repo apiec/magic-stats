@@ -18,7 +18,7 @@ export default function CommanderForm({onSubmit}: CommanderFormProps) {
                 }}>
                 <TextField.Root
                     id='name-input'
-                    placeholder='New commander name'
+                    placeholder='Commander name'
                     value={name}
                     onChange={e => {
                         setName(e.currentTarget.value)

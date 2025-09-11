@@ -1,4 +1,5 @@
-﻿using MagicStats.Api.Commanders.CommanderStats;
+﻿using MagicStats.Api.Commanders.Cards;
+using MagicStats.Api.Commanders.CommanderStats;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -13,6 +14,7 @@ internal static class StartupExtensions
             .MapGroup("/commanders")
             .WithTags("commanders");
 
+        // Commanders
         endpoints.MapEndpoint<GetCommanders>();
         endpoints.MapEndpoint<GetCommandersWithStats>();
         endpoints.MapEndpoint<GetCommandersWinrates>();
@@ -20,7 +22,11 @@ internal static class StartupExtensions
         endpoints.MapEndpoint<CreateCommander>();
         endpoints.MapEndpoint<DeleteCommander>();
 
+        // CommanderStats
         endpoints.MapEndpoint<GetCommander>();
+
+        // Cards
+        endpoints.MapEndpoint<GetCommanderCards>();
 
         return app;
     }

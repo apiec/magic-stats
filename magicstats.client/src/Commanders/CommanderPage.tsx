@@ -4,6 +4,7 @@ import {useParams} from "react-router-dom";
 import {Box, Card as RadixCard, Dialog, Flex, HoverCard, IconButton, Inset, Spinner, Text} from "@radix-ui/themes";
 import {getCommanderDisplayName} from "./CommanderUtils.ts";
 import {Pencil1Icon} from "@radix-ui/react-icons";
+import {CommanderCardSearch} from "./CommanderCardSearch.tsx";
 
 export function CommanderPage() {
     const {commanderId} = useParams<string>();
@@ -27,6 +28,7 @@ export function CommanderPage() {
                 }}/>
             </RadixCard>
             {/* todo: value displays for wins/games */}
+            <CommanderCardSearch/>
         </Flex>
     );
 }
