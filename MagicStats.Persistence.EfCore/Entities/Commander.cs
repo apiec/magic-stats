@@ -33,11 +33,11 @@ internal class CommanderConfiguration : IEntityTypeConfiguration<Commander>
 
         builder
             .HasOne<CommanderCard>(c => c.CommanderCard)
-            .WithMany()
+            .WithMany(c => c.AssignedCommanders)
             .HasForeignKey(c => c.CommanderCardId);
         builder
             .HasOne<CommanderCard>(c => c.PartnerCard)
-            .WithMany()
+            .WithMany(c => c.AssignedPartners)
             .HasForeignKey(c => c.PartnerCardId);
     }
 }

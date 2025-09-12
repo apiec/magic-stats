@@ -3,6 +3,7 @@ using System;
 using MagicStats.Persistence.EfCore.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MagicStats.Persistence.EfCore.Migrations
 {
     [DbContext(typeof(StatsDbContext))]
-    partial class StatsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250912154851_AddScryfallIdIndex")]
+    partial class AddScryfallIdIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
@@ -52,9 +55,6 @@ namespace MagicStats.Persistence.EfCore.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<long>("LastUpdateTimestamp")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -65,9 +65,6 @@ namespace MagicStats.Persistence.EfCore.Migrations
 
                     b.Property<string>("ScryfallUri")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("UpdateId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -194,11 +191,11 @@ namespace MagicStats.Persistence.EfCore.Migrations
             modelBuilder.Entity("MagicStats.Persistence.EfCore.Entities.Commander", b =>
                 {
                     b.HasOne("MagicStats.Persistence.EfCore.Entities.CommanderCard", "CommanderCard")
-                        .WithMany("AssignedCommanders")
+                        .WithMany()
                         .HasForeignKey("CommanderCardId");
 
                     b.HasOne("MagicStats.Persistence.EfCore.Entities.CommanderCard", "PartnerCard")
-                        .WithMany("AssignedPartners")
+                        .WithMany()
                         .HasForeignKey("PartnerCardId");
 
                     b.Navigation("CommanderCard");
@@ -340,13 +337,6 @@ namespace MagicStats.Persistence.EfCore.Migrations
             modelBuilder.Entity("MagicStats.Persistence.EfCore.Entities.Commander", b =>
                 {
                     b.Navigation("Participated");
-                });
-
-            modelBuilder.Entity("MagicStats.Persistence.EfCore.Entities.CommanderCard", b =>
-                {
-                    b.Navigation("AssignedCommanders");
-
-                    b.Navigation("AssignedPartners");
                 });
 
             modelBuilder.Entity("MagicStats.Persistence.EfCore.Entities.Game", b =>

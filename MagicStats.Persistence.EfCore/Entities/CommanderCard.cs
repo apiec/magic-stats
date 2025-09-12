@@ -10,14 +10,28 @@ public class CommanderCard
     public Guid ScryfallId { get; init; }
 
     [MaxLength(128)]
-    public required string Name { get; init; }
+    public required string Name { get; set; }
 
-    public required Uri ScryfallUri { get; init; }
-    public required ImageUris ImageUris { get; init; }
-    public ImageUris? OtherFaceUris { get; init; }
+    public required Uri ScryfallUri { get; set; }
+    public required ImageUris ImageUris { get; set; }
+    public ImageUris? OtherFaceUris { get; set; }
+    public DateTimeOffset LastUpdateTimestamp { get; set; }
+    public Guid UpdateId { get; set; }
+    public List<Commander> AssignedCommanders { get; set; }
+    public List<Commander> AssignedPartners { get; set; }
+
+    public void UpdateFromOther(CommanderCard other, Guid updateId, DateTimeOffset timestamp)
+    {
+        Name = other.Name;
+        ScryfallUri = other.ScryfallUri;
+        ImageUris = other.ImageUris;
+        OtherFaceUris = other.OtherFaceUris;
+        UpdateId = updateId;
+        LastUpdateTimestamp = timestamp;
+    }
 }
 
-public class ImageUris
+public record ImageUris
 {
     public required Uri Png { get; init; }
     public required Uri BorderCrop { get; init; }
@@ -33,8 +47,8 @@ internal class CommanderCardConfiguration : IEntityTypeConfiguration<CommanderCa
     {
         builder.HasKey(c => c.Id);
 
-        // to make ef core update the rows when doing a data import from scryfall
         builder.HasAlternateKey(c => c.ScryfallId);
+        builder.HasIndex(c => c.ScryfallId);
 
         builder.HasIndex(c => c.Name);
 
