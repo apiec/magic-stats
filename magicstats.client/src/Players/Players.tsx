@@ -44,7 +44,7 @@ export default function Players() {
 
     return (
         <Flex direction='column' align='center' gap='6'>
-            <Flex direction={{initial: 'column', md: 'row'}} gap='5'>
+            <Flex direction='row' gap='5'>
                 <ValueDisplay title='Most games' values={[mostGamesPlayer.name, mostGames.toFixed(0)]}/>
                 <ValueDisplay title='Highest WR'
                               values={[highestWinratePlayer.name, toPercentage(highestWinrate)]}/>

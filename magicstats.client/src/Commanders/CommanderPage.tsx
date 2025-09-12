@@ -22,7 +22,7 @@ export function CommanderPage() {
     }
 
     return (
-        <Flex direction='column' gap='7' align='center'>
+        <Flex direction='column' gap='7' width='100%' align='center' justify='center'>
             <RadixCard>
                 <CommanderSummary commander={commander} onCommanderUpdate={(c) => {
                     handleCommanderChange(c)
@@ -44,14 +44,22 @@ type CommanderSummaryCardProps = {
 
 function CommanderSummary({commander, onCommanderUpdate}: CommanderSummaryCardProps) {
     return (
-        <Flex direction='row' align='center' gap='3' p='1'>
+        <Flex direction={{
+            initial: 'column',
+            md: 'row',
+        }} align='center' gap='3' p='1'>
             <Box asChild>
                 <CommanderCardsDisplay commander={commander}/>
             </Box>
-            <Box maxWidth='150px' asChild>
-                <Text as='div' align='left' wrap='pretty' size='6'>{getCommanderDisplayName(commander)}</Text>
-            </Box>
-            <EditCommanderDialog commander={commander} onUpdate={onCommanderUpdate}/>
+            <Flex direction='row' align='center' gap='3' p='1'>
+                <Box maxWidth='150px' asChild>
+                    <Text align={{
+                        initial: 'center',
+                        md: 'left',
+                    }} as='div' wrap='pretty' size='6'>{getCommanderDisplayName(commander)}</Text>
+                </Box>
+                <EditCommanderDialog commander={commander} onUpdate={onCommanderUpdate}/>
+            </Flex>
         </Flex>
     );
 }
@@ -96,8 +104,12 @@ function SingleCardDisplay({card}: SingleCardDisplayProps) {
         <HoverCard.Root>
             <HoverCard.Trigger>
                 <Dialog.Trigger>
-                    <Box maxWidth='200px' asChild
-                         style={{borderRadius: 'var(--radius-1)', boxShadow: 'var(--shadow-1)'}}>
+                    <Box asChild
+                         maxWidth='200px'
+                         style={{
+                             borderRadius: 'var(--radius-1)',
+                             boxShadow: 'var(--shadow-1)'
+                         }}>
                         <img src={card.images.artCrop} alt={card.name + ' art crop'}/>
                     </Box>
                 </Dialog.Trigger>
