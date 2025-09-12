@@ -14,6 +14,7 @@ import Pods from "./Pods/Pods.tsx";
 import Hosts from "./Hosts/Hosts.tsx";
 import {ThemeProvider} from 'next-themes';
 import PlayerPage from "./Players/PlayerPage.tsx";
+import {CommanderPage} from "./Commanders/CommanderPage.tsx";
 
 const router = createBrowserRouter([
     {
@@ -26,7 +27,16 @@ const router = createBrowserRouter([
             },
             {
                 path: "commanders",
-                element: <Commanders/>,
+                children: [
+                    {
+                        index: true,
+                        element: <Commanders/>,
+                    },
+                    {
+                        path: ":commanderId",
+                        element: <CommanderPage/>,
+                    },
+                ]
             },
             {
                 path: "players",
@@ -36,7 +46,7 @@ const router = createBrowserRouter([
                         element: <Players/>,
                     },
                     {
-                    path: ":playerId",
+                        path: ":playerId",
                         element: <PlayerPage/>,
                     }
                 ],

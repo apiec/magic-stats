@@ -15,15 +15,14 @@ export default function PlayerForm({player, onSubmit, onClose}: PlayerFormProps)
     );
     return (
         <Flex asChild direction='column' gap='2'>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    onSubmit(playerCopy!);
-                }}>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                onSubmit(playerCopy);
+            }}>
                 <TextField.Root
                     id='name-input'
                     placeholder='Player name'
-                    value={playerCopy?.name}
+                    value={playerCopy.name}
                     onChange={e => {
                         setPlayerCopy(p => {
                             p.name = e.currentTarget.value;

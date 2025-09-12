@@ -14,7 +14,23 @@ public record GameDto(
 
 public record ParticipantDto(CommanderDto Commander, PlayerDto Player, int StartingOrder, int Placement);
 
-public record CommanderDto(string Id, string Name);
+public record CommanderDto(string Id, string Name, CardDto? Card, CardDto? Partner);
+
+public record CardDto(
+    string Id,
+    string Name,
+    Guid ScryfallId,
+    Uri ScyrfallUri,
+    ImageUris Images,
+    ImageUris? OtherFaceImages);
+
+public record ImageUris(
+    Uri Png,
+    Uri BorderCrop,
+    Uri ArtCrop,
+    Uri Large,
+    Uri Normal,
+    Uri Small);
 
 public record PlayerDto(string Id, string Name, bool IsGuest);
 
@@ -39,5 +55,25 @@ internal static class GameMapper
         new(p.Commander.ToDto(), p.Player.ToDto(), p.StartingOrder, p.Placement);
 
     public static PlayerDto ToDto(this Player p) => new(p.Id.ToString(), p.Name, p.IsGuest);
-    public static CommanderDto ToDto(this Commander c) => new(c.Id.ToString(), c.Name);
+
+    public static CommanderDto ToDto(this Commander c) => new(
+        c.Id.ToString(),
+        c.Name,
+        c.CommanderCard?.ToDto(),
+        c.PartnerCard?.ToDto());
+
+    public static CardDto ToDto(this CommanderCard c) => new(c.Id.ToString(),
+        c.Name,
+        c.ScryfallId,
+        c.ScryfallUri,
+        c.ImageUris.ToDto(),
+        c.OtherFaceUris?.ToDto());
+
+    public static ImageUris ToDto(this MagicStats.Persistence.EfCore.Entities.ImageUris images) => new(
+        images.Png,
+        images.BorderCrop,
+        images.ArtCrop,
+        images.Large,
+        images.Normal,
+        images.Small);
 }

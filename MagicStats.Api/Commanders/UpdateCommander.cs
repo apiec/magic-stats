@@ -1,7 +1,6 @@
 ﻿using MagicStats.Api.Games;
 using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
-using MagicStats.Persistence.EfCore.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -11,29 +10,32 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MagicStats.Api.Commanders;
 
-public class CreateCommander : IEndpoint
+public class UpdateCommander : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app) => app
-        .MapPost("/", Handle)
-        .WithSummary("Create a commander");
+        .MapPut("/{commanderId}", Handle)
+        .WithSummary("Update a commander");
 
     public record Request(string? Name, string? CardId, string? PartnerId);
 
-    private static async Task<Results<
-            Ok<CommanderDto>,
-            BadRequest<string>,
-            NotFound<string>>>
-        Handle(
-            [FromBody] Request request,
-            StatsDbContext dbContext,
-            CancellationToken ct)
+    private static async Task<Results<Ok<CommanderDto>, NotFound<string>>> Handle(
+        [FromRoute] string commanderId,
+        Request request,
+        StatsDbContext dbContext,
+        CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.Name) && string.IsNullOrWhiteSpace(request.CardId))
+        var intId = int.Parse(commanderId);
+        var commander = await dbContext.Commanders.SingleOrDefaultAsync(p => p.Id == intId, ct);
+        if (commander is null)
         {
-            return TypedResults.BadRequest("Need to provide at least either Name or CardId");
+            return TypedResults.NotFound("Commander not found");
         }
 
-        var commander = new Commander();
+        if (!string.IsNullOrWhiteSpace(request.Name))
+        {
+            commander.Name = request.Name;
+        }
+
         if (!string.IsNullOrWhiteSpace(request.CardId))
         {
             var cardId = int.Parse(request.CardId);
@@ -43,6 +45,7 @@ public class CreateCommander : IEndpoint
                 return TypedResults.NotFound("Commander card not found");
             }
 
+            commander.CommanderCardId = cardId;
             commander.CommanderCard = card;
         }
 
@@ -55,14 +58,12 @@ public class CreateCommander : IEndpoint
                 return TypedResults.NotFound("Partner card not found");
             }
 
+            commander.PartnerCardId = partnerId;
             commander.PartnerCard = partner;
         }
 
-        commander.Name = request.Name ?? commander.CommanderCard!.Name;
-        dbContext.Commanders.Add(commander);
         await dbContext.SaveChangesAsync(ct);
 
-        var response = commander.ToDto();
-        return TypedResults.Ok(response);
+        return TypedResults.Ok(commander.ToDto());
     }
 }

@@ -12,11 +12,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MagicStats.Api.Migration;
 
-public class ImportFromCsv : IEndpoint
+public class ImportGamesFromCsv : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app) => app
-        .MapPost("/csv", Handle)
-        .WithSummary("Import data from csv");
+        .MapPost("/games/csv", Handle)
+        .WithSummary("Import game data from csv");
 
     private static async Task<Ok> Handle(
         IFormFile file,

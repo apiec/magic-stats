@@ -3,17 +3,47 @@
 export type Commander = {
     id: string,
     name: string,
+    card: Card | undefined,
+    partner: Card | undefined,
 }
-export type CommanderWithStats = {
+
+export type Card = {
     id: string,
     name: string,
+    scryfallId: string,
+    scryfallUri: string,
+    images: CommanderImageUris,
+    otherFaceImages: CommanderImageUris | undefined,
+}
+
+export type CommanderImageUris = {
+    png: string,
+    borderCrop: string,
+    artCrop: string,
+    large: string,
+    normal: string,
+    small: string,
+}
+
+export type CommanderWithStats = Commander & {
     stats: CommanderStats,
 }
+
 export type CommanderStats = {
     wins: number,
     games: number,
     winrate: number,
     winrateLastX: number,
+}
+
+export type SingleCommanderWithStats = Commander & {
+    stats: SingleCommanderStats
+}
+
+export type SingleCommanderStats = {
+    wins: number,
+    games: number,
+    winrate: number,
 }
 
 type GetCommandersResponse = {
@@ -40,12 +70,23 @@ export type DataPoint = {
 }
 
 type CreateCommanderRequest = {
-    name: string;
+    name?: string;
+    cardId?: Card;
+    partnerId?: Card;
 }
 
+type UpdateCommanderRequest = {
+    name?: string,
+    cardId?: string,
+    partnerId?: string,
+}
 export default class CommanderApi {
     private path: string = 'commanders/';
     private api = new Api();
+
+    async get(commanderId: string): Promise<SingleCommanderWithStats> {
+        return await this.api.get<SingleCommanderWithStats>(this.path + commanderId);
+    }
 
     async getAll(): Promise<Commander[]> {
         const response = await this.api.get<GetCommandersResponse>(this.path);
@@ -81,12 +122,25 @@ export default class CommanderApi {
         return response.commanderWinrates;
     }
 
-    async create(name: string): Promise<Commander> {
-        const request = {name: name} as CreateCommanderRequest;
+    async create(commander: Commander): Promise<Commander> {
+        const request = {
+            name: commander.name,
+            cardId: commander.card?.id,
+            partnerId: commander.partner?.id,
+        } as CreateCommanderRequest;
         return await this.api.post<CreateCommanderRequest, Commander>(this.path, request);
     }
 
     async delete(id: string): Promise<void> {
         await this.api.delete(this.path + id);
+    }
+
+    async update(commander: Commander): Promise<Commander> {
+        const request = {
+            name: commander.name,
+            cardId: commander.card?.id,
+            partnerId: commander.partner?.id,
+        } as UpdateCommanderRequest;
+        return await this.api.put<UpdateCommanderRequest, Commander>(this.path + commander.id, request)
     }
 }

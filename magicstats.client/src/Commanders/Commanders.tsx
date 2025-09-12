@@ -1,6 +1,6 @@
 ﻿import {useEffect, useState} from 'react';
 import {useImmer} from 'use-immer';
-import {Box, Flex, Select, Spinner, Text} from '@radix-ui/themes';
+import {Button, Dialog, Flex, Select, Spinner, Text} from '@radix-ui/themes';
 import CommanderApi, {CommanderWithStats} from "./CommanderApi.ts";
 import CommanderForm from "./CommanderForm.tsx";
 import CommandersTable from "./CommandersTable.tsx";
@@ -11,12 +11,11 @@ export default function Commanders() {
     const [commanders, setCommanders] = useImmer<CommanderWithStats[] | undefined>(undefined);
     const [slidingWindowSize, setSlidingWindowSize] = useState<string>(startingWindowValue);
     const [podSize, setPodSize] = useState<string>(startingPodSizeValue);
-    const [rerender, setRerender] = useState<number>(0);
     const lastX = slidingWindowOptions.get(slidingWindowSize) ?? 10;
 
     useEffect(() => {
         populateCommanderData().then();
-    }, [slidingWindowSize, podSize, rerender]);
+    }, [slidingWindowSize, podSize]);
 
     async function populateCommanderData() {
         const api = new CommanderApi();
@@ -44,13 +43,14 @@ export default function Commanders() {
                 <ValueDisplay title={'Highest WRL' + lastX}
                               values={[highestWinrateCommanderLast.name, toPercentage(highestWinrateLast)]}/>
             </Flex>
-            <Flex direction='row' align='start' gap='5' justify='center'>
+            <Flex direction='row' align='end' gap='5' justify='center'>
                 <Flex direction='column' minWidth='70px' align='center'>
                     <Text>Sliding window:</Text>
                     <Select.Root value={slidingWindowSize} onValueChange={setSlidingWindowSize}>
                         <Select.Trigger/>
                         <Select.Content>
-                            {Array.from(slidingWindowOptions.keys()).map(v => <Select.Item value={v}>{v}</Select.Item>)}
+                            {Array.from(slidingWindowOptions.keys())
+                                .map(v => <Select.Item key={v} value={v}>{v}</Select.Item>)}
                         </Select.Content>
                     </Select.Root>
                 </Flex>
@@ -59,19 +59,12 @@ export default function Commanders() {
                     <Select.Root value={podSize} onValueChange={setPodSize}>
                         <Select.Trigger/>
                         <Select.Content>
-                            {Array.from(podSizeOptions.keys()).map(v => <Select.Item value={v}>{v}</Select.Item>)}
+                            {Array.from(podSizeOptions.keys())
+                                .map(v => <Select.Item key={v} value={v}>{v}</Select.Item>)}
                         </Select.Content>
                     </Select.Root>
                 </Flex>
-                <Box>
-                    <Text>Add a new commander:</Text>
-                    <CommanderForm onSubmit={p => {
-                        const api = new CommanderApi();
-                        api.create(p.name).then(_ => {
-                            setRerender(rerender + 1);
-                        });
-                    }}/>
-                </Box>
+                <AddCommanderDialog/>
             </Flex>
             <CommandersTable commanders={commanders} lastXWindowSize={lastX}/>
             <CommandersWinrateGraph
@@ -92,6 +85,29 @@ const podSizeOptions: Map<string, number | undefined> = new Map<string, number |
 podSizeValues.forEach(v => podSizeOptions.set(v ? v.toString() : 'None', v));
 const startingPodSizeValue = 'None';
 
+function AddCommanderDialog() {
+    const [open, setOpen] = useState<boolean>(false);
+    return <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Trigger>
+            <Button>
+                Add a new commander
+            </Button>
+        </Dialog.Trigger>
+        <Dialog.Content maxWidth='300px'>
+            <Dialog.Title>
+                Add a new commander
+            </Dialog.Title>
+            <CommanderForm
+                onClose={() => setOpen(false)}
+                onSubmit={c => {
+                    const api = new CommanderApi();
+                    api.create(c).then(() => {
+                        setOpen(false);
+                    });
+                }}/>
+        </Dialog.Content>
+    </Dialog.Root>
+}
 
 type CommandersWinrateGraphProps = {
     slidingWindowSize: number | undefined;

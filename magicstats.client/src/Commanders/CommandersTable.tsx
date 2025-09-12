@@ -6,17 +6,20 @@
     TableState,
     useReactTable
 } from '@tanstack/react-table';
-import {CommanderWithStats} from './CommanderApi';
+import {Commander, CommanderWithStats} from './CommanderApi';
 import {useImmer} from 'use-immer';
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import CommanderApi from "../Commanders/CommanderApi.ts";
-import {Table} from '@radix-ui/themes';
+import {Box, Flex, HoverCard, Inset, Link, Table, Text} from '@radix-ui/themes';
+import {Link as RouterLink} from 'react-router-dom';
 import DeleteButton from '../Shared/DeleteButton.tsx';
+import {getCommanderDisplayName} from "./CommanderUtils.ts";
 
 type CommanderTableProps = {
     commanders: CommanderWithStats[],
     lastXWindowSize: number,
 }
+
 export default function CommandersTable({commanders}: CommanderTableProps) {
     const table = useReactTable({
         data: commanders,
@@ -76,6 +79,7 @@ const columns = [
     columnHelper.accessor('name', {
         id: 'name',
         header: ctx => <SortableHeader text='Name' context={ctx}/>,
+        cell: props => <CommanderName commander={props.row.original}/>
     }),
     columnHelper.accessor('stats.games', {
         id: 'games',
@@ -90,11 +94,6 @@ const columns = [
         header: ctx => <SortableHeader text='WR%' context={ctx}/>,
         cell: props => toPercentage(props.row.original.stats.winrate)
     }),
-    columnHelper.accessor('stats.winrateLastX', {
-        id: 'winrateLastX',
-        header: ctx => <SortableHeader text='WRLX' context={ctx}/>,
-        cell: props => toPercentage(props.row.original.stats.winrateLastX)
-    }),
     columnHelper.display({
         id: 'delete',
         header: 'Delete',
@@ -108,4 +107,62 @@ const columns = [
 
 function toPercentage(num: number): string {
     return (100 * num).toFixed(0);
+}
+
+type CommanderNameProps = {
+    commander: Commander,
+}
+
+export function CommanderName({commander}: CommanderNameProps) {
+    const displayName = getCommanderDisplayName(commander);
+
+    const nameLinkComponent = (
+        <Flex direction='row' gap='1' align='center' justify='center'>
+            <Link asChild style={{color: 'var(--color)'}}>
+                <RouterLink reloadDocument to={'/commanders/' + commander.id}>
+                    <Text>{displayName}</Text>
+                </RouterLink>
+            </Link>
+        </Flex>
+    );
+
+    if (!commander?.card?.images) {
+        return nameLinkComponent;
+    }
+
+    return (
+        <HoverCard.Root openDelay={700}>
+            <HoverCard.Trigger>
+                {nameLinkComponent}
+            </HoverCard.Trigger>
+            <HoverCard.Content maxWidth='600px'>
+                <Inset>
+                    <Box width='100%' asChild>
+                        <CommanderCardDisplay commander={commander}/>
+                    </Box>
+                </Inset>
+            </HoverCard.Content>
+        </HoverCard.Root>
+    );
+}
+
+type CommanderCardDisplayProps = {
+    commander: Commander,
+}
+
+function CommanderCardDisplay({commander}: CommanderCardDisplayProps) {
+    const maxWidth = '300px'
+    return <Flex>
+        {!commander.card && <Box maxWidth={maxWidth} asChild>
+            <img src='https://cards.scryfall.io/png/front/9/d/9d68befe-78bc-4d9c-968b-f7e6b3042f27.png?1562769676'
+                 alt='placeholder image'/>
+        </Box>}
+        {commander.card && <Box maxWidth={maxWidth} asChild>
+            <img src={commander.card.images.borderCrop} alt='commander image'/>
+        </Box>}
+        {commander.partner &&
+            <Box maxWidth={maxWidth} asChild>
+                <img src={commander.partner.images.borderCrop} alt='partner image'/>
+            </Box>}
+    </Flex>;
 }
