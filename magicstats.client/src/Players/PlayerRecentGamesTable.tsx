@@ -11,6 +11,7 @@ import {
 import {useImmer} from "use-immer";
 import {Commander} from "../Commanders/CommanderApi.ts";
 import {RecentGame} from "./PlayerApi.ts";
+import {CommanderName} from "../Commanders/CommandersTable.tsx";
 
 type PlayerRecentGamesTableProps = {
     games: RecentGame[],
@@ -63,6 +64,7 @@ export function PlayerRecentGamesTable({games}: PlayerRecentGamesTableProps) {
             <Table.Body>
                 {table.getRowModel().rows.map(row => (
                     <Table.Row key={row.id}
+                               align='center'
                                style={row.original.placement === 0 ? {background: 'var(--grass-4)',} : {}}>
                         {row.getVisibleCells().map(cell => (
                             <Table.Cell key={cell.id} align='center'>
@@ -88,9 +90,10 @@ const columns = [
                 </RouterLink>
             </Link>
     }),
-    columnHelper.accessor('commander.name', {
+    columnHelper.display({
         id: 'commanderName',
         header: 'Commander',
+        cell: props => <CommanderName commander={props.row.original.commander}/>,
     }),
     columnHelper.accessor('placement', {
         id: 'placement',

@@ -35,6 +35,10 @@ public class GetRecentGames : IEndpoint
         var recentGames = await dbContext.Players
             .Where(p => p.Id == intId)
             .SelectMany(p => p.Participated)
+            .Include(p => p.Commander)
+            .ThenInclude(p => p.CommanderCard)
+            .Include(p => p.Commander)
+            .ThenInclude(p => p.PartnerCard)
             .OrderByDescending(p => p.Game.PlayedAt)
             .Take(count)
             .Select(p => new { p.GameId, p.Game.PlayedAt, p.Commander, p.Placement })
