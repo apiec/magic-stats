@@ -6,6 +6,7 @@ import CommanderForm from "./CommanderForm.tsx";
 import CommandersTable from "./CommandersTable.tsx";
 import {DataPoint, DataSeries, DataSeriesGraph} from "../Shared/DataSeriesGraph.tsx";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
+import {toPercentage} from "../Shared/toPercentage.ts";
 
 export default function Commanders() {
     const [commanders, setCommanders] = useImmer<CommanderWithStats[] | undefined>(undefined);
@@ -141,8 +142,4 @@ function CommandersWinrateGraph({slidingWindowSize, podSize}: CommandersWinrateG
             <DataSeriesGraph data={data} width='100%' height='400px'/>
         </Flex>
     );
-}
-
-function toPercentage(num: number): string {
-    return (100 * num).toFixed(0) + '%'
 }

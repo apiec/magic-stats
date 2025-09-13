@@ -15,7 +15,6 @@ import {
 } from "@radix-ui/themes";
 import {useParams} from "react-router-dom";
 import PlayerApi, {
-    CommanderStats,
     Player,
     PlayerWithWinrates,
     Pod,
@@ -34,11 +33,13 @@ import {PlayerRecentGamesTable} from "./PlayerRecentGamesTable.tsx";
 import {PlayerPodsTable} from "./PlayerPodsTable.tsx";
 import {DataPoint, DataSeries, DataSeriesGraph} from "../Shared/DataSeriesGraph.tsx";
 import {RecordAgainstPlayerTable} from "./RecordAgainstPlayerTable.tsx";
+import {toPercentage} from "../Shared/toPercentage.ts";
+import {CommanderWithStats} from "../Commanders/CommanderApi.ts";
 
 export default function PlayerPage() {
     const {playerId} = useParams<string>();
     const [player, setPlayer] = useState<SinglePlayerWithStats | undefined>();
-    const [commanderStats, setCommanderStats] = useState<CommanderStats[] | undefined>();
+    const [commanderStats, setCommanderStats] = useState<CommanderWithStats[] | undefined>();
 
     useEffect(() => {
         const api = new PlayerApi();
@@ -60,8 +61,8 @@ export default function PlayerPage() {
         if (commanderStats === undefined || commanderStats.length === 0) {
             return ['No games on record'];
         }
-        const mostGames = Math.max(...commanderStats.map(x => x.games));
-        const mostPlayedCommander = commanderStats.find(x => x.games === mostGames);
+        const mostGames = Math.max(...commanderStats.map(x => x.stats.games));
+        const mostPlayedCommander = commanderStats.find(x => x.stats.games === mostGames);
         if (mostPlayedCommander === undefined) {
             return ['Not enough games'];
         }
@@ -72,9 +73,9 @@ export default function PlayerPage() {
         if (commanderStats === undefined || commanderStats.length === 0) {
             return ['No games on record'];
         }
-        const filtered = commanderStats.filter(x => x.games >= 3);
-        const bestWinrate = Math.max(...filtered.map(x => x.winrate));
-        const bestCommander = filtered.find(x => x.winrate === bestWinrate);
+        const filtered = commanderStats.filter(x => x.stats.games >= 3);
+        const bestWinrate = Math.max(...filtered.map(x => x.stats.winrate));
+        const bestCommander = filtered.find(x => x.stats.winrate === bestWinrate);
         if (bestCommander === undefined) {
             return ['Not enough games'];
         }
@@ -91,22 +92,20 @@ export default function PlayerPage() {
                     }}/>
                 </Card>
             </Box>
-            <Flex>
-                <Flex gap='2' align='center' wrap='wrap' maxWidth='500px' justify='center'>
-                    <ValueDisplay title='Total games' values={[player.stats.games.toFixed(0)]}/>
-                    <ValueDisplay title='Recent winrate' values={[toPercentage(player.stats.winrateLast30)]}
-                                  tooltip='Winrate from the last 30&nbsp;games'/>
-                    <ValueDisplay title='All time winrate' values={[toPercentage(player.stats.winrate)]}/>
-                    {commanderStats
-                        ? <ValueDisplay title='Best' values={getBestCommanderDisplay()}
-                                        tooltip='Highest winrate commander with&nbsp;at&nbsp;least 5&nbsp;recorded games'/>
-                        : <Spinner/>
-                    }
-                    {commanderStats
-                        ? <ValueDisplay title='Most played' values={getMostPlayedCommanderDisplay()}/>
-                        : <Spinner/>
-                    }
-                </Flex>
+            <Flex gap='2' align='center' wrap='wrap' maxWidth='500px' justify='center'>
+                <ValueDisplay title='Total games' values={[player.stats.games.toFixed(0)]}/>
+                <ValueDisplay title='Recent winrate' values={[toPercentage(player.stats.winrateLast30)]}
+                              tooltip='Winrate from the last 30&nbsp;games'/>
+                <ValueDisplay title='All time winrate' values={[toPercentage(player.stats.winrate)]}/>
+                {commanderStats
+                    ? <ValueDisplay title='Best' values={getBestCommanderDisplay()}
+                                    tooltip='Highest winrate commander with&nbsp;at&nbsp;least 5&nbsp;recorded games'/>
+                    : <Spinner/>
+                }
+                {commanderStats
+                    ? <ValueDisplay title='Most played' values={getMostPlayedCommanderDisplay()}/>
+                    : <Spinner/>
+                }
             </Flex>
             <Grid gap='7' columns={{initial: '1', md: '2',}}>
                 <Box width='360px' maxWidth='90vw' height='300px' asChild>
@@ -225,10 +224,6 @@ function RecordAgainstPlayers({playerId}: RecordAgainstPlayersProps) {
             <RecordAgainstPlayerTable records={records}/>
         </ScrollArea>
         : <Spinner/>;
-}
-
-function toPercentage(num: number): string {
-    return (100 * num).toFixed(0) + '%'
 }
 
 type EditPlayerDialogProps = {

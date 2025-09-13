@@ -14,6 +14,7 @@ import {Box, Flex, HoverCard, Inset, Link, Table, Text} from '@radix-ui/themes';
 import {Link as RouterLink} from 'react-router-dom';
 import DeleteButton from '../Shared/DeleteButton.tsx';
 import {getCommanderDisplayName} from "./CommanderUtils.ts";
+import {toPercentage} from "../Shared/toPercentage.ts";
 
 type CommanderTableProps = {
     commanders: CommanderWithStats[],
@@ -104,10 +105,6 @@ const columns = [
         }}/>,
     })
 ];
-
-function toPercentage(num: number): string {
-    return (100 * num).toFixed(0);
-}
 
 type CommanderNameProps = {
     commander: Commander,

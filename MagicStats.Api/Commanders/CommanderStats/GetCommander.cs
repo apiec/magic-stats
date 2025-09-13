@@ -24,7 +24,6 @@ public class GetCommander : IEndpoint
 
     public record CommanderStats(int Wins, int Games, float? Winrate);
 
-
     private static async Task<Results<Ok<CommanderWithStatsDto>, NotFound>> Handle(
         [FromRoute] string commanderId,
         StatsDbContext dbContext,

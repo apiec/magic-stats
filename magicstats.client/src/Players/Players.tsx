@@ -7,6 +7,7 @@ import PlayerApi, {PlayerWithStats} from "./PlayerApi.ts";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
 import {DataSeries, DataPoint, DataSeriesGraph} from "../Shared/DataSeriesGraph.tsx";
 import PlayerForm from "./PlayerForm.tsx";
+import {toPercentage} from "../Shared/toPercentage.ts";
 
 export default function Players() {
     const [showGuests, setShowGuests] = useState<boolean>(false);
@@ -150,10 +151,6 @@ function PlayersWinrateGraph({slidingWindowSize, podSize, playerIds, showGuests}
             <DataSeriesGraph data={filteredData} width='100%' height='400px'/>
         </Flex>
     );
-}
-
-function toPercentage(num: number): string {
-    return (100 * num).toFixed(0) + '%'
 }
 
 function AddPlayerDialog() {

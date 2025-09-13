@@ -1,3 +1,4 @@
+using MagicStats.Api.Games;
 using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
 using Microsoft.AspNetCore.Builder;
@@ -14,9 +15,11 @@ public class GetPlayerCommanderStats : IEndpoint
     public static void Map(IEndpointRouteBuilder app) => app
         .MapGet("/{playerId}/commanders", Handle);
 
-    public record Response(CommanderStats[] Commanders);
+    public record Response(CommanderWithStatsDto[] Commanders);
 
-    public record CommanderStats(string Name, int Games, int Wins, float Winrate);
+    public record CommanderWithStatsDto(string Id, string Name, CardDto? Card, CardDto? Partner, CommanderStats Stats);
+
+    public record CommanderStats(int Wins, int Games, float Winrate);
 
     private static async Task<Results<Ok<Response>, NotFound>> Handle(
         [FromRoute] string playerId,
@@ -32,20 +35,35 @@ public class GetPlayerCommanderStats : IEndpoint
 
         var rawStats = await dbContext.Participants
             .Where(p => p.Player.Id == intId)
-            .GroupBy(p => p.Commander.Name)
-            .Select(g => new
-            {
-                CommanderName = g.Key,
-                TotalGames = g.Count(),
-                Wins = g.Count(x => x.Placement == 0),
-            })
+            .GroupBy(p => p.CommanderId)
+            .ToDictionaryAsync(
+                g => g.Key, // CommanderId
+                g => new
+                {
+                    Games = g.Count(),
+                    Wins = g.Count(x => x.Placement == 0),
+                },
+                ct);
+
+        var commanders = await dbContext.Commanders
+            .Where(c => rawStats.Keys.Contains(c.Id))
+            .Include(c => c.CommanderCard)
+            .Include(c => c.PartnerCard)
             .ToArrayAsync(ct);
 
-        var stats = rawStats.Select(x => new CommanderStats(
-                x.CommanderName,
-                x.TotalGames,
-                x.Wins,
-                (float)x.Wins / x.TotalGames))
+        var stats = commanders.Select(c =>
+            {
+                var stats = rawStats[c.Id];
+                return new CommanderWithStatsDto(
+                    c.Id.ToString(),
+                    c.Name,
+                    c.CommanderCard?.ToDto(),
+                    c.PartnerCard?.ToDto(),
+                    new CommanderStats(
+                        stats.Games,
+                        stats.Wins,
+                        (float)stats.Wins / stats.Games));
+            })
             .ToArray();
         return TypedResults.Ok(new Response(stats));
     }

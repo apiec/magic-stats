@@ -13,6 +13,7 @@ import PlayerApi from "../Players/PlayerApi.ts";
 import {Table} from '@radix-ui/themes';
 import DeleteButton from '../Shared/DeleteButton.tsx';
 import {PlayerName} from "./PlayerName.tsx";
+import {toPercentage} from "../Shared/toPercentage.ts";
 
 type PlayersTableProps = {
     players: PlayerWithStats[],
@@ -108,8 +109,3 @@ const columns = [
         }}/>,
     }),
 ];
-
-
-function toPercentage(num: number): string {
-    return (100 * num).toFixed(0);
-}

@@ -12,6 +12,7 @@ import {useImmer} from "use-immer";
 import {RecordAgainstPlayer} from "./PlayerApi";
 import {PlayerName} from "./PlayerName.tsx";
 import {useState} from "react";
+import {toPercentage} from "../Shared/toPercentage.ts";
 
 type RecordAgainstPlayerTableProps = {
     records: RecordAgainstPlayer[],
@@ -184,7 +185,3 @@ const absoluteTableColumns = [
         header: ctx => <SortableHeader text={'Losses'} context={ctx}/>,
     }),
 ];
-
-function toPercentage(num: number): string {
-    return (100 * num).toFixed(0) + '%'
-}

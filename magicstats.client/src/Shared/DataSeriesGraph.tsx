@@ -1,5 +1,6 @@
 ﻿import {Box, BoxProps} from "@radix-ui/themes";
 import {CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
+import {toPercentage} from "./toPercentage.ts";
 
 export type DataPoint = {
     date: number,
@@ -79,7 +80,3 @@ const strokes = [
     '10',
     '10 5 5 5',
 ]
-
-function toPercentage(num: number): string {
-    return (100 * num).toFixed(0) + '%'
-}
