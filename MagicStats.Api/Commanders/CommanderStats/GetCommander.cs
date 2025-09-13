@@ -16,14 +16,10 @@ public class GetCommander : IEndpoint
         .MapGet("/{commanderId}", Handle);
 
     public record CommanderWithStatsDto(
-        string Id,
-        string Name,
-        CardDto? Card,
-        CardDto? Partner,
+        CommanderDto Commander,
         CommanderStats Stats);
 
     public record CommanderStats(int Wins, int Games, float? Winrate);
-
 
     private static async Task<Results<Ok<CommanderWithStatsDto>, NotFound>> Handle(
         [FromRoute] string commanderId,
@@ -32,14 +28,13 @@ public class GetCommander : IEndpoint
     {
         var intId = int.Parse(commanderId);
         var commander = await dbContext.Commanders
+            .Include(c => c.CommanderCard)
+            .Include(c => c.PartnerCard)
             .AsNoTracking()
             .Where(c => c.Id == intId)
             .Select(c => new
             {
-                c.Id,
-                c.Name,
-                c.CommanderCard,
-                c.PartnerCard,
+                Commander = c,
                 Games = c.Participated.Count,
                 Wins = c.Participated.Count(p => p.Placement == 0),
             })
@@ -56,10 +51,7 @@ public class GetCommander : IEndpoint
             Winrate: commander.Games > 0 ? (float)commander.Wins / commander.Games : null);
 
         var response = new CommanderWithStatsDto(
-            commander.Id.ToString(),
-            commander.Name,
-            commander.CommanderCard?.ToDto(),
-            commander.PartnerCard?.ToDto(),
+            commander.Commander.ToDto(),
             stats);
         return TypedResults.Ok(response);
     }

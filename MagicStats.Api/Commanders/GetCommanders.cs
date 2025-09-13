@@ -21,7 +21,7 @@ public class GetCommanders : IEndpoint
         var commanders = await dbContext.Commanders
             .AsNoTracking()
             .Include(c => c.CommanderCard)
-            .OrderBy(c => c.Name)
+            .OrderBy(c => c.CustomName)
             .Select(c => c.ToDto())
             .ToListAsync(ct);
         

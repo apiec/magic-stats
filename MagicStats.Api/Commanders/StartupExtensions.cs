@@ -28,6 +28,8 @@ internal static class StartupExtensions
 
         // Cards
         endpoints.MapEndpoint<GetCommanderCards>();
+        endpoints.MapEndpoint<GetRecentGames>();
+        endpoints.MapEndpoint<GetRecordAgainstOtherCommanders>();
 
         return app;
     }

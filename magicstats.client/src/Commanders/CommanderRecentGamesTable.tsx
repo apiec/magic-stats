@@ -9,11 +9,9 @@ import {
     useReactTable
 } from "@tanstack/react-table";
 import {useImmer} from "use-immer";
-import {Commander} from "../Commanders/CommanderApi.ts";
-import {RecentGame} from "./PlayerApi.ts";
-import {CommanderName} from "../Commanders/CommandersTable.tsx";
+import {RecentGame} from "./CommanderApi.ts";
 
-type PlayerRecentGamesTableProps = {
+type CommanderRecentGamesTableProps = {
     games: RecentGame[],
 }
 
@@ -22,10 +20,9 @@ type RecentGameRow = {
     playedAt: string,
     placement: number,
     podSize: number,
-    commander: Commander,
 }
 
-export function PlayerRecentGamesTable({games}: PlayerRecentGamesTableProps) {
+export function CommanderRecentGamesTable({games}: CommanderRecentGamesTableProps) {
     const table = useReactTable({
         data: games
             .sort((a, b) => b.playedAt.getTime() - a.playedAt.getTime())
@@ -90,11 +87,6 @@ const columns = [
                     <Text>{props.getValue()}</Text>
                 </RouterLink>
             </Link>
-    }),
-    columnHelper.display({
-        id: 'commanderName',
-        header: 'Commander',
-        cell: props => <CommanderName commander={props.row.original.commander}/>,
     }),
     columnHelper.accessor('placement', {
         id: 'placement',

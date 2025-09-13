@@ -51,7 +51,7 @@ public class CreateGame : IEndpoint
         dbContext.Games.Add(game);
         await dbContext.SaveChangesAsync(ct);
 
-        var response = GameMapper.MapGame(game);
+        var response = GameMapper.ToDto(game);
         return TypedResults.Ok(response);
     }
 }

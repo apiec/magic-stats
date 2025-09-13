@@ -2,7 +2,9 @@
 
 export type Commander = {
     id: string,
-    name: string,
+    displayName: string,
+    customName: string | undefined,
+    useCustomDisplayName: boolean,
     card: Card | undefined,
     partner: Card | undefined,
 }
@@ -25,7 +27,8 @@ export type CommanderImageUris = {
     small: string,
 }
 
-export type CommanderWithStats = Commander & {
+export type CommanderWithStats = {
+    commander: Commander,
     stats: CommanderStats,
 }
 
@@ -36,7 +39,8 @@ export type CommanderStats = {
     winrateLastX: number,
 }
 
-export type SingleCommanderWithStats = Commander & {
+export type SingleCommanderWithStats = {
+    commander: Commander,
     stats: SingleCommanderStats
 }
 
@@ -70,15 +74,43 @@ export type DataPoint = {
 }
 
 type CreateCommanderRequest = {
-    name?: string;
-    cardId?: Card;
-    partnerId?: Card;
+    useCustomDisplayName: boolean,
+    customName?: string,
+    cardId?: string;
+    partnerId?: string;
 }
 
 type UpdateCommanderRequest = {
-    name?: string,
+    useCustomDisplayName: boolean,
+    customName?: string,
     cardId?: string,
     partnerId?: string,
+}
+
+export type GetRecentGamesResponse = {
+    recentGames: RecentGame[],
+}
+
+export type RecentGame = {
+    gameId: string,
+    playedAt: Date,
+    podSize: number,
+    placement: number,
+}
+
+type GetRecordAgainstCommandersResponse = {
+    records: RecordAgainstCommander[],
+}
+
+export type RecordAgainstCommander = {
+    commander: Commander,
+    gamesAgainst: number,
+    winsAgainst: number,
+    lossesAgainst: number,
+    absoluteDifference: number,
+    winrateAgainst: number,
+    lossrateAgainst: number,
+    relativeDifference: number,
 }
 export default class CommanderApi {
     private path: string = 'commanders/';
@@ -122,9 +154,27 @@ export default class CommanderApi {
         return response.commanderWinrates;
     }
 
+    async getRecentGames(commanderId: string, count?: number): Promise<GetRecentGamesResponse> {
+        let requestPath = this.path + commanderId + '/recentGames';
+        if (count !== undefined) {
+            requestPath += '?count=' + count;
+        }
+        const response = await this.api.get<GetRecentGamesResponse>(requestPath);
+        response.recentGames.forEach(g => g.playedAt = new Date(g.playedAt));
+
+        return response;
+    }
+
+    async getRecordAgainstOtherCommanders(commanderId: string): Promise<RecordAgainstCommander[]> {
+        let requestPath = this.path + commanderId + '/commanderRecord';
+        const response = await this.api.get<GetRecordAgainstCommandersResponse>(requestPath);
+        return response.records;
+    }
+
     async create(commander: Commander): Promise<Commander> {
         const request = {
-            name: commander.name,
+            useCustomDisplayName: commander.useCustomDisplayName,
+            name: commander.customName,
             cardId: commander.card?.id,
             partnerId: commander.partner?.id,
         } as CreateCommanderRequest;
@@ -137,7 +187,8 @@ export default class CommanderApi {
 
     async update(commander: Commander): Promise<Commander> {
         const request = {
-            name: commander.name,
+            useCustomDisplayName: commander.useCustomDisplayName,
+            customName: commander.customName,
             cardId: commander.card?.id,
             partnerId: commander.partner?.id,
         } as UpdateCommanderRequest;

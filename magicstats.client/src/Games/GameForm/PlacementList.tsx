@@ -14,6 +14,7 @@ import DeleteButton from "../../Shared/DeleteButton.tsx";
 import {FaTrophy} from "react-icons/fa";
 import {Button, Checkbox, Flex} from "@radix-ui/themes";
 import {PlayerName} from "../../Players/PlayerName.tsx";
+import {CommanderName} from "../../Commanders/CommandersTable.tsx";
 
 type PlacementListProps = {
     participants: Participant[],
@@ -94,8 +95,8 @@ export default function PlacementList(
             }}/>
             <Flex direction='row' gap='2' my='5'>
                 {
-                    table.getColumn('select')!.getIsVisible() ?
-                        <>
+                    table.getColumn('select')!.getIsVisible()
+                        ? <>
                             <Button size='2' variant='surface' onClick={(e) => {
                                 e.stopPropagation();
                                 table.resetRowSelection();
@@ -114,8 +115,7 @@ export default function PlacementList(
                                 Confirm
                             </Button>
                         </>
-                        :
-                        <Button size='2' variant='surface' onClick={(e) => {
+                        : <Button size='2' variant='surface' onClick={(e) => {
                             e.stopPropagation();
                             toggleDrawsView(true);
                         }}>
@@ -142,7 +142,7 @@ function getColumnDefinition(onParticipantDeleted: (playerId: string) => void): 
             cell: ({row}) => row.original.placement + 1,
             size: 60,
         }),
-        columnHelper.accessor('player.name', {
+        columnHelper.display({
             id: 'playerName',
             header: 'Player',
             cell: ({row}) => <Flex direction='row' gap='3' align='center'>
@@ -150,9 +150,10 @@ function getColumnDefinition(onParticipantDeleted: (playerId: string) => void): 
                 {row.original.placement === 0 && <FaTrophy color='gold'/>}
             </Flex>
         }),
-        columnHelper.accessor('commander.name', {
+        columnHelper.display({
             id: 'commanderName',
             header: 'Commander',
+            cell: ({row}) => <CommanderName commander={row.original.commander}/>,
         }),
         columnHelper.display({
             id: 'delete',

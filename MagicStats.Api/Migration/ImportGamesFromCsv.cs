@@ -46,8 +46,8 @@ public class ImportGamesFromCsv : IEndpoint
             .ToHashSet();
         var existingCommanders = await dbContext.Commanders.ToListAsync(ct);
         var commandersToAdd =
-            fileCommanders.Except(existingCommanders.Select(p => p.Name), StringComparer.OrdinalIgnoreCase);
-        dbContext.Commanders.AddRange(commandersToAdd.Select(name => new Commander { Name = name }));
+            fileCommanders.Except(existingCommanders.Select(p => p.CustomName), StringComparer.OrdinalIgnoreCase);
+        dbContext.Commanders.AddRange(commandersToAdd.Select(name => new Commander { CustomName = name }));
 
         var fileHosts = records
             .Select(r => r.Host)
@@ -64,7 +64,7 @@ public class ImportGamesFromCsv : IEndpoint
         var players =
             await dbContext.Players.ToDictionaryAsync(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase, ct);
         var commanders =
-            await dbContext.Commanders.ToDictionaryAsync(c => c.Name, c => c, StringComparer.OrdinalIgnoreCase, ct);
+            await dbContext.Commanders.ToDictionaryAsync(c => c.CustomName, c => c, StringComparer.OrdinalIgnoreCase, ct);
         var hosts = await dbContext.Hosts.ToDictionaryAsync(h => h.Name, h => h, StringComparer.OrdinalIgnoreCase, ct);
 
         var now = DateTimeOffset.UtcNow;

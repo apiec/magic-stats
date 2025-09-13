@@ -1,5 +1,4 @@
 import {Table} from "@radix-ui/themes";
-import {CommanderStats} from "./PlayerApi.ts";
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import {
     createColumnHelper,
@@ -10,9 +9,12 @@ import {
     useReactTable
 } from "@tanstack/react-table";
 import {useImmer} from "use-immer";
+import {toPercentage} from "../Shared/toPercentage.ts";
+import {CommanderWithStats} from "../Commanders/CommanderApi.ts";
+import {CommanderName} from "../Commanders/CommandersTable.tsx";
 
 type CommanderStatsTableProps = {
-    stats: CommanderStats[],
+    stats: CommanderWithStats[],
 }
 
 export function CommanderStatsTable({stats}: CommanderStatsTableProps) {
@@ -68,24 +70,21 @@ export function CommanderStatsTable({stats}: CommanderStatsTableProps) {
     );
 }
 
-const columnHelper = createColumnHelper<CommanderStats>();
+const columnHelper = createColumnHelper<CommanderWithStats>();
 
 const columns = [
-    columnHelper.accessor('name', {
+    columnHelper.display({
         id: 'name',
         header: ctx => <SortableHeader text='Name' context={ctx}/>,
+        cell: props => <CommanderName commander={props.row.original.commander}/>
     }),
-    columnHelper.accessor('games', {
+    columnHelper.accessor('stats.games', {
         id: 'games',
         header: ctx => <SortableHeader text='Games' context={ctx}/>,
     }),
-    columnHelper.accessor('winrate', {
+    columnHelper.accessor('stats.winrate', {
         id: 'winrate',
         header: ctx => <SortableHeader text={'Winrate'} context={ctx}/>,
-        cell: props => toPercentage(props.row.original.winrate),
+        cell: props => toPercentage(props.row.original.stats.winrate),
     }),
 ];
-
-function toPercentage(num: number): string {
-    return (100 * num).toFixed(0) + '%'
-}

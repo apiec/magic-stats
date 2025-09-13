@@ -29,10 +29,8 @@ public class GetCommandersWinrates : IEndpoint
             ? await dataProvider.GetAllData()
             : await dataProvider.GetByPodSize(podSize.Value);
 
-        slidingWindowSize ??= 10;
-
         var calculator = new CommanderWinratesCalculator(games, commanders);
-        var commanderResults = calculator.Calculate(slidingWindowSize.Value).ToArray();
+        var commanderResults = calculator.Calculate(slidingWindowSize).ToArray();
 
         var response = new Response(commanderResults);
         return TypedResults.Ok(response);

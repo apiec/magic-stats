@@ -8,14 +8,13 @@ import {
     IconButton,
     ScrollArea,
     SegmentedControl,
+    Skeleton,
     Spinner,
     Text,
     Tooltip,
 } from "@radix-ui/themes";
-import {format} from "date-fns";
 import {useParams} from "react-router-dom";
 import PlayerApi, {
-    CommanderStats,
     Player,
     PlayerWithWinrates,
     Pod,
@@ -32,14 +31,15 @@ import {InfoCircledIcon, Pencil1Icon} from "@radix-ui/react-icons";
 import PlayerForm from "./PlayerForm.tsx";
 import {PlayerRecentGamesTable} from "./PlayerRecentGamesTable.tsx";
 import {PlayerPodsTable} from "./PlayerPodsTable.tsx";
-import {DataPoint, DataSeries} from "../Shared/WinrateGraph.tsx";
-import {CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip as GraphTooltip, XAxis, YAxis} from "recharts";
+import {DataPoint, DataSeries, DataSeriesGraph} from "../Shared/DataSeriesGraph.tsx";
 import {RecordAgainstPlayerTable} from "./RecordAgainstPlayerTable.tsx";
+import {toPercentage} from "../Shared/toPercentage.ts";
+import {CommanderWithStats} from "../Commanders/CommanderApi.ts";
 
 export default function PlayerPage() {
     const {playerId} = useParams<string>();
     const [player, setPlayer] = useState<SinglePlayerWithStats | undefined>();
-    const [commanderStats, setCommanderStats] = useState<CommanderStats[] | undefined>();
+    const [commanderStats, setCommanderStats] = useState<CommanderWithStats[] | undefined>();
 
     useEffect(() => {
         const api = new PlayerApi();
@@ -61,25 +61,25 @@ export default function PlayerPage() {
         if (commanderStats === undefined || commanderStats.length === 0) {
             return ['No games on record'];
         }
-        const mostGames = Math.max(...commanderStats.map(x => x.games));
-        const mostPlayedCommander = commanderStats.find(x => x.games === mostGames);
+        const mostGames = Math.max(...commanderStats.map(x => x.stats.games));
+        const mostPlayedCommander = commanderStats.find(x => x.stats.games === mostGames);
         if (mostPlayedCommander === undefined) {
             return ['Not enough games'];
         }
-        return [mostPlayedCommander.name, mostGames.toFixed(0)];
+        return [mostPlayedCommander.commander.displayName, mostGames.toFixed(0)];
     }
 
     function getBestCommanderDisplay() {
         if (commanderStats === undefined || commanderStats.length === 0) {
             return ['No games on record'];
         }
-        const filtered = commanderStats.filter(x => x.games >= 3);
-        const bestWinrate = Math.max(...filtered.map(x => x.winrate));
-        const bestCommander = filtered.find(x => x.winrate === bestWinrate);
+        const filtered = commanderStats.filter(x => x.stats.games >= 3);
+        const bestWinrate = Math.max(...filtered.map(x => x.stats.winrate));
+        const bestCommander = filtered.find(x => x.stats.winrate === bestWinrate);
         if (bestCommander === undefined) {
             return ['Not enough games'];
         }
-        return [bestCommander.name, toPercentage(bestWinrate)];
+        return [bestCommander.commander.displayName, toPercentage(bestWinrate)];
     }
 
     return (
@@ -92,37 +92,35 @@ export default function PlayerPage() {
                     }}/>
                 </Card>
             </Box>
-            <Flex>
-                <Flex gap='2' align='center' wrap='wrap' maxWidth='500px' justify='center'>
-                    <ValueDisplay title='Total games' values={[player.stats.games.toFixed(0)]}/>
-                    <ValueDisplay title='Recent winrate' values={[toPercentage(player.stats.winrateLast30)]}
-                                  tooltip='Winrate from the last 30&nbsp;games'/>
-                    <ValueDisplay title='All time winrate' values={[toPercentage(player.stats.winrate)]}/>
-                    {commanderStats
-                        ? <ValueDisplay title='Best' values={getBestCommanderDisplay()}
-                                        tooltip='Highest winrate commander with&nbsp;at&nbsp;least 5&nbsp;recorded games'/>
-                        : <Spinner/>
-                    }
-                    {commanderStats
-                        ? <ValueDisplay title='Most played' values={getMostPlayedCommanderDisplay()}/>
-                        : <Spinner/>
-                    }
-                </Flex>
+            <Flex gap='2' align='center' wrap='wrap' maxWidth='500px' justify='center'>
+                <ValueDisplay title='Total games' values={[player.stats.games.toFixed(0)]}/>
+                <ValueDisplay title='Recent winrate' values={[toPercentage(player.stats.winrateLast30)]}
+                              tooltip='Winrate from the last 30&nbsp;games'/>
+                <ValueDisplay title='All time winrate' values={[toPercentage(player.stats.winrate)]}/>
+                {commanderStats
+                    ? <ValueDisplay title='Best' values={getBestCommanderDisplay()}
+                                    tooltip='Highest winrate commander with&nbsp;at&nbsp;least 5&nbsp;recorded games'/>
+                    : <Spinner/>
+                }
+                {commanderStats
+                    ? <ValueDisplay title='Most played' values={getMostPlayedCommanderDisplay()}/>
+                    : <Spinner/>
+                }
             </Flex>
             <Grid gap='7' columns={{initial: '1', md: '2',}}>
-                <Box width='360px' maxWidth='90vw' maxHeight='300px' asChild>
-                    <Flex direction='column'>
+                <Box width='360px' maxWidth='90vw' height='300px' asChild>
+                    <Flex direction='column' height='100%'>
                         <Heading>Winrate</Heading>
                         <PlayerWinrateGraph playerId={playerId!}/>
                     </Flex>
                 </Box>
-                <Box width='360px' maxWidth='90vw' maxHeight='300px' asChild>
+                <Box width='360px' maxWidth='90vw' height='300px' asChild>
                     <Flex direction='column'>
                         <Heading>Recent games</Heading>
                         <PlayerRecentGames playerId={playerId!} gameCount={30}/>
                     </Flex>
                 </Box>
-                <Box width='360px' maxWidth='90vw' maxHeight='300px' asChild>
+                <Box width='360px' maxWidth='90vw' height='300px' asChild>
                     <Flex direction='column'>
                         <Heading>Played commanders</Heading>
                         {
@@ -130,18 +128,18 @@ export default function PlayerPage() {
                                 ? <ScrollArea>
                                     <CommanderStatsTable stats={commanderStats}/>
                                 </ScrollArea>
-                                : <Spinner/>
+                                : <Skeleton width='100%' height='100%'/>
                         }
                     </Flex>
                 </Box>
-                <Box width='360px' maxWidth='90vw' maxHeight='300px' asChild>
+                <Box width='360px' maxWidth='90vw' height='300px' asChild>
                     <Flex direction='column'>
                         <Heading>Most played pods</Heading>
                         <PlayerPods playerId={playerId!}/>
                     </Flex>
                 </Box>
             </Grid>
-            <Box maxWidth='90vw' maxHeight='400px' asChild>
+            <Box maxWidth='90vw' minHeight='300px' maxHeight='400px' asChild>
                 <Flex direction='column'>
                     <Heading>Opponents</Heading>
                     <RecordAgainstPlayers playerId={playerId!}/>
@@ -191,7 +189,7 @@ function PlayerRecentGames({playerId, gameCount}: PlayerRecentGamesProps) {
         ? <ScrollArea>
             <PlayerRecentGamesTable games={games}/>
         </ScrollArea>
-        : <Spinner/>;
+        : <Skeleton width='100%' height='100%'/>;
 }
 
 type PlayerPodsProps = {
@@ -208,7 +206,7 @@ function PlayerPods({playerId}: PlayerPodsProps) {
         ? <ScrollArea>
             <PlayerPodsTable pods={pods}/>
         </ScrollArea>
-        : <Spinner/>;
+        : <Skeleton width='100%' height='100%'/>;
 }
 
 type RecordAgainstPlayersProps = {
@@ -222,12 +220,10 @@ function RecordAgainstPlayers({playerId}: RecordAgainstPlayersProps) {
         api.getRecordAgainstPlayers(playerId).then((res) => setRecords(res));
     }, []);
     return records
-        ? <RecordAgainstPlayerTable records={records}/>
+        ? <ScrollArea>
+            <RecordAgainstPlayerTable records={records}/>
+        </ScrollArea>
         : <Spinner/>;
-}
-
-function toPercentage(num: number): string {
-    return (100 * num).toFixed(0) + '%'
 }
 
 type EditPlayerDialogProps = {
@@ -298,21 +294,6 @@ function PlayerWinrateGraph({playerId}: PlayerWinrateGraphProps) {
     }, []);
 
     const usedData = seriesUsed === 'recent' ? recentData : allTimeData;
-    if (usedData === undefined) {
-        return <Spinner/>;
-    }
-
-    const minDate = Math.min(...usedData.data.map(p => p.date));
-    const maxDate = Math.max(...usedData.data.map(p => p.date));
-    const stepCount = 5;
-    const step = Math.floor((maxDate - minDate) / stepCount);
-    const lastStepFix = maxDate - minDate - step * stepCount;
-    const ticks = Array.from({length: stepCount + 1}, (_, k) => minDate + k * step);
-    ticks[stepCount] += lastStepFix;
-
-    const maxValue = Math.max(...usedData.data.map(p => p.value));
-    const topValue = Math.ceil(10 * maxValue) / 10;
-    const horizontalTicks = Array.from({length: topValue / 0.2 + 1}, (_, k) => 0.2 * k);
     const tooltip = 'Recent - shows the winrate from the most recent 30 games';
     return (
         <>
@@ -336,30 +317,10 @@ function PlayerWinrateGraph({playerId}: PlayerWinrateGraphProps) {
                     </Dialog.Root>
                 </Flex>
             </Box>
-            <ResponsiveContainer width='100%' height='100%' minHeight='200px'>
-                <LineChart>
-                    <CartesianGrid vertical={false} horizontalValues={horizontalTicks} strokeWidth={1}
-                                   strokeDasharray='5 5'/>
-                    <XAxis
-                        dataKey='date'
-                        type='number'
-                        allowDuplicatedCategory={false} // without this active data point detection breaks ¯\_(ツ)_/¯
-                        ticks={ticks}
-                        domain={[minDate, maxDate]}
-                        padding={{left: 20, right: 20}}
-                        tickFormatter={(tickItem: number) => {
-                            return new Date(tickItem).toLocaleDateString();
-                        }}/>
-                    <YAxis ticks={horizontalTicks} dataKey='value' domain={[0, topValue]}
-                           tickFormatter={(tickItem: number) => toPercentage(tickItem)}/>
-                    <GraphTooltip formatter={(value: number, _) => toPercentage(value)}
-                                  filterNull={true}
-                                  contentStyle={{background: 'var(--gray-2)'}}
-                                  labelFormatter={(label: number, _) => format(new Date(label), "dd/MM/yyyy")}/>
-                    <Line type='monotone' dataKey='value' data={usedData.data} name={usedData.name}
-                          key={usedData.name}
-                          dot={false} strokeWidth={2}/>
-                </LineChart>
-            </ResponsiveContainer>
+            {
+                usedData !== undefined
+                    ? <DataSeriesGraph data={[usedData]} width='100%' height='100%'/>
+                    : <Skeleton width='100%' height='100%'/>
+            }
         </>);
 }

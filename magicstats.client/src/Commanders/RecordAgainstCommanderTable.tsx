@@ -1,4 +1,4 @@
-import {Box, Flex, ScrollArea, SegmentedControl, Switch, Table, Text} from "@radix-ui/themes";
+import {Box, Flex, ScrollArea, SegmentedControl, Table} from "@radix-ui/themes";
 import SortableHeader from "../Shared/SortableHeader.tsx";
 import {
     createColumnHelper,
@@ -9,21 +9,19 @@ import {
     useReactTable,
 } from "@tanstack/react-table";
 import {useImmer} from "use-immer";
-import {RecordAgainstPlayer} from "./PlayerApi";
-import {PlayerName} from "./PlayerName.tsx";
+import {RecordAgainstCommander} from "./CommanderApi";
 import {useState} from "react";
 import {toPercentage} from "../Shared/toPercentage.ts";
+import {CommanderName} from "./CommandersTable.tsx";
 
-type RecordAgainstPlayerTableProps = {
-    records: RecordAgainstPlayer[],
+type RecordAgainstCommanderTableProps = {
+    records: RecordAgainstCommander[],
 };
 
 type StatsType = 'absolute' | 'relative';
 
-export function RecordAgainstPlayerTable({records}: RecordAgainstPlayerTableProps) {
+export function RecordAgainstCommanderTable({records}: RecordAgainstCommanderTableProps) {
     const [statsType, setStatsType] = useState<StatsType>('relative');
-    const [showGuests, setShowGuests] = useState<boolean>(false);
-    const filtered = records.filter(r => showGuests || !r.isGuest);
     return (
         <>
             <Box my='2' asChild>
@@ -36,22 +34,16 @@ export function RecordAgainstPlayerTable({records}: RecordAgainstPlayerTableProp
                             <SegmentedControl.Item value='relative'>Relative</SegmentedControl.Item>
                         </SegmentedControl.Root>
                     </Box>
-                    <Box>
-                        <Flex gap='1' align='center'>
-                            <Text size='2'>Show guests</Text>
-                            <Switch size='2' checked={showGuests} onClick={() => setShowGuests(!showGuests)}/>
-                        </Flex>
-                    </Box>
                 </Flex>
             </Box>
             <ScrollArea>
-                <RecordTable records={filtered} statsType={statsType}/>
+                <RecordTable records={records} statsType={statsType}/>
             </ScrollArea>
         </>);
 }
 
 type RecordTableProps = {
-    records: RecordAgainstPlayer[],
+    records: RecordAgainstCommander[],
     statsType: StatsType,
 };
 
@@ -132,13 +124,15 @@ function RecordTable({records, statsType}: RecordTableProps) {
     </Table.Root>
 }
 
-const columnHelper = createColumnHelper<RecordAgainstPlayer>();
+const columnHelper = createColumnHelper<RecordAgainstCommander>();
 
 const relativeTableColumns = [
-    columnHelper.accessor('name', {
+    columnHelper.display({
         id: 'name',
         header: ctx => <SortableHeader text='Name' context={ctx}/>,
-        cell: props => <PlayerName player={props.row.original}/>
+        cell: props => <Box maxWidth='200px'>
+            <CommanderName commander={props.row.original.commander}/>
+        </Box>
     }),
     columnHelper.accessor('gamesAgainst', {
         id: 'gamesAgainst',
@@ -162,10 +156,10 @@ const relativeTableColumns = [
 ];
 
 const absoluteTableColumns = [
-    columnHelper.accessor('name', {
+    columnHelper.display({
         id: 'name',
         header: ctx => <SortableHeader text='Name' context={ctx}/>,
-        cell: props => <PlayerName player={props.row.original}/>
+        cell: props => <CommanderName commander={props.row.original.commander}/>
     }),
     columnHelper.accessor('gamesAgainst', {
         id: 'gamesAgainst',

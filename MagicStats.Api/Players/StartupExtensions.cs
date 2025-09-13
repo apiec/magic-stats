@@ -22,10 +22,10 @@ public static class StartupExtensions
         endpoints.MapEndpoint<UpdatePlayer>();
 
         endpoints.MapEndpoint<GetPlayer>();
-        endpoints.MapEndpoint<GetCommanderStats>();
+        endpoints.MapEndpoint<GetPlayerCommanderStats>();
         endpoints.MapEndpoint<GetRecentGames>();
         endpoints.MapEndpoint<GetPlayerPods>();
-        endpoints.MapEndpoint<GetRecordAgainstPlayers>();
+        endpoints.MapEndpoint<GetRecordAgainstOtherPlayers>();
 
         return app;
     }

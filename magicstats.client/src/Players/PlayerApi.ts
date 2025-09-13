@@ -1,5 +1,5 @@
 ﻿import Api from "../api/Api.ts";
-import {Commander} from "../Commanders/CommanderApi.ts";
+import {Commander, CommanderWithStats} from "../Commanders/CommanderApi.ts";
 
 export type Player = {
     id: string,
@@ -48,14 +48,7 @@ export type SinglePlayerStats = {
 }
 
 export type CommanderStatsResponse = {
-    commanders: CommanderStats[],
-}
-
-export type CommanderStats = {
-    name: string,
-    games: number,
-    wins: number,
-    winrate: number,
+    commanders: CommanderWithStats[],
 }
 
 type GetPlayerWinratesResponse = {
@@ -79,6 +72,7 @@ export type RecentGame = {
     gameId: string,
     playedAt: Date,
     placement: number,
+    podSize: number,
     commander: Commander,
 }
 

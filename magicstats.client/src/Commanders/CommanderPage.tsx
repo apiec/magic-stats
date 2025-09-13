@@ -1,13 +1,43 @@
 import {useEffect, useState} from "react";
-import CommanderApi, {Commander, Card, SingleCommanderWithStats, CommanderImageUris} from "./CommanderApi.ts";
+import CommanderApi, {
+    Commander,
+    Card,
+    SingleCommanderWithStats,
+    CommanderImageUris,
+    CommanderWithWinrates,
+    RecentGame,
+    RecordAgainstCommander
+} from "./CommanderApi.ts";
 import {useParams} from "react-router-dom";
-import {Box, Card as RadixCard, Dialog, Flex, HoverCard, IconButton, Inset, Spinner, Text} from "@radix-ui/themes";
-import {getCommanderDisplayName} from "./CommanderUtils.ts";
-import {Pencil1Icon} from "@radix-ui/react-icons";
+import {
+    Box,
+    Card as RadixCard,
+    Dialog,
+    Flex,
+    HoverCard,
+    IconButton,
+    Inset,
+    Spinner,
+    Text,
+    SegmentedControl,
+    Tooltip,
+    Grid,
+    Heading,
+    Skeleton,
+    ScrollArea,
+    Button,
+} from "@radix-ui/themes";
+import {InfoCircledIcon, Pencil1Icon, UpdateIcon} from "@radix-ui/react-icons";
 import CommanderForm from "./CommanderForm.tsx";
+import {DataPoint, DataSeries, DataSeriesGraph} from "../Shared/DataSeriesGraph.tsx";
+import ValueDisplay from "../Shared/ValueDisplay.tsx";
+import {toPercentage} from "../Shared/toPercentage.ts";
+import {RecordAgainstCommanderTable} from "./RecordAgainstCommanderTable.tsx";
+import {CommanderRecentGamesTable} from "./CommanderRecentGamesTable.tsx";
+import {LayoutProps} from "@radix-ui/themes/props";
 
 export function CommanderPage() {
-    const {commanderId} = useParams<string>();
+    const {commanderId} = useParams<string>()!;
     const [commander, setCommander] = useState<SingleCommanderWithStats | undefined>();
     useEffect(() => {
         const api = new CommanderApi();
@@ -24,22 +54,52 @@ export function CommanderPage() {
     return (
         <Flex direction='column' gap='7' width='100%' align='center' justify='center'>
             <RadixCard>
-                <CommanderSummary commander={commander} onCommanderUpdate={(c) => {
-                    handleCommanderChange(c)
-                        .then(res => setCommander({
+                <CommanderSummary
+                    commander={commander.commander}
+                    onCommanderUpdate={async (c) => {
+                        const res = await handleCommanderChange(c);
+                        console.log(res);
+                        setCommander({
                             ...commander,
-                            ...res,
-                        }));
-                }}/>
+                            commander: {
+                                ...commander.commander,
+                                ...res,
+                            }
+                        });
+                    }}/>
             </RadixCard>
-            {/* todo: value displays for wins/games */}
+            <Flex gap='2' align='center' wrap='wrap' maxWidth='500px' justify='center'>
+                <ValueDisplay title='Total games' values={[commander.stats.games.toFixed(0)]}/>
+                <ValueDisplay title='Total wins' values={[commander.stats.wins.toFixed(0)]}/>
+                <ValueDisplay title='All time winrate' values={[toPercentage(commander.stats.winrate)]}/>
+            </Flex>
+            <Grid gap='7' columns={{initial: '1', md: '2',}}>
+                <Box width='360px' maxWidth='90vw' height='300px' asChild>
+                    <Flex direction='column'>
+                        <Heading>Winrate</Heading>
+                        <CommanderWinrateGraph commanderId={commanderId!}/>
+                    </Flex>
+                </Box>
+                <Box width='360px' maxWidth='90vw' height='300px' asChild>
+                    <Flex direction='column'>
+                        <Heading>Recent games</Heading>
+                        <CommanderRecentGames commanderId={commanderId!} gameCount={30}/>
+                    </Flex>
+                </Box>
+            </Grid>
+            <Box maxWidth='90vw' minHeight='300px' maxHeight='400px' asChild>
+                <Flex direction='column'>
+                    <Heading>Head to head</Heading>
+                    <RecordAgainstCommanders commanderId={commanderId!}/>
+                </Flex>
+            </Box>
         </Flex>
     );
 }
 
 type CommanderSummaryCardProps = {
     commander: Commander,
-    onCommanderUpdate: (commander: Commander) => void,
+    onCommanderUpdate: (commander: Commander) => Promise<void>,
 }
 
 function CommanderSummary({commander, onCommanderUpdate}: CommanderSummaryCardProps) {
@@ -56,7 +116,7 @@ function CommanderSummary({commander, onCommanderUpdate}: CommanderSummaryCardPr
                     <Text align={{
                         initial: 'center',
                         md: 'left',
-                    }} as='div' wrap='pretty' size='6'>{getCommanderDisplayName(commander)}</Text>
+                    }} as='div' wrap='pretty' size='6'>{commander.displayName}</Text>
                 </Box>
                 <EditCommanderDialog commander={commander} onUpdate={onCommanderUpdate}/>
             </Flex>
@@ -82,22 +142,20 @@ export function CommanderCardsDisplay({commander}: CommanderCardDisplayProps) {
     } as Card; // pigeon placeholder todo: replace
 
     return <Flex>
-        {!commander.card && <SingleCardDisplay card={fallbackCard}/>}
-        {commander.card && <SingleCardDisplay card={commander.card}/>}
-        {commander.partner && <SingleCardDisplay card={commander.partner}/>}
+        {!commander.card && <CardArtDisplay card={fallbackCard}/>}
+        {commander.card && <CardArtDisplay card={commander.card}/>}
+        {commander.partner && <CardArtDisplay card={commander.partner}/>}
     </Flex>;
 }
 
-type SingleCardDisplayProps = {
+type CardArtDisplayProps = {
     card: Card,
 }
 
-function SingleCardDisplay({card}: SingleCardDisplayProps) {
+function CardArtDisplay({card}: CardArtDisplayProps) {
     const content = () => (
         <Inset>
-            <Box width='100%' asChild>
-                <img src={card.images.borderCrop} alt={card.name}/>
-            </Box>
+            <FullCardDisplay card={card} maxWidth='300px'/>
         </Inset>);
 
     return <Dialog.Root>
@@ -114,11 +172,11 @@ function SingleCardDisplay({card}: SingleCardDisplayProps) {
                     </Box>
                 </Dialog.Trigger>
             </HoverCard.Trigger>
-            <HoverCard.Content maxWidth='300px'>
+            <HoverCard.Content>
                 {content()}
             </HoverCard.Content>
         </HoverCard.Root>
-        <Dialog.Content>
+        <Dialog.Content width='fit-content'>
             <Dialog.Close>
                 {content()}
             </Dialog.Close>
@@ -126,13 +184,42 @@ function SingleCardDisplay({card}: SingleCardDisplayProps) {
     </Dialog.Root>
 }
 
+type FullCardDisplayProps = {
+    card: Card,
+} & LayoutProps;
+
+export function FullCardDisplay({card, ...layoutProps}: FullCardDisplayProps) {
+    const [useOtherFace, setUseOtherFace] = useState<boolean>(false);
+    return <Flex {...layoutProps} direction='column'>
+        <Box asChild>
+            {(useOtherFace && card.otherFaceImages)
+                ? <img src={card.otherFaceImages?.borderCrop} alt={card.name}/>
+                : <img src={card.images.borderCrop} alt={card.name + ' other face'}/>
+            }
+        </Box>
+        {
+            card.otherFaceImages &&
+            <Button variant='solid' onClick={(e) => {
+                e.preventDefault();
+                setUseOtherFace(!useOtherFace);
+            }}>
+                <Flex align='center' gap='1'>
+                    <UpdateIcon/>
+                    <Text>Transform</Text>
+                </Flex>
+            </Button>
+        }
+    </Flex>
+}
+
 type EditCommanderDialogProps = {
     commander: Commander,
-    onUpdate: (commander: Commander) => void,
+    onUpdate: (commander: Commander) => Promise<void>,
 };
 
 function EditCommanderDialog({commander, onUpdate}: EditCommanderDialogProps) {
     const [open, setOpen] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
     return <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Trigger>
             <IconButton size='1' variant='ghost' radius='small' asChild>
@@ -146,10 +233,13 @@ function EditCommanderDialog({commander, onUpdate}: EditCommanderDialogProps) {
                 Edit commander
             </Dialog.Title>
             <CommanderForm
+                loading={loading}
                 commander={commander}
                 onSubmit={(c) => {
-                    onUpdate(c);
-                    setOpen(false);
+                    setLoading(true);
+                    onUpdate(c)
+                        .then(() => setOpen(false))
+                        .finally(() => setLoading(false));
                 }}
                 onClose={() => setOpen(false)}
             />
@@ -159,5 +249,108 @@ function EditCommanderDialog({commander, onUpdate}: EditCommanderDialogProps) {
 
 async function handleCommanderChange(commander: Commander): Promise<Commander> {
     const api = new CommanderApi();
-    return await api.update(commander);
+    const result = await api.update(commander);
+    console.log(result);
+    return result;
+}
+
+type CommanderRecentGamesProps = {
+    commanderId: string,
+    gameCount: number,
+}
+
+function CommanderRecentGames({commanderId, gameCount}: CommanderRecentGamesProps) {
+    const [games, setGames] = useState<RecentGame[] | undefined>();
+    useEffect(() => {
+        const api = new CommanderApi();
+        api.getRecentGames(commanderId, gameCount).then((res) => setGames(res.recentGames));
+    }, [commanderId]);
+    return games
+        ? <ScrollArea>
+            <CommanderRecentGamesTable games={games}/>
+        </ScrollArea>
+        : <Skeleton width='100%' height='100%'/>;
+}
+
+type CommanderWinrateGraphProps = {
+    commanderId: string;
+}
+
+type SeriesType = 'recent' | 'allTime';
+
+function CommanderWinrateGraph({commanderId}: CommanderWinrateGraphProps) {
+    const [recentData, setRecentData] = useState<DataSeries | undefined>(undefined);
+    const [allTimeData, setAllTimeData] = useState<DataSeries | undefined>(undefined);
+    const [seriesUsed, setSeriesUsed] = useState<SeriesType>('recent');
+
+    function mapData(data: CommanderWithWinrates[]): DataSeries {
+        const commanderData = data.find(d => d.id === commanderId)!;
+        return {
+            name: commanderData.name,
+            data: commanderData.dataPoints.map(d => {
+                return {
+                    date: new Date(d.date).valueOf(),
+                    value: d.winrate,
+                } as DataPoint;
+            })
+        } as DataSeries;
+    }
+
+    function populateData() {
+        const api = new CommanderApi();
+        api.getWinrates(30).then(mapData).then(setRecentData);
+        api.getWinrates().then(mapData).then(setAllTimeData);
+    }
+
+    useEffect(() => {
+        populateData();
+    }, []);
+
+    const usedData = seriesUsed === 'recent' ? recentData : allTimeData;
+    const tooltip = 'Recent - shows the winrate from the most recent 30 games';
+    return (
+        <>
+            <Box my='2' width='fit-content'>
+                <Flex gap='1' align='center'>
+                    <SegmentedControl.Root value={seriesUsed} size='1' onValueChange={(value) => {
+                        setSeriesUsed(value as SeriesType);
+                    }}>
+                        <SegmentedControl.Item value='allTime'>All time</SegmentedControl.Item>
+                        <SegmentedControl.Item value='recent'>Recent</SegmentedControl.Item>
+                    </SegmentedControl.Root>
+                    <Dialog.Root>
+                        <Tooltip content={tooltip}>
+                            <Dialog.Trigger>
+                                <InfoCircledIcon/>
+                            </Dialog.Trigger>
+                        </Tooltip>
+                        <Dialog.Content maxWidth='fit-content'>
+                            <Text as='div' align='center'>{tooltip}</Text>
+                        </Dialog.Content>
+                    </Dialog.Root>
+                </Flex>
+            </Box>
+            {
+                usedData !== undefined
+                    ? <DataSeriesGraph data={[usedData]}/>
+                    : <Skeleton width='100%' height='100%'/>
+            }
+        </>);
+}
+
+type RecordAgainstCommandersProps = {
+    commanderId: string,
+}
+
+function RecordAgainstCommanders({commanderId}: RecordAgainstCommandersProps) {
+    const [records, setRecords] = useState<RecordAgainstCommander[] | undefined>();
+    useEffect(() => {
+        const api = new CommanderApi();
+        api.getRecordAgainstOtherCommanders(commanderId).then((res) => setRecords(res));
+    }, []);
+    return records
+        ? <ScrollArea>
+            <RecordAgainstCommanderTable records={records}/>
+        </ScrollArea>
+        : <Spinner/>;
 }

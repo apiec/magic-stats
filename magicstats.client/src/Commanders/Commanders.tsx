@@ -1,11 +1,12 @@
 ﻿import {useEffect, useState} from 'react';
 import {useImmer} from 'use-immer';
-import {Button, Dialog, Flex, Select, Spinner, Text} from '@radix-ui/themes';
+import {Button, Dialog, Flex, Heading, Select, Spinner, Text} from '@radix-ui/themes';
 import CommanderApi, {CommanderWithStats} from "./CommanderApi.ts";
 import CommanderForm from "./CommanderForm.tsx";
 import CommandersTable from "./CommandersTable.tsx";
-import WinrateGraph, {DataPoint, DataSeries} from "../Shared/WinrateGraph.tsx";
+import {DataPoint, DataSeries, DataSeriesGraph} from "../Shared/DataSeriesGraph.tsx";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
+import {toPercentage} from "../Shared/toPercentage.ts";
 
 export default function Commanders() {
     const [commanders, setCommanders] = useImmer<CommanderWithStats[] | undefined>(undefined);
@@ -31,17 +32,13 @@ export default function Commanders() {
     const mostGamesCommander = commanders.find(p => p.stats.games === mostGames)!;
     const highestWinrate = Math.max(...commanders.map(p => p.stats.winrate));
     const highestWinrateCommander = commanders.find(p => p.stats.winrate === highestWinrate)!;
-    const highestWinrateLast = Math.max(...commanders.map(p => p.stats.winrateLastX));
-    const highestWinrateCommanderLast = commanders.find(p => p.stats.winrateLastX === highestWinrateLast)!;
 
     return (
         <Flex direction='column' maxWidth='700px' align='center' gap='6'>
             <Flex direction={{initial: 'column', md: 'row'}} gap='5'>
-                <ValueDisplay title='Most games' values={[mostGamesCommander.name, mostGames.toFixed(0)]}/>
+                <ValueDisplay title='Most games' values={[mostGamesCommander.commander.displayName, mostGames.toFixed(0)]}/>
                 <ValueDisplay title='Highest WR'
-                              values={[highestWinrateCommander.name, toPercentage(highestWinrate)]}/>
-                <ValueDisplay title={'Highest WRL' + lastX}
-                              values={[highestWinrateCommanderLast.name, toPercentage(highestWinrateLast)]}/>
+                              values={[highestWinrateCommander.commander.displayName, toPercentage(highestWinrate)]}/>
             </Flex>
             <Flex direction='row' align='end' gap='5' justify='center'>
                 <Flex direction='column' minWidth='70px' align='center'>
@@ -139,10 +136,10 @@ function CommandersWinrateGraph({slidingWindowSize, podSize}: CommandersWinrateG
     }, [slidingWindowSize, podSize]);
 
     return (
-        <WinrateGraph data={data} slidingWindowSize={slidingWindowSize}/>
+        <Flex direction='column' align='center' width='100%'>
+            <Heading as='h3'>Winrates</Heading>
+            <Text>{slidingWindowSize ? `Sliding window - ${slidingWindowSize}` : 'All time'}</Text>
+            <DataSeriesGraph data={data} width='100%' height='400px'/>
+        </Flex>
     );
-}
-
-function toPercentage(num: number): string {
-    return (100 * num).toFixed(0) + '%'
 }

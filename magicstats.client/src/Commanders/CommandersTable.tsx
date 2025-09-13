@@ -13,7 +13,8 @@ import CommanderApi from "../Commanders/CommanderApi.ts";
 import {Box, Flex, HoverCard, Inset, Link, Table, Text} from '@radix-ui/themes';
 import {Link as RouterLink} from 'react-router-dom';
 import DeleteButton from '../Shared/DeleteButton.tsx';
-import {getCommanderDisplayName} from "./CommanderUtils.ts";
+import {toPercentage} from "../Shared/toPercentage.ts";
+import {FullCardDisplay} from "./CommanderPage.tsx";
 
 type CommanderTableProps = {
     commanders: CommanderWithStats[],
@@ -76,10 +77,10 @@ export default function CommandersTable({commanders}: CommanderTableProps) {
 const columnHelper = createColumnHelper<CommanderWithStats>();
 
 const columns = [
-    columnHelper.accessor('name', {
+    columnHelper.display({
         id: 'name',
         header: ctx => <SortableHeader text='Name' context={ctx}/>,
-        cell: props => <CommanderName commander={props.row.original}/>
+        cell: props => <CommanderName commander={props.row.original.commander}/>
     }),
     columnHelper.accessor('stats.games', {
         id: 'games',
@@ -99,31 +100,23 @@ const columns = [
         header: 'Delete',
         cell: props => <DeleteButton onClick={() => {
             const api = new CommanderApi();
-            api.delete(props.row.original.id)
+            api.delete(props.row.original.commander.id)
                 .then(() => window.location.reload());
         }}/>,
     })
 ];
-
-function toPercentage(num: number): string {
-    return (100 * num).toFixed(0);
-}
 
 type CommanderNameProps = {
     commander: Commander,
 }
 
 export function CommanderName({commander}: CommanderNameProps) {
-    const displayName = getCommanderDisplayName(commander);
-
     const nameLinkComponent = (
-        <Flex direction='row' gap='1' align='center' justify='center'>
-            <Link asChild style={{color: 'var(--color)'}}>
-                <RouterLink reloadDocument to={'/commanders/' + commander.id}>
-                    <Text>{displayName}</Text>
-                </RouterLink>
-            </Link>
-        </Flex>
+        <Link asChild style={{color: 'var(--color)'}}>
+            <RouterLink reloadDocument to={'/commanders/' + commander.id}>
+                <Text wrap='wrap'>{commander.displayName}</Text>
+            </RouterLink>
+        </Link>
     );
 
     if (!commander?.card?.images) {
@@ -135,7 +128,7 @@ export function CommanderName({commander}: CommanderNameProps) {
             <HoverCard.Trigger>
                 {nameLinkComponent}
             </HoverCard.Trigger>
-            <HoverCard.Content maxWidth='600px'>
+            <HoverCard.Content>
                 <Inset>
                     <Box width='100%' asChild>
                         <CommanderCardDisplay commander={commander}/>
@@ -151,18 +144,8 @@ type CommanderCardDisplayProps = {
 }
 
 function CommanderCardDisplay({commander}: CommanderCardDisplayProps) {
-    const maxWidth = '300px'
     return <Flex>
-        {!commander.card && <Box maxWidth={maxWidth} asChild>
-            <img src='https://cards.scryfall.io/png/front/9/d/9d68befe-78bc-4d9c-968b-f7e6b3042f27.png?1562769676'
-                 alt='placeholder image'/>
-        </Box>}
-        {commander.card && <Box maxWidth={maxWidth} asChild>
-            <img src={commander.card.images.borderCrop} alt='commander image'/>
-        </Box>}
-        {commander.partner &&
-            <Box maxWidth={maxWidth} asChild>
-                <img src={commander.partner.images.borderCrop} alt='partner image'/>
-            </Box>}
+        {commander.card && <FullCardDisplay card={commander.card} width='300px'/>}
+        {commander.partner && <FullCardDisplay card={commander.partner} width='300px'/>}
     </Flex>;
 }

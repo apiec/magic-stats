@@ -65,7 +65,7 @@ function CommanderPicker({onCommanderChange, value}: CommanderPickerProps) {
 }
 
 function commanderAsOption(commander: Commander): PickerOption<Commander> {
-    return {value: commander, label: commander.name} as PickerOption<Commander>;
+    return {value: commander, label: commander.customName} as PickerOption<Commander>;
 }
 
 type PlayerPickerProps = {

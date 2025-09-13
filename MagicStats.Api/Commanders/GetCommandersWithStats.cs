@@ -18,9 +18,9 @@ public class GetCommandersWithStats : IEndpoint
 
     public record Response(IReadOnlyCollection<CommanderWithStatsDto> Commanders);
 
-    public record CommanderWithStatsDto(string Id, string Name, CardDto? Card, CardDto? Partner, CommanderStats Stats);
+    public record CommanderWithStatsDto(CommanderDto Commander, CommanderStats Stats);
 
-    public record CommanderStats(int Wins, int Games, float? Winrate, float? WinrateLastX);
+    public record CommanderStats(int Wins, int Games, float? Winrate);
 
     private static async Task<Ok<Response>> Handle(
         [FromQuery] int? windowSize,
@@ -37,15 +37,11 @@ public class GetCommandersWithStats : IEndpoint
 
         var dto = rawStats.Select(p =>
                 new CommanderWithStatsDto(
-                    p.Id.ToString(),
-                    p.Name,
-                    p.Card?.ToDto(),
-                    p.Partner?.ToDto(),
+                    p.Commander.ToDto(),
                     new CommanderStats(
                         Wins: p.Wins,
                         Games: p.Games,
-                        Winrate: p.Games > 0 ? (float)p.Wins / p.Games : null,
-                        WinrateLastX: p.Games > 0 ? (float)p.WinsLastX / Math.Min(p.Games, windowSize.Value) : null)))
+                        Winrate: p.Games > 0 ? (float)p.Wins / p.Games : null)))
             .ToList();
 
         var response = new Response(dto);
@@ -61,10 +57,7 @@ public class GetCommandersWithStats : IEndpoint
                 .Include(c => c.CommanderCard)
                 .Include(c => c.PartnerCard)
                 .Select(commander => new RawStats(
-                    commander.Id,
-                    commander.Name,
-                    commander.CommanderCard,
-                    commander.PartnerCard,
+                    commander,
                     commander.Participated.Count,
                     commander.Participated.Count(p => p.Placement == 0),
                     commander.Participated
@@ -93,10 +86,7 @@ public class GetCommandersWithStats : IEndpoint
 
             return commanders
                 .Select(commander => new RawStats(
-                    commander.Id,
-                    commander.Name,
-                    commander.CommanderCard,
-                    commander.PartnerCard,
+                    commander,
                     commander.Participated.Count,
                     commander.Participated.Count(p => p.Placement == 0),
                     commander.Participated
@@ -108,10 +98,7 @@ public class GetCommandersWithStats : IEndpoint
     }
 
     private record RawStats(
-        int Id,
-        string Name,
-        CommanderCard? Card,
-        CommanderCard? Partner,
+        Commander Commander,
         int Games,
         int Wins,
         int WinsLastX);

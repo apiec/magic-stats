@@ -14,7 +14,13 @@ public record GameDto(
 
 public record ParticipantDto(CommanderDto Commander, PlayerDto Player, int StartingOrder, int Placement);
 
-public record CommanderDto(string Id, string Name, CardDto? Card, CardDto? Partner);
+public record CommanderDto(
+    string Id,
+    string CustomName,
+    bool UseCustomDisplayName,
+    string DisplayName,
+    CardDto? Card,
+    CardDto? Partner);
 
 public record CardDto(
     string Id,
@@ -36,7 +42,7 @@ public record PlayerDto(string Id, string Name, bool IsGuest);
 
 internal static class GameMapper
 {
-    public static GameDto MapGame(Game g)
+    public static GameDto ToDto(this Game g)
     {
         var participants = g.Participants.Select(ToDto).ToArray();
         var winner = participants.MinBy(p => p.Placement);
@@ -57,10 +63,12 @@ internal static class GameMapper
     public static PlayerDto ToDto(this Player p) => new(p.Id.ToString(), p.Name, p.IsGuest);
 
     public static CommanderDto ToDto(this Commander c) => new(
-        c.Id.ToString(),
-        c.Name,
-        c.CommanderCard?.ToDto(),
-        c.PartnerCard?.ToDto());
+        Id: c.Id.ToString(),
+        CustomName: c.CustomName,
+        UseCustomDisplayName: c.UseCustomDisplayName,
+        DisplayName: c.GetDisplayName(),
+        Card: c.CommanderCard?.ToDto(),
+        Partner: c.PartnerCard?.ToDto());
 
     public static CardDto ToDto(this CommanderCard c) => new(c.Id.ToString(),
         c.Name,

@@ -17,7 +17,7 @@ public class CreateCommander : IEndpoint
         .MapPost("/", Handle)
         .WithSummary("Create a commander");
 
-    public record Request(string? Name, string? CardId, string? PartnerId);
+    public record Request(bool UseCustomDisplayName, string? CustomName, string? CardId, string? PartnerId);
 
     private static async Task<Results<
             Ok<CommanderDto>,
@@ -28,12 +28,13 @@ public class CreateCommander : IEndpoint
             StatsDbContext dbContext,
             CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.Name) && string.IsNullOrWhiteSpace(request.CardId))
+        if (string.IsNullOrWhiteSpace(request.CustomName) && string.IsNullOrWhiteSpace(request.CardId))
         {
             return TypedResults.BadRequest("Need to provide at least either Name or CardId");
         }
 
         var commander = new Commander();
+        commander.UseCustomDisplayName = request.UseCustomDisplayName;
         if (!string.IsNullOrWhiteSpace(request.CardId))
         {
             var cardId = int.Parse(request.CardId);
@@ -58,7 +59,10 @@ public class CreateCommander : IEndpoint
             commander.PartnerCard = partner;
         }
 
-        commander.Name = request.Name ?? commander.CommanderCard!.Name;
+        commander.CustomName = string.IsNullOrWhiteSpace(request.CustomName)
+            ? commander.GetCardsNames()
+            : request.CustomName;
+
         dbContext.Commanders.Add(commander);
         await dbContext.SaveChangesAsync(ct);
 
