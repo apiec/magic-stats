@@ -80,6 +80,32 @@ type UpdateCommanderRequest = {
     cardId?: string,
     partnerId?: string,
 }
+
+export type GetRecentGamesResponse = {
+    recentGames: RecentGame[],
+}
+
+export type RecentGame = {
+    gameId: string,
+    playedAt: Date,
+    podSize: number,
+    placement: number,
+}
+
+type GetRecordAgainstCommandersResponse = {
+    records: RecordAgainstCommander[],
+}
+
+export type RecordAgainstCommander = {
+    commander: Commander,
+    gamesAgainst: number,
+    winsAgainst: number,
+    lossesAgainst: number,
+    absoluteDifference: number,
+    winrateAgainst: number,
+    lossrateAgainst: number,
+    relativeDifference: number,
+}
 export default class CommanderApi {
     private path: string = 'commanders/';
     private api = new Api();
@@ -120,6 +146,23 @@ export default class CommanderApi {
         const path = this.path + 'winrates' + query;
         const response = await this.api.get<GetCommanderWinratesResponse>(path);
         return response.commanderWinrates;
+    }
+
+    async getRecentGames(commanderId: string, count?: number): Promise<GetRecentGamesResponse> {
+        let requestPath = this.path + commanderId + '/recentGames';
+        if (count !== undefined) {
+            requestPath += '?count=' + count;
+        }
+        const response = await this.api.get<GetRecentGamesResponse>(requestPath);
+        response.recentGames.forEach(g => g.playedAt = new Date(g.playedAt));
+
+        return response;
+    }
+
+    async getRecordAgainstOtherCommanders(commanderId: string): Promise<RecordAgainstCommander[]> {
+        let requestPath = this.path + commanderId + '/commanderRecord';
+        const response = await this.api.get<GetRecordAgainstCommandersResponse>(requestPath);
+        return response.records;
     }
 
     async create(commander: Commander): Promise<Commander> {

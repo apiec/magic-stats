@@ -8,49 +8,39 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
-namespace MagicStats.Api.Players.PlayerStats;
+namespace MagicStats.Api.Commanders.CommanderStats;
 
 public class GetRecentGames : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app) => app
-        .MapGet("/{playerId}/recentGames", Handle);
+        .MapGet("/{commanderId}/recentGames", Handle);
 
     public record Response(RecentGameDto[] RecentGames);
 
-    public record RecentGameDto(
-        string GameId,
-        DateTimeOffset PlayedAt,
-        CommanderDto Commander,
-        int PodSize,
-        int Placement);
+    public record RecentGameDto(string GameId, DateTimeOffset PlayedAt, int PodSize, int Placement);
 
     private static async Task<Results<Ok<Response>, NotFound>> Handle(
-        [FromRoute] string playerId,
+        [FromRoute] string commanderId,
         [FromQuery] int count,
         StatsDbContext dbContext,
         CancellationToken ct)
     {
-        var intId = int.Parse(playerId);
-        var playerExists = await dbContext.Players.AnyAsync(p => p.Id == intId, ct);
-        if (!playerExists)
+        var intId = int.Parse(commanderId);
+        var commanderExists = await dbContext.Commanders.AnyAsync(p => p.Id == intId, ct);
+        if (!commanderExists)
         {
             return TypedResults.NotFound();
         }
 
-        var recentGames = await dbContext.Players
+        var recentGames = await dbContext.Commanders
             .Where(p => p.Id == intId)
             .SelectMany(p => p.Participated)
-            .Include(p => p.Commander)
-            .ThenInclude(p => p.CommanderCard)
-            .Include(p => p.Commander)
-            .ThenInclude(p => p.PartnerCard)
             .OrderByDescending(p => p.Game.PlayedAt)
             .Take(count)
             .Select(p => new
             {
                 p.GameId,
                 p.Game.PlayedAt,
-                p.Commander,
                 PodSize = p.Game.Participants.Count,
                 p.Placement,
             })
@@ -60,7 +50,6 @@ public class GetRecentGames : IEndpoint
             recentGames.Select(g => new RecentGameDto(
                     g.GameId.ToString(),
                     g.PlayedAt,
-                    g.Commander.ToDto(),
                     g.PodSize,
                     g.Placement))
                 .ToArray());

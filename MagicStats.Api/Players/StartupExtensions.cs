@@ -25,7 +25,7 @@ public static class StartupExtensions
         endpoints.MapEndpoint<GetPlayerCommanderStats>();
         endpoints.MapEndpoint<GetRecentGames>();
         endpoints.MapEndpoint<GetPlayerPods>();
-        endpoints.MapEndpoint<GetRecordAgainstPlayers>();
+        endpoints.MapEndpoint<GetRecordAgainstOtherPlayers>();
 
         return app;
     }

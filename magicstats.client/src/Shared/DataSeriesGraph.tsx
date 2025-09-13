@@ -1,6 +1,7 @@
 ﻿import {Box, BoxProps} from "@radix-ui/themes";
 import {CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import {toPercentage} from "./toPercentage.ts";
+import {format} from "date-fns";
 
 export type DataPoint = {
     date: number,
@@ -42,15 +43,13 @@ export function DataSeriesGraph({data, ...boxProps}: DataSeriesGraphProps) {
                         ticks={ticks}
                         domain={[minDate, maxDate]}
                         padding={{left: 20, right: 20}}
-                        tickFormatter={(tickItem: number) => {
-                            return new Date(tickItem).toLocaleDateString();
-                        }}/>
+                        tickFormatter={(tickItem: number) => format(new Date(tickItem), "dd/MM/yyyy")}/>
                     <YAxis ticks={horizontalTicks} dataKey='value' domain={[0, topValue]}
                            tickFormatter={(tickItem: number) => toPercentage(tickItem)}/>
                     <Tooltip formatter={(value: number, _) => toPercentage(value)}
                              filterNull={true}
                              contentStyle={{background: 'var(--gray-2)'}}
-                             labelFormatter={(label: number, _) => new Date(label).toLocaleDateString()}/>
+                             labelFormatter={(label: number, _) => format(new Date(label), "dd/MM/yyyy")}/>
                     <Legend/>
                     {data.map((s, i) => (
                         <Line type='monotone' dataKey='value' data={s.data} name={s.name} key={s.name}

@@ -4,7 +4,9 @@ import CommanderApi, {
     Card,
     SingleCommanderWithStats,
     CommanderImageUris,
-    CommanderWithWinrates
+    CommanderWithWinrates,
+    RecentGame,
+    RecordAgainstCommander
 } from "./CommanderApi.ts";
 import {useParams} from "react-router-dom";
 import {
@@ -21,14 +23,18 @@ import {
     Tooltip,
     Grid,
     Heading,
-    Skeleton
+    Skeleton,
+    ScrollArea,
+    Button
 } from "@radix-ui/themes";
 import {getCommanderDisplayName} from "./CommanderUtils.ts";
-import {InfoCircledIcon, Pencil1Icon} from "@radix-ui/react-icons";
+import {InfoCircledIcon, Pencil1Icon, UpdateIcon} from "@radix-ui/react-icons";
 import CommanderForm from "./CommanderForm.tsx";
 import {DataPoint, DataSeries, DataSeriesGraph} from "../Shared/DataSeriesGraph.tsx";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
-import { toPercentage } from "../Shared/toPercentage.ts";
+import {toPercentage} from "../Shared/toPercentage.ts";
+import {RecordAgainstCommanderTable} from "./RecordAgainstCommanderTable.tsx";
+import {CommanderRecentGamesTable} from "./CommanderRecentGamesTable.tsx";
 
 export function CommanderPage() {
     const {commanderId} = useParams<string>()!;
@@ -68,7 +74,19 @@ export function CommanderPage() {
                         <CommanderWinrateGraph commanderId={commanderId!}/>
                     </Flex>
                 </Box>
+                <Box width='360px' maxWidth='90vw' height='300px' asChild>
+                    <Flex direction='column'>
+                        <Heading>Recent games</Heading>
+                        <CommanderRecentGames commanderId={commanderId!} gameCount={30}/>
+                    </Flex>
+                </Box>
             </Grid>
+            <Box maxWidth='90vw' minHeight='300px' maxHeight='400px' asChild>
+                <Flex direction='column'>
+                    <Heading>Head to head</Heading>
+                    <RecordAgainstCommanders commanderId={commanderId!}/>
+                </Flex>
+            </Box>
         </Flex>
     );
 }
@@ -129,11 +147,29 @@ type SingleCardDisplayProps = {
 }
 
 function SingleCardDisplay({card}: SingleCardDisplayProps) {
+    const [useOtherFace, setUseOtherFace] = useState<boolean>(false);
     const content = () => (
         <Inset>
-            <Box width='100%' asChild>
-                <img src={card.images.borderCrop} alt={card.name}/>
-            </Box>
+            <Flex direction='column'>
+                <Box width='100%' asChild>
+                    {useOtherFace
+                        ? <img src={card.otherFaceImages?.borderCrop} alt={card.name}/>
+                        : <img src={card.images.borderCrop} alt={card.name + ' other face'}/>
+                    }
+                </Box>
+                {
+                    card.otherFaceImages &&
+                    <Button variant='solid' onClick={(e) => {
+                        e.preventDefault();
+                        setUseOtherFace(!useOtherFace);
+                    }}>
+                        <Flex align='center' gap='1'>
+                            <UpdateIcon/>
+                            <Text>Transform</Text>
+                        </Flex>
+                    </Button>
+                }
+            </Flex>
         </Inset>);
 
     return <Dialog.Root>
@@ -196,6 +232,24 @@ function EditCommanderDialog({commander, onUpdate}: EditCommanderDialogProps) {
 async function handleCommanderChange(commander: Commander): Promise<Commander> {
     const api = new CommanderApi();
     return await api.update(commander);
+}
+
+type CommanderRecentGamesProps = {
+    commanderId: string,
+    gameCount: number,
+}
+
+function CommanderRecentGames({commanderId, gameCount}: CommanderRecentGamesProps) {
+    const [games, setGames] = useState<RecentGame[] | undefined>();
+    useEffect(() => {
+        const api = new CommanderApi();
+        api.getRecentGames(commanderId, gameCount).then((res) => setGames(res.recentGames));
+    }, [commanderId]);
+    return games
+        ? <ScrollArea>
+            <CommanderRecentGamesTable games={games}/>
+        </ScrollArea>
+        : <Skeleton width='100%' height='100%'/>;
 }
 
 type CommanderWinrateGraphProps = {
@@ -262,4 +316,21 @@ function CommanderWinrateGraph({commanderId}: CommanderWinrateGraphProps) {
                     : <Skeleton width='100%' height='100%'/>
             }
         </>);
+}
+
+type RecordAgainstCommandersProps = {
+    commanderId: string,
+}
+
+function RecordAgainstCommanders({commanderId}: RecordAgainstCommandersProps) {
+    const [records, setRecords] = useState<RecordAgainstCommander[] | undefined>();
+    useEffect(() => {
+        const api = new CommanderApi();
+        api.getRecordAgainstOtherCommanders(commanderId).then((res) => setRecords(res));
+    }, []);
+    return records
+        ? <ScrollArea>
+            <RecordAgainstCommanderTable records={records}/>
+        </ScrollArea>
+        : <Spinner/>;
 }

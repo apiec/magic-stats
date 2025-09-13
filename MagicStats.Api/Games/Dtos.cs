@@ -36,7 +36,7 @@ public record PlayerDto(string Id, string Name, bool IsGuest);
 
 internal static class GameMapper
 {
-    public static GameDto MapGame(Game g)
+    public static GameDto ToDto(this Game g)
     {
         var participants = g.Participants.Select(ToDto).ToArray();
         var winner = participants.MinBy(p => p.Placement);

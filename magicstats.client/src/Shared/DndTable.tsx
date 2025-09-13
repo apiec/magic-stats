@@ -108,12 +108,12 @@ function DraggableRow<T>({row}: DraggableRowProps<T>) {
     }
 
     return (
-        <Table.Row ref={setNodeRef} style={style}>
+        <Table.Row align='center' ref={setNodeRef} style={style}>
             <Table.Cell>
                 <RowDragHandleCell rowId={row.id}/>
             </Table.Cell>
             {row.getVisibleCells().map(cell => (
-                <Table.Cell key={cell.id} style={{width: cell.column.getSize()}}>
+                <Table.Cell justify='start' key={cell.id} style={{width: cell.column.getSize()}}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </Table.Cell>
             ))}

@@ -28,11 +28,15 @@ public class GetGame : IEndpoint
             .ThenInclude(p => p.Player)
             .Include(g => g.Participants)
             .ThenInclude(p => p.Commander)
+            .ThenInclude(c => c.CommanderCard)
+            .Include(g => g.Participants)
+            .ThenInclude(p => p.Commander)
+            .ThenInclude(c => c.PartnerCard)
             .Include(g => g.Host)
             .SingleOrDefaultAsync(g => g.Id == intId, ct);
 
         return game is not null
-            ? TypedResults.Ok(GameMapper.MapGame(game))
+            ? TypedResults.Ok(game.ToDto())
             : TypedResults.NotFound();
     }
 }

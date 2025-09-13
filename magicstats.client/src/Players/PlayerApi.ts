@@ -72,6 +72,7 @@ export type RecentGame = {
     gameId: string,
     playedAt: Date,
     placement: number,
+    podSize: number,
     commander: Commander,
 }
 

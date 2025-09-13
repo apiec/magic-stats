@@ -8,14 +8,13 @@ import {useDebounce} from "../Shared/useDebounce.ts";
 import {useTheme} from "next-themes";
 import {Card} from "./CommanderApi.ts";
 
-type CommanderCardSearchProps = {
+type CommanderCardSelectProps = {
     card: Card | undefined,
     onCardChange: (card: Card | undefined) => void,
     placeholder?: string,
 }
 
-
-export function CommanderCardSelect({card, onCardChange, placeholder}: CommanderCardSearchProps) {
+export function CommanderCardSelect({card, onCardChange, placeholder}: CommanderCardSelectProps) {
     const cardOption = card ? toOption(card) : undefined;
     const [open, setOpen] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
@@ -84,6 +83,7 @@ export function CommanderCardSelect({card, onCardChange, placeholder}: Commander
                             inputValue={input}
                             onInputChange={(v) => setInput(v)}
                             isLoading={loading}
+                            isClearable
                             formatOptionLabel={(option) => <CardOptionLabel card={option.card}/>}
                             styles={{
                                 input: (baseStyles, _) => ({

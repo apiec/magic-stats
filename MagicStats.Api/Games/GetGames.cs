@@ -32,7 +32,7 @@ public class GetGames : IEndpoint
             .OrderByDescending(g => g.PlayedAt)
             .ToListAsync(ct);
 
-        var response = new Response(games.Select(GameMapper.MapGame));
+        var response = new Response(games.Select(GameMapper.ToDto));
 
         return TypedResults.Ok(response);
     }

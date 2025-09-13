@@ -7,6 +7,7 @@ import DndTable from "../../Shared/DndTable.tsx";
 import {Flex} from "@radix-ui/themes";
 import {FaTrophy} from "react-icons/fa";
 import {PlayerName} from "../../Players/PlayerName.tsx";
+import {CommanderName} from "../../Commanders/CommandersTable.tsx";
 
 type StartingOrderList = {
     participants: Participant[],
@@ -50,7 +51,7 @@ function getColumnDefinition(onParticipantDeleted: (playerId: string) => void): 
             cell: ({row}) => row.original.startingOrder + 1,
             size: 60,
         }),
-        columnHelper.accessor('player.name', {
+        columnHelper.display({
             id: 'playerName',
             header: 'Player',
             cell: ({row}) => <Flex direction='row' gap='3' align='center'>
@@ -58,9 +59,10 @@ function getColumnDefinition(onParticipantDeleted: (playerId: string) => void): 
                 {row.original.placement === 0 && <FaTrophy color='gold'/>}
             </Flex>
         }),
-        columnHelper.accessor('commander.name', {
+        columnHelper.display({
             id: 'commanderName',
             header: 'Commander',
+            cell: ({row}) => <CommanderName commander={row.original.commander}/>,
         }),
         columnHelper.display({
             id: 'delete',

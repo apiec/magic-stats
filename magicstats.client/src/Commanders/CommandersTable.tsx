@@ -114,13 +114,11 @@ export function CommanderName({commander}: CommanderNameProps) {
     const displayName = getCommanderDisplayName(commander);
 
     const nameLinkComponent = (
-        <Flex direction='row' gap='1' align='center' justify='center'>
-            <Link asChild style={{color: 'var(--color)'}}>
-                <RouterLink reloadDocument to={'/commanders/' + commander.id}>
-                    <Text>{displayName}</Text>
-                </RouterLink>
-            </Link>
-        </Flex>
+        <Link asChild style={{color: 'var(--color)'}}>
+            <RouterLink reloadDocument to={'/commanders/' + commander.id}>
+                <Text wrap='wrap'>{displayName}</Text>
+            </RouterLink>
+        </Link>
     );
 
     if (!commander?.card?.images) {

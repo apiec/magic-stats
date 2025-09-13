@@ -36,7 +36,12 @@ public class UpdateCommander : IEndpoint
             commander.Name = request.Name;
         }
 
-        if (!string.IsNullOrWhiteSpace(request.CardId))
+        if (string.IsNullOrWhiteSpace(request.CardId))
+        {
+            commander.CommanderCardId = null;
+            commander.CommanderCard = null;
+        }
+        else
         {
             var cardId = int.Parse(request.CardId);
             var card = await dbContext.CommanderCards.SingleOrDefaultAsync(c => c.Id == cardId, ct);
@@ -49,7 +54,12 @@ public class UpdateCommander : IEndpoint
             commander.CommanderCard = card;
         }
 
-        if (!string.IsNullOrWhiteSpace(request.PartnerId))
+        if (string.IsNullOrWhiteSpace(request.PartnerId))
+        {
+            commander.PartnerCardId = null;
+            commander.PartnerCard = null;
+        }
+        else
         {
             var partnerId = int.Parse(request.PartnerId);
             var partner = await dbContext.CommanderCards.SingleOrDefaultAsync(c => c.Id == partnerId, ct);
