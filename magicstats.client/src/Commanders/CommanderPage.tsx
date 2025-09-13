@@ -25,7 +25,7 @@ import {
     Heading,
     Skeleton,
     ScrollArea,
-    Button
+    Button,
 } from "@radix-ui/themes";
 import {getCommanderDisplayName} from "./CommanderUtils.ts";
 import {InfoCircledIcon, Pencil1Icon, UpdateIcon} from "@radix-ui/react-icons";
@@ -35,6 +35,7 @@ import ValueDisplay from "../Shared/ValueDisplay.tsx";
 import {toPercentage} from "../Shared/toPercentage.ts";
 import {RecordAgainstCommanderTable} from "./RecordAgainstCommanderTable.tsx";
 import {CommanderRecentGamesTable} from "./CommanderRecentGamesTable.tsx";
+import {LayoutProps} from "@radix-ui/themes/props";
 
 export function CommanderPage() {
     const {commanderId} = useParams<string>()!;
@@ -136,40 +137,20 @@ export function CommanderCardsDisplay({commander}: CommanderCardDisplayProps) {
     } as Card; // pigeon placeholder todo: replace
 
     return <Flex>
-        {!commander.card && <SingleCardDisplay card={fallbackCard}/>}
-        {commander.card && <SingleCardDisplay card={commander.card}/>}
-        {commander.partner && <SingleCardDisplay card={commander.partner}/>}
+        {!commander.card && <CardArtDisplay card={fallbackCard}/>}
+        {commander.card && <CardArtDisplay card={commander.card}/>}
+        {commander.partner && <CardArtDisplay card={commander.partner}/>}
     </Flex>;
 }
 
-type SingleCardDisplayProps = {
+type CardArtDisplayProps = {
     card: Card,
 }
 
-function SingleCardDisplay({card}: SingleCardDisplayProps) {
-    const [useOtherFace, setUseOtherFace] = useState<boolean>(false);
+function CardArtDisplay({card}: CardArtDisplayProps) {
     const content = () => (
         <Inset>
-            <Flex direction='column'>
-                <Box width='100%' asChild>
-                    {useOtherFace
-                        ? <img src={card.otherFaceImages?.borderCrop} alt={card.name}/>
-                        : <img src={card.images.borderCrop} alt={card.name + ' other face'}/>
-                    }
-                </Box>
-                {
-                    card.otherFaceImages &&
-                    <Button variant='solid' onClick={(e) => {
-                        e.preventDefault();
-                        setUseOtherFace(!useOtherFace);
-                    }}>
-                        <Flex align='center' gap='1'>
-                            <UpdateIcon/>
-                            <Text>Transform</Text>
-                        </Flex>
-                    </Button>
-                }
-            </Flex>
+            <FullCardDisplay card={card} maxWidth='300px'/>
         </Inset>);
 
     return <Dialog.Root>
@@ -186,16 +167,44 @@ function SingleCardDisplay({card}: SingleCardDisplayProps) {
                     </Box>
                 </Dialog.Trigger>
             </HoverCard.Trigger>
-            <HoverCard.Content maxWidth='300px'>
+            <HoverCard.Content>
                 {content()}
             </HoverCard.Content>
         </HoverCard.Root>
-        <Dialog.Content>
+        <Dialog.Content width='fit-content'>
             <Dialog.Close>
                 {content()}
             </Dialog.Close>
         </Dialog.Content>
     </Dialog.Root>
+}
+
+type FullCardDisplayProps = {
+    card: Card,
+} & LayoutProps;
+
+export function FullCardDisplay({card, ...layoutProps}: FullCardDisplayProps) {
+    const [useOtherFace, setUseOtherFace] = useState<boolean>(false);
+    return <Flex {...layoutProps} direction='column'>
+        <Box asChild>
+            {(useOtherFace && card.otherFaceImages)
+                ? <img src={card.otherFaceImages?.borderCrop} alt={card.name}/>
+                : <img src={card.images.borderCrop} alt={card.name + ' other face'}/>
+            }
+        </Box>
+        {
+            card.otherFaceImages &&
+            <Button variant='solid' onClick={(e) => {
+                e.preventDefault();
+                setUseOtherFace(!useOtherFace);
+            }}>
+                <Flex align='center' gap='1'>
+                    <UpdateIcon/>
+                    <Text>Transform</Text>
+                </Flex>
+            </Button>
+        }
+    </Flex>
 }
 
 type EditCommanderDialogProps = {
