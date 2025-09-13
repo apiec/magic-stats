@@ -27,6 +27,8 @@ import {getCommanderDisplayName} from "./CommanderUtils.ts";
 import {InfoCircledIcon, Pencil1Icon} from "@radix-ui/react-icons";
 import CommanderForm from "./CommanderForm.tsx";
 import {DataPoint, DataSeries, DataSeriesGraph} from "../Shared/DataSeriesGraph.tsx";
+import ValueDisplay from "../Shared/ValueDisplay.tsx";
+import { toPercentage } from "../Shared/toPercentage.ts";
 
 export function CommanderPage() {
     const {commanderId} = useParams<string>()!;
@@ -54,6 +56,11 @@ export function CommanderPage() {
                         }));
                 }}/>
             </RadixCard>
+            <Flex gap='2' align='center' wrap='wrap' maxWidth='500px' justify='center'>
+                <ValueDisplay title='Total games' values={[commander.stats.games.toFixed(0)]}/>
+                <ValueDisplay title='Total wins' values={[commander.stats.wins.toFixed(0)]}/>
+                <ValueDisplay title='All time winrate' values={[toPercentage(commander.stats.winrate)]}/>
+            </Flex>
             <Grid gap='7' columns={{initial: '1', md: '2',}}>
                 <Box width='360px' maxWidth='90vw' height='300px' asChild>
                     <Flex direction='column'>
