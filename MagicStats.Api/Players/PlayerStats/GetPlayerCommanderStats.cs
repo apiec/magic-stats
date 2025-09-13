@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MagicStats.Api.Players.PlayerStats;
 
-public class GetCommanderStats : IEndpoint
+public class GetPlayerCommanderStats : IEndpoint
 {
     public static void Map(IEndpointRouteBuilder app) => app
         .MapGet("/{playerId}/commanders", Handle);

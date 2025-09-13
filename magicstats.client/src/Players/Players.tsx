@@ -1,11 +1,11 @@
 ﻿import {useEffect, useMemo, useState} from 'react';
 import {useImmer} from 'use-immer';
 import {useLocation} from 'react-router-dom';
-import {Button, Dialog, Flex, Select, Spinner, Switch, Text} from '@radix-ui/themes';
+import {Button, Dialog, Flex, Heading, Select, Spinner, Switch, Text} from '@radix-ui/themes';
 import PlayersTable from "./PlayersTable.tsx";
 import PlayerApi, {PlayerWithStats} from "./PlayerApi.ts";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
-import WinrateGraph, {DataSeries, DataPoint} from "../Shared/WinrateGraph.tsx";
+import {DataSeries, DataPoint, DataSeriesGraph} from "../Shared/DataSeriesGraph.tsx";
 import PlayerForm from "./PlayerForm.tsx";
 
 export default function Players() {
@@ -144,7 +144,11 @@ function PlayersWinrateGraph({slidingWindowSize, podSize, playerIds, showGuests}
 
     const filteredData = data.filter(d => showGuests || !d.isGuest);
     return (
-        <WinrateGraph data={filteredData} slidingWindowSize={slidingWindowSize}/>
+        <Flex direction='column' align='center' width='100%'>
+            <Heading as='h3'>Winrates</Heading>
+            <Text>{slidingWindowSize ? `Sliding window - ${slidingWindowSize}` : 'All time'}</Text>
+            <DataSeriesGraph data={filteredData} width='100%' height='400px'/>
+        </Flex>
     );
 }
 

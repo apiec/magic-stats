@@ -1,13 +1,35 @@
 import {useEffect, useState} from "react";
-import CommanderApi, {Commander, Card, SingleCommanderWithStats, CommanderImageUris} from "./CommanderApi.ts";
+import CommanderApi, {
+    Commander,
+    Card,
+    SingleCommanderWithStats,
+    CommanderImageUris,
+    CommanderWithWinrates
+} from "./CommanderApi.ts";
 import {useParams} from "react-router-dom";
-import {Box, Card as RadixCard, Dialog, Flex, HoverCard, IconButton, Inset, Spinner, Text} from "@radix-ui/themes";
+import {
+    Box,
+    Card as RadixCard,
+    Dialog,
+    Flex,
+    HoverCard,
+    IconButton,
+    Inset,
+    Spinner,
+    Text,
+    SegmentedControl,
+    Tooltip,
+    Grid,
+    Heading,
+    Skeleton
+} from "@radix-ui/themes";
 import {getCommanderDisplayName} from "./CommanderUtils.ts";
-import {Pencil1Icon} from "@radix-ui/react-icons";
+import {InfoCircledIcon, Pencil1Icon} from "@radix-ui/react-icons";
 import CommanderForm from "./CommanderForm.tsx";
+import {DataPoint, DataSeries, DataSeriesGraph} from "../Shared/DataSeriesGraph.tsx";
 
 export function CommanderPage() {
-    const {commanderId} = useParams<string>();
+    const {commanderId} = useParams<string>()!;
     const [commander, setCommander] = useState<SingleCommanderWithStats | undefined>();
     useEffect(() => {
         const api = new CommanderApi();
@@ -32,7 +54,14 @@ export function CommanderPage() {
                         }));
                 }}/>
             </RadixCard>
-            {/* todo: value displays for wins/games */}
+            <Grid gap='7' columns={{initial: '1', md: '2',}}>
+                <Box width='360px' maxWidth='90vw' height='300px' asChild>
+                    <Flex direction='column'>
+                        <Heading>Winrate</Heading>
+                        <CommanderWinrateGraph commanderId={commanderId!}/>
+                    </Flex>
+                </Box>
+            </Grid>
         </Flex>
     );
 }
@@ -160,4 +189,70 @@ function EditCommanderDialog({commander, onUpdate}: EditCommanderDialogProps) {
 async function handleCommanderChange(commander: Commander): Promise<Commander> {
     const api = new CommanderApi();
     return await api.update(commander);
+}
+
+type CommanderWinrateGraphProps = {
+    commanderId: string;
+}
+
+type SeriesType = 'recent' | 'allTime';
+
+function CommanderWinrateGraph({commanderId}: CommanderWinrateGraphProps) {
+    const [recentData, setRecentData] = useState<DataSeries | undefined>(undefined);
+    const [allTimeData, setAllTimeData] = useState<DataSeries | undefined>(undefined);
+    const [seriesUsed, setSeriesUsed] = useState<SeriesType>('recent');
+
+    function mapData(data: CommanderWithWinrates[]): DataSeries {
+        const commanderData = data.find(d => d.id === commanderId)!;
+        return {
+            name: commanderData.name,
+            data: commanderData.dataPoints.map(d => {
+                return {
+                    date: new Date(d.date).valueOf(),
+                    value: d.winrate,
+                } as DataPoint;
+            })
+        } as DataSeries;
+    }
+
+    function populateData() {
+        const api = new CommanderApi();
+        api.getWinrates(30).then(mapData).then(setRecentData);
+        api.getWinrates().then(mapData).then(setAllTimeData);
+    }
+
+    useEffect(() => {
+        populateData();
+    }, []);
+
+    const usedData = seriesUsed === 'recent' ? recentData : allTimeData;
+    const tooltip = 'Recent - shows the winrate from the most recent 30 games';
+    return (
+        <>
+            <Box my='2' width='fit-content'>
+                <Flex gap='1' align='center'>
+                    <SegmentedControl.Root value={seriesUsed} size='1' onValueChange={(value) => {
+                        setSeriesUsed(value as SeriesType);
+                    }}>
+                        <SegmentedControl.Item value='allTime'>All time</SegmentedControl.Item>
+                        <SegmentedControl.Item value='recent'>Recent</SegmentedControl.Item>
+                    </SegmentedControl.Root>
+                    <Dialog.Root>
+                        <Tooltip content={tooltip}>
+                            <Dialog.Trigger>
+                                <InfoCircledIcon/>
+                            </Dialog.Trigger>
+                        </Tooltip>
+                        <Dialog.Content maxWidth='fit-content'>
+                            <Text as='div' align='center'>{tooltip}</Text>
+                        </Dialog.Content>
+                    </Dialog.Root>
+                </Flex>
+            </Box>
+            {
+                usedData !== undefined
+                    ? <DataSeriesGraph data={[usedData]}/>
+                    : <Skeleton width='100%' height='100%'/>
+            }
+        </>);
 }

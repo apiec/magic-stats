@@ -20,7 +20,7 @@ public class GetCommandersWithStats : IEndpoint
 
     public record CommanderWithStatsDto(string Id, string Name, CardDto? Card, CardDto? Partner, CommanderStats Stats);
 
-    public record CommanderStats(int Wins, int Games, float? Winrate, float? WinrateLastX);
+    public record CommanderStats(int Wins, int Games, float? Winrate);
 
     private static async Task<Ok<Response>> Handle(
         [FromQuery] int? windowSize,
@@ -44,8 +44,7 @@ public class GetCommandersWithStats : IEndpoint
                     new CommanderStats(
                         Wins: p.Wins,
                         Games: p.Games,
-                        Winrate: p.Games > 0 ? (float)p.Wins / p.Games : null,
-                        WinrateLastX: p.Games > 0 ? (float)p.WinsLastX / Math.Min(p.Games, windowSize.Value) : null)))
+                        Winrate: p.Games > 0 ? (float)p.Wins / p.Games : null)))
             .ToList();
 
         var response = new Response(dto);

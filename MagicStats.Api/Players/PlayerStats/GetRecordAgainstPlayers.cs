@@ -1,4 +1,3 @@
-using MagicStats.Api.Games;
 using MagicStats.Api.Shared;
 using MagicStats.Persistence.EfCore.Context;
 using Microsoft.AspNetCore.Builder;
