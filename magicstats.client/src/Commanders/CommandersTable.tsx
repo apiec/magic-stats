@@ -13,7 +13,6 @@ import CommanderApi from "../Commanders/CommanderApi.ts";
 import {Box, Flex, HoverCard, Inset, Link, Table, Text} from '@radix-ui/themes';
 import {Link as RouterLink} from 'react-router-dom';
 import DeleteButton from '../Shared/DeleteButton.tsx';
-import {getCommanderDisplayName} from "./CommanderUtils.ts";
 import {toPercentage} from "../Shared/toPercentage.ts";
 import {FullCardDisplay} from "./CommanderPage.tsx";
 
@@ -78,10 +77,10 @@ export default function CommandersTable({commanders}: CommanderTableProps) {
 const columnHelper = createColumnHelper<CommanderWithStats>();
 
 const columns = [
-    columnHelper.accessor('name', {
+    columnHelper.display({
         id: 'name',
         header: ctx => <SortableHeader text='Name' context={ctx}/>,
-        cell: props => <CommanderName commander={props.row.original}/>
+        cell: props => <CommanderName commander={props.row.original.commander}/>
     }),
     columnHelper.accessor('stats.games', {
         id: 'games',
@@ -101,7 +100,7 @@ const columns = [
         header: 'Delete',
         cell: props => <DeleteButton onClick={() => {
             const api = new CommanderApi();
-            api.delete(props.row.original.id)
+            api.delete(props.row.original.commander.id)
                 .then(() => window.location.reload());
         }}/>,
     })
@@ -112,12 +111,10 @@ type CommanderNameProps = {
 }
 
 export function CommanderName({commander}: CommanderNameProps) {
-    const displayName = getCommanderDisplayName(commander);
-
     const nameLinkComponent = (
         <Link asChild style={{color: 'var(--color)'}}>
             <RouterLink reloadDocument to={'/commanders/' + commander.id}>
-                <Text wrap='wrap'>{displayName}</Text>
+                <Text wrap='wrap'>{commander.displayName}</Text>
             </RouterLink>
         </Link>
     );

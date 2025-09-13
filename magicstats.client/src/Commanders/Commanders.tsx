@@ -36,9 +36,9 @@ export default function Commanders() {
     return (
         <Flex direction='column' maxWidth='700px' align='center' gap='6'>
             <Flex direction={{initial: 'column', md: 'row'}} gap='5'>
-                <ValueDisplay title='Most games' values={[mostGamesCommander.name, mostGames.toFixed(0)]}/>
+                <ValueDisplay title='Most games' values={[mostGamesCommander.commander.displayName, mostGames.toFixed(0)]}/>
                 <ValueDisplay title='Highest WR'
-                              values={[highestWinrateCommander.name, toPercentage(highestWinrate)]}/>
+                              values={[highestWinrateCommander.commander.displayName, toPercentage(highestWinrate)]}/>
             </Flex>
             <Flex direction='row' align='end' gap='5' justify='center'>
                 <Flex direction='column' minWidth='70px' align='center'>

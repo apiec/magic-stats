@@ -76,7 +76,7 @@ const columns = [
     columnHelper.display({
         id: 'name',
         header: ctx => <SortableHeader text='Name' context={ctx}/>,
-        cell: props => <CommanderName commander={props.row.original}/>
+        cell: props => <CommanderName commander={props.row.original.commander}/>
     }),
     columnHelper.accessor('stats.games', {
         id: 'games',

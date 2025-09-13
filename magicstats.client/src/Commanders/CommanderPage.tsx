@@ -27,7 +27,6 @@ import {
     ScrollArea,
     Button,
 } from "@radix-ui/themes";
-import {getCommanderDisplayName} from "./CommanderUtils.ts";
 import {InfoCircledIcon, Pencil1Icon, UpdateIcon} from "@radix-ui/react-icons";
 import CommanderForm from "./CommanderForm.tsx";
 import {DataPoint, DataSeries, DataSeriesGraph} from "../Shared/DataSeriesGraph.tsx";
@@ -55,13 +54,19 @@ export function CommanderPage() {
     return (
         <Flex direction='column' gap='7' width='100%' align='center' justify='center'>
             <RadixCard>
-                <CommanderSummary commander={commander} onCommanderUpdate={(c) => {
-                    handleCommanderChange(c)
-                        .then(res => setCommander({
+                <CommanderSummary
+                    commander={commander.commander}
+                    onCommanderUpdate={async (c) => {
+                        const res = await handleCommanderChange(c);
+                        console.log(res);
+                        setCommander({
                             ...commander,
-                            ...res,
-                        }));
-                }}/>
+                            commander: {
+                                ...commander.commander,
+                                ...res,
+                            }
+                        });
+                    }}/>
             </RadixCard>
             <Flex gap='2' align='center' wrap='wrap' maxWidth='500px' justify='center'>
                 <ValueDisplay title='Total games' values={[commander.stats.games.toFixed(0)]}/>
@@ -94,7 +99,7 @@ export function CommanderPage() {
 
 type CommanderSummaryCardProps = {
     commander: Commander,
-    onCommanderUpdate: (commander: Commander) => void,
+    onCommanderUpdate: (commander: Commander) => Promise<void>,
 }
 
 function CommanderSummary({commander, onCommanderUpdate}: CommanderSummaryCardProps) {
@@ -111,7 +116,7 @@ function CommanderSummary({commander, onCommanderUpdate}: CommanderSummaryCardPr
                     <Text align={{
                         initial: 'center',
                         md: 'left',
-                    }} as='div' wrap='pretty' size='6'>{getCommanderDisplayName(commander)}</Text>
+                    }} as='div' wrap='pretty' size='6'>{commander.displayName}</Text>
                 </Box>
                 <EditCommanderDialog commander={commander} onUpdate={onCommanderUpdate}/>
             </Flex>
@@ -209,11 +214,12 @@ export function FullCardDisplay({card, ...layoutProps}: FullCardDisplayProps) {
 
 type EditCommanderDialogProps = {
     commander: Commander,
-    onUpdate: (commander: Commander) => void,
+    onUpdate: (commander: Commander) => Promise<void>,
 };
 
 function EditCommanderDialog({commander, onUpdate}: EditCommanderDialogProps) {
     const [open, setOpen] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
     return <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Trigger>
             <IconButton size='1' variant='ghost' radius='small' asChild>
@@ -227,10 +233,13 @@ function EditCommanderDialog({commander, onUpdate}: EditCommanderDialogProps) {
                 Edit commander
             </Dialog.Title>
             <CommanderForm
+                loading={loading}
                 commander={commander}
                 onSubmit={(c) => {
-                    onUpdate(c);
-                    setOpen(false);
+                    setLoading(true);
+                    onUpdate(c)
+                        .then(() => setOpen(false))
+                        .finally(() => setLoading(false));
                 }}
                 onClose={() => setOpen(false)}
             />
@@ -240,7 +249,9 @@ function EditCommanderDialog({commander, onUpdate}: EditCommanderDialogProps) {
 
 async function handleCommanderChange(commander: Commander): Promise<Commander> {
     const api = new CommanderApi();
-    return await api.update(commander);
+    const result = await api.update(commander);
+    console.log(result);
+    return result;
 }
 
 type CommanderRecentGamesProps = {

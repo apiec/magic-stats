@@ -66,7 +66,7 @@ export default function PlayerPage() {
         if (mostPlayedCommander === undefined) {
             return ['Not enough games'];
         }
-        return [mostPlayedCommander.name, mostGames.toFixed(0)];
+        return [mostPlayedCommander.commander.displayName, mostGames.toFixed(0)];
     }
 
     function getBestCommanderDisplay() {
@@ -79,7 +79,7 @@ export default function PlayerPage() {
         if (bestCommander === undefined) {
             return ['Not enough games'];
         }
-        return [bestCommander.name, toPercentage(bestWinrate)];
+        return [bestCommander.commander.displayName, toPercentage(bestWinrate)];
     }
 
     return (

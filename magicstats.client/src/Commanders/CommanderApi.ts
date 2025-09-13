@@ -2,7 +2,9 @@
 
 export type Commander = {
     id: string,
-    name: string,
+    displayName: string,
+    customName: string | undefined,
+    useCustomDisplayName: boolean,
     card: Card | undefined,
     partner: Card | undefined,
 }
@@ -25,7 +27,8 @@ export type CommanderImageUris = {
     small: string,
 }
 
-export type CommanderWithStats = Commander & {
+export type CommanderWithStats = {
+    commander: Commander,
     stats: CommanderStats,
 }
 
@@ -36,7 +39,8 @@ export type CommanderStats = {
     winrateLastX: number,
 }
 
-export type SingleCommanderWithStats = Commander & {
+export type SingleCommanderWithStats = {
+    commander: Commander,
     stats: SingleCommanderStats
 }
 
@@ -70,13 +74,15 @@ export type DataPoint = {
 }
 
 type CreateCommanderRequest = {
-    name?: string;
-    cardId?: Card;
-    partnerId?: Card;
+    useCustomDisplayName: boolean,
+    customName?: string,
+    cardId?: string;
+    partnerId?: string;
 }
 
 type UpdateCommanderRequest = {
-    name?: string,
+    useCustomDisplayName: boolean,
+    customName?: string,
     cardId?: string,
     partnerId?: string,
 }
@@ -167,7 +173,8 @@ export default class CommanderApi {
 
     async create(commander: Commander): Promise<Commander> {
         const request = {
-            name: commander.name,
+            useCustomDisplayName: commander.useCustomDisplayName,
+            name: commander.customName,
             cardId: commander.card?.id,
             partnerId: commander.partner?.id,
         } as CreateCommanderRequest;
@@ -180,7 +187,8 @@ export default class CommanderApi {
 
     async update(commander: Commander): Promise<Commander> {
         const request = {
-            name: commander.name,
+            useCustomDisplayName: commander.useCustomDisplayName,
+            customName: commander.customName,
             cardId: commander.card?.id,
             partnerId: commander.partner?.id,
         } as UpdateCommanderRequest;

@@ -17,7 +17,7 @@ public class GetPlayerCommanderStats : IEndpoint
 
     public record Response(CommanderWithStatsDto[] Commanders);
 
-    public record CommanderWithStatsDto(string Id, string Name, CardDto? Card, CardDto? Partner, CommanderStats Stats);
+    public record CommanderWithStatsDto(CommanderDto Commander, CommanderStats Stats);
 
     public record CommanderStats(int Wins, int Games, float Winrate);
 
@@ -55,10 +55,7 @@ public class GetPlayerCommanderStats : IEndpoint
             {
                 var stats = rawStats[c.Id];
                 return new CommanderWithStatsDto(
-                    c.Id.ToString(),
-                    c.Name,
-                    c.CommanderCard?.ToDto(),
-                    c.PartnerCard?.ToDto(),
+                    c.ToDto(),
                     new CommanderStats(
                         stats.Games,
                         stats.Wins,

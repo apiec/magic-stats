@@ -1,16 +1,17 @@
 ﻿import {Commander} from "./CommanderApi";
-import {Button, Flex, Grid, TextField} from "@radix-ui/themes";
+import {Button, Flex, Grid, Switch, Text, TextField} from "@radix-ui/themes";
 import {CommanderCardSelect} from "./CommanderCardSelect.tsx";
 import {useImmer} from "use-immer";
 
 type CommanderFormProps = {
     commander?: Commander,
+    loading: boolean,
     onSubmit: (commander: Commander) => void;
     onClose?: () => void;
 }
-export default function CommanderForm({commander, onSubmit, onClose}: CommanderFormProps) {
+export default function CommanderForm({commander, loading, onSubmit, onClose}: CommanderFormProps) {
     const [commanderCopy, setCommanderCopy] = useImmer<Commander>(
-        commander ?? {name: ''} as Commander);
+        commander ?? {customName: ''} as Commander);
 
     return (
         <Flex asChild direction='column' gap='1'>
@@ -18,20 +19,6 @@ export default function CommanderForm({commander, onSubmit, onClose}: CommanderF
                 e.preventDefault();
                 onSubmit(commanderCopy);
             }}>
-                {
-                    commanderCopy.name && !commanderCopy.card &&
-                    <TextField.Root
-                        id='name-input'
-                        placeholder='Commander name'
-                        value={commanderCopy.name}
-                        onChange={e => {
-                            const name = e.currentTarget.value;
-                            setCommanderCopy(c => {
-                                c.name = name;
-                            });
-                        }}>
-                    </TextField.Root>
-                }
                 <CommanderCardSelect
                     card={commanderCopy.card}
                     onCardChange={card => {
@@ -41,15 +28,39 @@ export default function CommanderForm({commander, onSubmit, onClose}: CommanderF
                     }}
                     placeholder={'Find your commander'}
                 />
-                <CommanderCardSelect
-                    card={commanderCopy.partner}
-                    onCardChange={card => {
-                        setCommanderCopy(c => {
-                            c.partner = card;
-                        })
-                    }}
-                    placeholder={'Add a partner'}
-                />
+                {
+                    (commanderCopy.card || commanderCopy.partner) &&
+                    <CommanderCardSelect
+                        card={commanderCopy.partner}
+                        onCardChange={card => {
+                            setCommanderCopy(c => {
+                                c.partner = card;
+                            })
+                        }}
+                        placeholder={'Add a partner'}
+                    />
+                }
+                <Flex gap='1'>
+                    <Switch checked={commanderCopy.useCustomDisplayName}
+                            onClick={() => setCommanderCopy(c => {
+                                    c.useCustomDisplayName = !c.useCustomDisplayName;
+                                }
+                            )}/>
+                    <Text>Use custom display name</Text>
+                </Flex>
+                {commanderCopy.useCustomDisplayName &&
+                    <TextField.Root
+                        id='name-input'
+                        placeholder='Custom name'
+                        value={commanderCopy.customName}
+                        onChange={e => {
+                            const name = e.currentTarget.value;
+                            setCommanderCopy(c => {
+                                c.customName = name;
+                            });
+                        }}>
+                    </TextField.Root>
+                }
                 <Grid columns='2' gap='3'>
                     {
                         onClose &&
@@ -60,7 +71,7 @@ export default function CommanderForm({commander, onSubmit, onClose}: CommanderF
                             Cancel
                         </Button>
                     }
-                    <Button type='submit'>
+                    <Button type='submit' loading={loading}>
                         Confirm
                     </Button>
                 </Grid>

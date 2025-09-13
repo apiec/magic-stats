@@ -15,7 +15,7 @@ public class CommanderWinratesCalculator(IReadOnlyCollection<Game> games, IReadO
 
         var commanderResults = commanders.ToDictionary(
             p => p.Id,
-            p => new CommanderWinratesOverTime(p.Id.ToString(), p.Name, new List<DataPoint>(meetings.Length)));
+            p => new CommanderWinratesOverTime(p.Id.ToString(), p.CustomName, new List<DataPoint>(meetings.Length)));
 
         var commanderRecords = commanders.ToDictionary(p => p.Id, _ => new Queue<bool>());
         foreach (var meeting in meetings)

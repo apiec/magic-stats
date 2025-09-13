@@ -16,7 +16,7 @@ public class UpdateCommander : IEndpoint
         .MapPut("/{commanderId}", Handle)
         .WithSummary("Update a commander");
 
-    public record Request(string? Name, string? CardId, string? PartnerId);
+    public record Request(bool UseCustomDisplayName, string? CustomName, string? CardId, string? PartnerId);
 
     private static async Task<Results<Ok<CommanderDto>, NotFound<string>>> Handle(
         [FromRoute] string commanderId,
@@ -25,15 +25,19 @@ public class UpdateCommander : IEndpoint
         CancellationToken ct)
     {
         var intId = int.Parse(commanderId);
-        var commander = await dbContext.Commanders.SingleOrDefaultAsync(p => p.Id == intId, ct);
+        var commander = await dbContext.Commanders
+            .Include(c => c.CommanderCard)
+            .Include(c => c.PartnerCard)
+            .SingleOrDefaultAsync(p => p.Id == intId, ct);
         if (commander is null)
         {
             return TypedResults.NotFound("Commander not found");
         }
 
-        if (!string.IsNullOrWhiteSpace(request.Name))
+        commander.UseCustomDisplayName = request.UseCustomDisplayName;
+        if (!string.IsNullOrWhiteSpace(request.CustomName))
         {
-            commander.Name = request.Name;
+            commander.CustomName = request.CustomName;
         }
 
         if (string.IsNullOrWhiteSpace(request.CardId))
@@ -41,7 +45,7 @@ public class UpdateCommander : IEndpoint
             commander.CommanderCardId = null;
             commander.CommanderCard = null;
         }
-        else
+        else if (request.CardId != commander.CommanderCardId.ToString())
         {
             var cardId = int.Parse(request.CardId);
             var card = await dbContext.CommanderCards.SingleOrDefaultAsync(c => c.Id == cardId, ct);
@@ -59,7 +63,7 @@ public class UpdateCommander : IEndpoint
             commander.PartnerCardId = null;
             commander.PartnerCard = null;
         }
-        else
+        else if (request.PartnerId != commander.PartnerCardId.ToString())
         {
             var partnerId = int.Parse(request.PartnerId);
             var partner = await dbContext.CommanderCards.SingleOrDefaultAsync(c => c.Id == partnerId, ct);
@@ -74,6 +78,7 @@ public class UpdateCommander : IEndpoint
 
         await dbContext.SaveChangesAsync(ct);
 
+        var dto = commander.ToDto();
         return TypedResults.Ok(commander.ToDto());
     }
 }
