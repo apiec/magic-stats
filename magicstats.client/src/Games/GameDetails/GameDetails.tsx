@@ -11,6 +11,8 @@ import {Game, Participant} from "../GamesApi.ts";
 import {Dialog, Inset, Table, Text} from '@radix-ui/themes';
 import {ReactNode} from 'react';
 import {FaTrophy} from 'react-icons/fa'
+import {CommanderName} from "../../Commanders/CommandersTable.tsx";
+import {PlayerName} from "../../Players/PlayerName.tsx";
 
 interface GameDetailsProps {
     game: Game,
@@ -83,13 +85,15 @@ const columns: ColumnDef<Participant, any>[] = [
         header: 'Placement',
         cell: ({row}) => row.original.placement === 0 ? <FaTrophy/> : row.original.placement + 1,
     }),
-    columnHelper.accessor('commander.name', {
+    columnHelper.display({
         id: 'commanderName',
-        header: 'Commander'
+        header: 'Commander',
+        cell: props => <CommanderName commander={props.row.original.commander}/>,
     }),
-    columnHelper.accessor('player.name', {
+    columnHelper.display({
         id: 'playerName',
-        header: 'Player'
+        header: 'Player',
+        cell: props => <PlayerName player={props.row.original.player}/>,
     }),
     columnHelper.accessor('startingOrder', {
         id: 'startingOrder',
