@@ -88,13 +88,25 @@ public class GetHomePageStats : IEndpoint
         {
             return await _dbContext.Database.SqlQuery<CommanderWithMostGamesDto>(
                     $"""
-                     SELECT c.Id, c.Name, gamesPlayed 
+                     SELECT c.Id,
+                     (CASE WHEN c.UseCustomDisplayName OR cc.Name IS NULL
+                         THEN c.CustomName
+                         ELSE (
+                             cc.NAME ||
+                             CASE WHEN pc.Name IS NULL
+                                 THEN ''
+                                 ELSE ' // ' || pc.Name
+                             END)
+                     END) Name,
+                     gamesPlayed
                      FROM Commanders c
-                     INNER JOIN (SELECT CommanderId, COUNT(1) gamesPlayed
-                         FROM Participants
-                         GROUP BY CommanderId
-                         ORDER BY gamesPlayed DESC
-                         LIMIT 1) ON c.Id = CommanderId
+                         INNER JOIN (SELECT CommanderId, COUNT(1) gamesPlayed
+                                     FROM Participants
+                                     GROUP BY CommanderId
+                                     ORDER BY gamesPlayed DESC
+                                     LIMIT 1) ON c.Id = CommanderId
+                         LEFT JOIN CommanderCards cc ON c.CommanderCardId = cc.Id
+                         LEFT JOIN CommanderCards pc ON c.PartnerCardId = pc.Id
                      """)
                 .FirstOrDefaultAsync(ct);
         }
