@@ -50,7 +50,7 @@ export function DataSeriesGraph({data, ...boxProps}: DataSeriesGraphProps) {
                              filterNull={true}
                              contentStyle={{background: 'var(--gray-2)'}}
                              labelFormatter={(label: number, _) => format(new Date(label), "dd/MM/yyyy")}/>
-                    <Legend/>
+                    <Legend />
                     {data.map((s, i) => (
                         <Line type='monotone' dataKey='value' data={s.data} name={s.name} key={s.name}
                               stroke={colors[i % colors.length]}

@@ -1,10 +1,9 @@
 ﻿import {useEffect, useState} from 'react';
 import {useImmer} from 'use-immer';
-import {Button, Dialog, Flex, Heading, Select, Spinner, Text} from '@radix-ui/themes';
+import {Button, Dialog, Flex, Select, Spinner, Text} from '@radix-ui/themes';
 import CommanderApi, {CommanderWithStats} from "./CommanderApi.ts";
 import CommanderForm from "./CommanderForm.tsx";
 import CommandersTable from "./CommandersTable.tsx";
-import {DataPoint, DataSeries, DataSeriesGraph} from "../Shared/DataSeriesGraph.tsx";
 import ValueDisplay from "../Shared/ValueDisplay.tsx";
 import {toPercentage} from "../Shared/toPercentage.ts";
 
@@ -36,7 +35,8 @@ export default function Commanders() {
     return (
         <Flex direction='column' maxWidth='700px' align='center' gap='6'>
             <Flex direction={{initial: 'column', md: 'row'}} gap='5'>
-                <ValueDisplay title='Most games' values={[mostGamesCommander.commander.displayName, mostGames.toFixed(0)]}/>
+                <ValueDisplay title='Most games'
+                              values={[mostGamesCommander.commander.displayName, mostGames.toFixed(0)]}/>
                 <ValueDisplay title='Highest WR'
                               values={[highestWinrateCommander.commander.displayName, toPercentage(highestWinrate)]}/>
             </Flex>
@@ -64,9 +64,6 @@ export default function Commanders() {
                 <AddCommanderDialog/>
             </Flex>
             <CommandersTable commanders={commanders} lastXWindowSize={lastX}/>
-            <CommandersWinrateGraph
-                slidingWindowSize={slidingWindowOptions.get(slidingWindowSize)}
-                podSize={podSizeOptions.get(podSize)}/>
         </Flex>
     );
 }
@@ -95,6 +92,7 @@ function AddCommanderDialog() {
                 Add a new commander
             </Dialog.Title>
             <CommanderForm
+                loading={false}
                 onClose={() => setOpen(false)}
                 onSubmit={c => {
                     const api = new CommanderApi();
@@ -104,42 +102,4 @@ function AddCommanderDialog() {
                 }}/>
         </Dialog.Content>
     </Dialog.Root>
-}
-
-type CommandersWinrateGraphProps = {
-    slidingWindowSize: number | undefined;
-    podSize: number | undefined;
-}
-
-function CommandersWinrateGraph({slidingWindowSize, podSize}: CommandersWinrateGraphProps) {
-    const [data, setData] = useState<DataSeries[]>([]);
-
-    async function populateData() {
-        const api = new CommanderApi();
-        const commanderWinrates = await api.getWinrates(slidingWindowSize, podSize);
-        const data = commanderWinrates.map(p => {
-            return {
-                name: p.name,
-                data: p.dataPoints.map(d => {
-                    return {
-                        date: new Date(d.date).valueOf(),
-                        value: d.winrate,
-                    } as DataPoint;
-                })
-            } as DataSeries;
-        });
-        setData(data);
-    }
-
-    useEffect(() => {
-        populateData().then();
-    }, [slidingWindowSize, podSize]);
-
-    return (
-        <Flex direction='column' align='center' width='100%'>
-            <Heading as='h3'>Winrates</Heading>
-            <Text>{slidingWindowSize ? `Sliding window - ${slidingWindowSize}` : 'All time'}</Text>
-            <DataSeriesGraph data={data} width='100%' height='400px'/>
-        </Flex>
-    );
 }

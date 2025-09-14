@@ -42,6 +42,5 @@ export default function ValueDisplay({title, values, tooltip}: ValueDisplayProps
                 </Flex>
             </Card>
         </Box>
-    )
-        ;
+    );
 }
