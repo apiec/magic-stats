@@ -3,17 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34316.72
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MagicStats.Server", "MagicStats.Server\MagicStats.Server.csproj", "{57C4B955-B747-4C61-805C-AA2EC7125E2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MagicStats.Server", "src\MagicStats.Server\MagicStats.Server.csproj", "{57C4B955-B747-4C61-805C-AA2EC7125E2E}"
 EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "magicstats.client", "magicstats.client\magicstats.client.esproj", "{0D865B17-9FC8-4BAC-AE2E-662A3306D7D7}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "magicstats.client", "src\magicstats.client\magicstats.client.esproj", "{0D865B17-9FC8-4BAC-AE2E-662A3306D7D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicStats.Persistence.EfCore", "MagicStats.Persistence.EfCore\MagicStats.Persistence.EfCore.csproj", "{44F19792-ABF7-4338-91BF-76F9BEAD848C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicStats.Persistence.EfCore", "src\MagicStats.Persistence.EfCore\MagicStats.Persistence.EfCore.csproj", "{44F19792-ABF7-4338-91BF-76F9BEAD848C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicStats.Api", "MagicStats.Api\MagicStats.Api.csproj", "{933DE7A7-7A3D-4745-8D28-58EA9F57A4F0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicStats.Api", "src\MagicStats.Api\MagicStats.Api.csproj", "{933DE7A7-7A3D-4745-8D28-58EA9F57A4F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicStats.Stats.Domain", "MagicStats.Stats.Domain\MagicStats.Stats.Domain.csproj", "{942A1A82-2B4C-4FFF-9F60-BE32D10A953D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicStats.Stats.Domain", "src\MagicStats.Stats.Domain\MagicStats.Stats.Domain.csproj", "{942A1A82-2B4C-4FFF-9F60-BE32D10A953D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicStats.Scryfall", "MagicStats.Scryfall\MagicStats.Scryfall.csproj", "{BCA3EEAF-5916-48DB-93CB-290CAE8E457D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicStats.Scryfall", "src\MagicStats.Scryfall\MagicStats.Scryfall.csproj", "{BCA3EEAF-5916-48DB-93CB-290CAE8E457D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
